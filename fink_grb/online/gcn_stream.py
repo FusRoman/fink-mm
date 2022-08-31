@@ -6,13 +6,13 @@ import pyarrow.parquet as pq
 import voeventparse as vp
 
 from gcn_kafka import Consumer
-from instruments import FERMI, SWIFT, INTEGRAL, ICECUBE, LISTEN_PACKS, INSTR_SUBSCRIBES, detect_instruments
+from fink_grb.online.instruments import FERMI, SWIFT, INTEGRAL, ICECUBE, LISTEN_PACKS, INSTR_SUBSCRIBES, detect_instruments
 
 import io
 import os
 import configparser
 
-import gcn_reader as gr
+import fink_grb.online.gcn_reader as gr
 
 
 def getargs(parser: argparse.ArgumentParser) -> argparse.Namespace:
@@ -47,14 +47,15 @@ def getargs(parser: argparse.ArgumentParser) -> argparse.Namespace:
     return args
 
 
-if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description=__doc__)
-    args = getargs(parser)
+
+
+
+def start_gcn_stream(arguments):
 
     # read the config file
     config = configparser.ConfigParser(os.environ)
-    config.read(args.config)
+    config.read(arguments["--config"])
 
     # Connect as a consumer.
     # Warning: don't share the client secret with others.
@@ -65,7 +66,6 @@ if __name__ == "__main__":
     # Subscribe to topics and receive alerts
     consumer.subscribe(INSTR_SUBSCRIBES)
 
-    i = 54
     while True:
         for message in consumer.consume():
             value = message.value()
@@ -80,11 +80,6 @@ if __name__ == "__main__":
                 print()
                 print()
                 continue
-
-            toplevel_params = vp.get_toplevel_params(voevent)
-            gcn_packet_type = toplevel_params["Packet_Type"]["value"]
-
-            gcn_how_description = voevent.How.Description
 
             if gr.is_observation(voevent) and gr.is_listened_packets_types(voevent, LISTEN_PACKS):
 

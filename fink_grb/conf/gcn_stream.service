@@ -1,0 +1,6 @@
+[Unit]
+Description=Listen the GCN kafka stream and store them in parquet format
+
+[Service]
+Type=forking
+ExecStart=fink_grb online start_gcn_stream

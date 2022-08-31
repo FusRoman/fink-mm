@@ -1,7 +1,7 @@
 import pandas as pd
 import voeventparse as vp
 
-from instruments import detect_instruments
+from fink_grb.online.instruments import detect_instruments
 
 def get_trigger_id(voevent):
     toplevel_params = vp.get_toplevel_params(voevent)
