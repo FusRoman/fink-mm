@@ -14,12 +14,36 @@ from fink_grb.init import get_config
 from fink_grb import __name__
 
 def signal_handler(signal, frame):
+    """
+    The signal handler function for the gcn stream.
+    Quit the gcn stream by using keyboard command (like Ctrl+C).
+
+    Parameters
+    ----------
+    signal : 
+    frame : 
+
+    Returns
+    -------
+    None
+    """
     logging.warn("exit the gcn streaming !")
     exit(0)
 
 
 def init_logging():
+    """
+    Initialise a logger for the gcn stream
 
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    logger : 
+    
+    """
     # create logger
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
@@ -41,7 +65,21 @@ def init_logging():
 
 
 def start_gcn_stream(arguments):
+    """
+    Start to listening the gcn stream. It is an infinite loop that wait messages and the write on disk
+    the gnc.
 
+    Parameters
+    ----------
+    Parameters
+    ----------
+    arguments : dictionnary
+        arguments parse by docopt from the command line
+
+    Returns 
+    -------
+    None
+    """
     config = get_config(arguments)
     logger = init_logging()
 
@@ -75,7 +113,7 @@ def start_gcn_stream(arguments):
 
                 if gr.is_observation(voevent) and gr.is_listened_packets_types(voevent, LISTEN_PACKS):
                     
-                    logging.info("the voevent is a new obervation.")
+                    logger.info("the voevent is a new obervation.")
 
                     df = gr.voevent_to_df(voevent)
 
@@ -93,4 +131,4 @@ def start_gcn_stream(arguments):
                         existing_data_behavior="overwrite_or_ignore"
                     )
 
-                    logging.info("writing of the new voevent successfull at the location {}".format(config["PATH"]["gcn_path_storage"]))
+                    logger.info("writing of the new voevent successfull at the location {}".format(config["PATH"]["gcn_path_storage"]))

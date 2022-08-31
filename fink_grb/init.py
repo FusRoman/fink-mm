@@ -4,7 +4,19 @@ from importlib.resources import files
 
 
 def init_fink_grb(arguments):
+    """
+    Initialise the fink_grb environment. Get the config specify by the user with the
+    --config argument or the default if not provided.
 
+    Parameters
+    ----------
+    arguments : dictionnary
+        arguments parse by docopt from the command line
+
+    Returns
+    -------
+    None
+    """
     # read the config file
     config = configparser.ConfigParser(os.environ)
 
@@ -29,7 +41,19 @@ def init_fink_grb(arguments):
 
 
 def get_config(arguments):
+    """
+    Get, read and return the configuration file of fink_grb
 
+    Parameters
+    ----------
+    arguments : dictionnary
+        arguments parse by docopt from the command line
+
+    Returns
+    -------
+    config : ConfigParser
+        the ConfigParser object containing the entry from the config file
+    """
     # read the config file
     config = configparser.ConfigParser(os.environ)
 

@@ -1,5 +1,18 @@
 class Instrument:
+    """
+    Main class for the instrument.
+    """
     def __init__(self, instruments_name, packet_type):
+        """
+        Initialise an instrument.
+
+        Parameters
+        ----------
+        instruments : string
+            Name of the instrument
+        packet_type : int list
+            List of packet_type to listen.        
+        """
         self.instruments = instruments_name
         self.packet_type = packet_type
 
@@ -7,6 +20,9 @@ class Instrument:
         return self.instruments
 
 class Fermi(Instrument):
+    """
+    Fermi instrument
+    """
     def __init__(self):
 
         fermi_gbm_pt = [111, 112, 115]
@@ -16,6 +32,9 @@ class Fermi(Instrument):
         super().__init__("Fermi", fermi_gbm_pt + fermi_lat_pt)
 
     def subscribe(self):
+        """
+        Return the topics to listen for the Fermi instrument.
+        """
         return [
             "gcn.classic.voevent.FERMI_GBM_ALERT",
             "gcn.classic.voevent.FERMI_GBM_FIN_POS",
@@ -39,10 +58,16 @@ class Fermi(Instrument):
 
 
 class Swift(Instrument):
+    """
+    Swift Instrument
+    """
     def __init__(self):
-        super().__init__("SWIFT", [97, 61, 65, 67, 81])
+        super().__init__("SWIFT", [61, 65, 67, 81, 97])
 
     def subscribe(self):
+        """
+        Return the topics to listen for the Swift instrument.
+        """
         return [
             "gcn.classic.voevent.SWIFT_ACTUAL_POINTDIR",
             "gcn.classic.voevent.SWIFT_BAT_ALARM_LONG",
@@ -92,10 +117,16 @@ class Swift(Instrument):
 
 
 class Integral(Instrument):
+    """
+    Integral instrument
+    """
     def __init__(self):
         super().__init__("INTEGRAL", [53, 54, 56])
 
     def subscribe(self):
+        """
+        Return the topics to listen for the Integral instrument.
+        """
         return [
             "gcn.classic.voevent.INTEGRAL_OFFLINE",
             "gcn.classic.voevent.INTEGRAL_POINTDIR",
@@ -107,10 +138,16 @@ class Integral(Instrument):
 
 
 class IceCube(Instrument):
+    """
+    IceCube Instrument
+    """
     def __init__(self):
         super().__init__("ICECUBE", [157, 173, 174, 176])
 
     def subscribe(self):
+        """
+        Return the topics to listen for the IceCube instrument.
+        """
         return [
             "gcn.classic.voevent.ICECUBE_ASTROTRACK_BRONZE",
             "gcn.classic.voevent.ICECUBE_ASTROTRACK_GOLD",
@@ -128,6 +165,19 @@ INSTR_SUBSCRIBES = FERMI.subscribe() + SWIFT.subscribe() + ICECUBE.subscribe() +
 
 
 def detect_instruments(gcn_description):
+    """
+    Detect the instrument that emitted the voevent in the description field.
+
+    Parameters
+    ----------
+    gcn_description : string
+        Description field contains in the voevent.
+    
+    Returns
+    -------
+    instrument : string
+        The emitting instrument of the voevent.
+    """
     if FERMI in str(gcn_description):
         return FERMI.__str__()
     elif SWIFT in str(gcn_description):
