@@ -11,8 +11,6 @@ import logging
 import fink_grb.online.gcn_reader as gr
 from fink_grb.init import get_config, init_logging
 
-from fink_grb import __name__
-
 
 def signal_handler(signal, frame):
     """

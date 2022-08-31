@@ -3,6 +3,8 @@ import configparser
 from importlib.resources import files
 import logging
 
+from fink_grb import __name__
+
 
 def init_fink_grb(arguments):
     """

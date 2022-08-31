@@ -7,7 +7,7 @@ from astropy.coordinates import SkyCoord
 from astropy.time import Time
 
 from pyspark.sql import functions as F
-from pyspark.sql.functions import pandas_udf, current_timestamp, expr, col
+from pyspark.sql.functions import pandas_udf
 from pyspark.sql.types import DoubleType
 
 from fink_broker.sparkUtils import init_sparksession, connect_to_raw_database
@@ -90,7 +90,7 @@ def ztf_join_gcn_stream(arguments):
 
     config = get_config(arguments)
     logger = init_logging()
-    spark = init_sparksession("fink_grb")
+    _ = init_sparksession("fink_grb")
 
     NSIDE = 4
 
@@ -98,9 +98,9 @@ def ztf_join_gcn_stream(arguments):
     exit_after = arguments["--exit_after"]
 
     ztf_datapath_prefix = config["PATH"]["online_ztf_data_prefix"]
-    ztf_rawdatapath = ztf_datapath_prefix + '/raw'
-    scitmpdatapath = ztf_datapath_prefix + '/science'
-    checkpointpath_sci_tmp = ztf_datapath_prefix + '/science_checkpoint'
+    ztf_rawdatapath = ztf_datapath_prefix + "/raw"
+    scitmpdatapath = ztf_datapath_prefix + "/science"
+    checkpointpath_sci_tmp = ztf_datapath_prefix + "/science_checkpoint"
 
     df_ztf_stream = connect_to_raw_database(
         ztf_rawdatapath
