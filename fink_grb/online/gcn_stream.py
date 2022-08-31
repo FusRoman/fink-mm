@@ -35,7 +35,7 @@ def write_and_parse_gcn(gcn, gcn_rawdatapath, logger):
     logger.info("A new voevent is coming")
     value = gcn.value()
 
-    decode = io.BytesIO(value).read()# .decode("UTF-8")
+    # decode = io.BytesIO(value).read()  # .decode("UTF-8")
 
     try:
         voevent = gr.load_voevent(io.BytesIO(value))
@@ -66,9 +66,7 @@ def write_and_parse_gcn(gcn, gcn_rawdatapath, logger):
             table,
             root_path=gcn_rawdatapath,
             partition_cols=["year", "month", "day"],
-            basename_template="{}_{}".format(
-                str(df["trigger_id"].values[0]), "{i}"
-            ),
+            basename_template="{}_{}".format(str(df["trigger_id"].values[0]), "{i}"),
             existing_data_behavior="overwrite_or_ignore",
         )
 
@@ -78,7 +76,7 @@ def write_and_parse_gcn(gcn, gcn_rawdatapath, logger):
             )
         )
         return
-    
+
     return
 
 

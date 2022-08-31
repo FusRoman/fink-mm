@@ -32,7 +32,7 @@ def compute_healpix_column(spark_df, ra, dec, nside):
     spark_df : Spark Distributed dataframe
         The initial spark_df with a new columns called 'hpix' containing the pixel ids.
     """
-    
+
     spark_df = spark_df.withColumn("hpix", ang2pix(ra, dec, F.lit(nside)))
 
     return spark_df
@@ -62,10 +62,10 @@ def grb_assoc(
         declination coordinates of the ztf alerts
     jdstarthist : double spark column
         Earliest Julian date of epoch corresponding to ndethist [days]
-        ndethist : Number of spatially-coincident detections falling within 1.5 arcsec 
-            going back to beginning of survey; 
-            only detections that fell on the same field and readout-channel ID 
-            where the input candidate was observed are counted. 
+        ndethist : Number of spatially-coincident detections falling within 1.5 arcsec
+            going back to beginning of survey;
+            only detections that fell on the same field and readout-channel ID
+            where the input candidate was observed are counted.
             All raw detections down to a photometric S/N of ~ 3 are included.
     instruments : string spark column
     trigger_time : double spark column
@@ -195,7 +195,6 @@ def ztf_join_gcn_stream(arguments):
     df_grb = df_ztf_stream.join(
         df_grb_stream, df_ztf_stream["hpix"] == df_grb_stream["hpix"]
     )
-
 
     # refine the association and compute the serendipitous probability
     df_grb = df_grb.withColumn(
