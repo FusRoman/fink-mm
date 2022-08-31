@@ -18,9 +18,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=find_packages(),
-    package_data={
-        "fink_grb" : ["conf/fink_grb.conf"] 
-    },
+    package_data={"fink_grb": ["conf/fink_grb.conf"]},
     install_requires=[
         "docopt>=0.6.2",
         "fink-science>=0.5.1",
@@ -30,7 +28,7 @@ setup(
         "astropy>=4.2.1",
         "healpy>=1.15.2",
         "voevent-parse>=1.0.3",
-        "pyarrow>=8.0.0"
+        "pyarrow>=8.0.0",
     ],
     entry_points={"console_scripts": ["fink_grb=fink_grb.fink_grb_cli:main"]},
     license="Apache-2.0 License",
