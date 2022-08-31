@@ -20,9 +20,10 @@ def signal_handler(signal, frame):
 
     Parameters
     ----------
-    signal : 
+    signal : integer
+        the signal number
     frame : 
-
+        the current stack frame
     Returns
     -------
     None
@@ -41,8 +42,9 @@ def init_logging():
 
     Returns
     -------
-    logger : 
-    
+    logger : Logger object
+        A logger object for the logging management.
+
     """
     # create logger
     logger = logging.getLogger(__name__)
@@ -69,8 +71,6 @@ def start_gcn_stream(arguments):
     Start to listening the gcn stream. It is an infinite loop that wait messages and the write on disk
     the gnc.
 
-    Parameters
-    ----------
     Parameters
     ----------
     arguments : dictionnary
