@@ -1,6 +1,7 @@
 import os
 import configparser
 from importlib.resources import files
+import logging
 
 
 def init_fink_grb(arguments):
@@ -72,3 +73,39 @@ def get_config(arguments):
         config.read(config_path)
 
     return config
+
+
+def init_logging():
+    """
+    Initialise a logger for the gcn stream
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    logger : Logger object
+        A logger object for the logging management.
+
+    """
+    # create logger
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+
+    # create console handler and set level to debug
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+
+    # create formatter
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s \n\t message: %(message)s"
+    )
+
+    # add formatter to ch
+    ch.setFormatter(formatter)
+
+    # add ch to logger
+    logger.addHandler(ch)
+
+    return logger

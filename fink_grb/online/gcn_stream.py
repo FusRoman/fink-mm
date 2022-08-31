@@ -9,7 +9,7 @@ import io
 import logging
 
 import fink_grb.online.gcn_reader as gr
-from fink_grb.init import get_config
+from fink_grb.init import get_config, init_logging
 
 from fink_grb import __name__
 
@@ -31,42 +31,6 @@ def signal_handler(signal, frame):
     """
     logging.warn("exit the gcn streaming !")
     exit(0)
-
-
-def init_logging():
-    """
-    Initialise a logger for the gcn stream
-
-    Parameters
-    ----------
-    None
-
-    Returns
-    -------
-    logger : Logger object
-        A logger object for the logging management.
-
-    """
-    # create logger
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-
-    # create console handler and set level to debug
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-
-    # create formatter
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s \n\t message: %(message)s"
-    )
-
-    # add formatter to ch
-    ch.setFormatter(formatter)
-
-    # add ch to logger
-    logger.addHandler(ch)
-
-    return logger
 
 
 def start_gcn_stream(arguments):
@@ -134,7 +98,7 @@ def start_gcn_stream(arguments):
 
                     pq.write_to_dataset(
                         table,
-                        root_path=config["PATH"]["gcn_path_storage"],
+                        root_path=config["PATH"]["online_gcn_data_prefix"],
                         partition_cols=["year", "month", "day"],
                         basename_template="{}_{}".format(
                             str(df["trigger_id"].values[0]), "{i}"
@@ -144,6 +108,6 @@ def start_gcn_stream(arguments):
 
                     logger.info(
                         "writing of the new voevent successfull at the location {}".format(
-                            config["PATH"]["gcn_path_storage"]
+                            config["PATH"]["online_gcn_data_prefix"]
                         )
                     )
