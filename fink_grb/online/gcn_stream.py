@@ -1,61 +1,49 @@
-import argparse
-
+import signal
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-import voeventparse as vp
-
 from gcn_kafka import Consumer
-from fink_grb.online.instruments import FERMI, SWIFT, INTEGRAL, ICECUBE, LISTEN_PACKS, INSTR_SUBSCRIBES, detect_instruments
+from fink_grb.online.instruments import LISTEN_PACKS, INSTR_SUBSCRIBES
 
 import io
-import os
-import configparser
+import logging
 
 import fink_grb.online.gcn_reader as gr
+from fink_grb.init import get_config
+
+from fink_grb import __name__
+
+def signal_handler(signal, frame):
+    logging.warn("exit the gcn streaming !")
+    exit(0)
 
 
-def getargs(parser: argparse.ArgumentParser) -> argparse.Namespace:
-    """
-    Parse command line arguments for fink grb service
+def init_logging():
 
-    Parameters
-    ----------
-    parser: argparse.ArgumentParser
-        Empty parser
+    # create logger
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
 
-    Returns
-    ----------
-    args: argparse.Namespace
-        Object containing CLI arguments parsedservices
+    # create console handler and set level to debug
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
 
-    Examples
-    ----------
-    >>> import argparse
-    >>> parser = argparse.ArgumentParser(description=__doc__)
-    >>> args = getargs(parser)
-    >>> print(type(args))
-    <class 'argparse.Namespace'>
-    """
-    parser.add_argument(
-        '--config', type=str, default="",
-        help="""
-        Path of the config file.
-        Default is ''.
-        """)
-    args = parser.parse_args(None)
-    return args
+    # create formatter
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s \n\t message: %(message)s')
 
+    # add formatter to ch
+    ch.setFormatter(formatter)
 
+    # add ch to logger
+    logger.addHandler(ch)
 
-
+    return logger
 
 
 def start_gcn_stream(arguments):
 
-    # read the config file
-    config = configparser.ConfigParser(os.environ)
-    config.read(arguments["--config"])
+    config = get_config(arguments)
+    logger = init_logging()
 
     # Connect as a consumer.
     # Warning: don't share the client secret with others.
@@ -66,35 +54,43 @@ def start_gcn_stream(arguments):
     # Subscribe to topics and receive alerts
     consumer.subscribe(INSTR_SUBSCRIBES)
 
+    signal.signal(signal.SIGINT, signal_handler)
+
     while True:
-        for message in consumer.consume():
-            value = message.value()
-            
-            decode = io.BytesIO(value).read().decode("UTF-8")
+        message = consumer.consume(timeout=2)
 
-            try:
-                voevent = gr.load_voevent(io.StringIO(decode))
-            except Exception as e:
-                print(decode)
-                print(e)
-                print()
-                print()
-                continue
+        if len(message) != 0:
+            for gcn in message:
+                logger.info("A new voevent is coming")
+                value = gcn.value()
+                
+                decode = io.BytesIO(value).read().decode("UTF-8")
 
-            if gr.is_observation(voevent) and gr.is_listened_packets_types(voevent, LISTEN_PACKS):
+                try:
+                    voevent = gr.load_voevent(io.StringIO(decode))
+                except Exception as e:
+                    logger.error("Error while reading the following voevent: \n\t {}\n\n\tcause: {}".format(decode, e))
+                    print()
+                    continue
 
-                df = gr.voevent_to_df(voevent)
+                if gr.is_observation(voevent) and gr.is_listened_packets_types(voevent, LISTEN_PACKS):
+                    
+                    logging.info("the voevent is a new obervation.")
 
-                df['year'] = df['timeUTC'].dt.strftime('%Y')
-                df['month'] = df['timeUTC'].dt.strftime('%m')
-                df['day'] = df['timeUTC'].dt.strftime('%d')
+                    df = gr.voevent_to_df(voevent)
 
-                table = pa.Table.from_pandas(df)
+                    df['year'] = df['timeUTC'].dt.strftime('%Y')
+                    df['month'] = df['timeUTC'].dt.strftime('%m')
+                    df['day'] = df['timeUTC'].dt.strftime('%d')
 
-                pq.write_to_dataset(
-                    table,
-                    root_path=config["PATH"]["gcn_path_storage"],
-                    partition_cols=['year', 'month', 'day'],
-                    basename_template="{}_{}".format(str(df["trigger_id"].values[0]), "{i}"),
-                    existing_data_behavior="overwrite_or_ignore"
-                )
+                    table = pa.Table.from_pandas(df)
+
+                    pq.write_to_dataset(
+                        table,
+                        root_path=config["PATH"]["gcn_path_storage"],
+                        partition_cols=['year', 'month', 'day'],
+                        basename_template="{}_{}".format(str(df["trigger_id"].values[0]), "{i}"),
+                        existing_data_behavior="overwrite_or_ignore"
+                    )
+
+                    logging.info("writing of the new voevent successfull at the location {}".format(config["PATH"]["gcn_path_storage"]))
