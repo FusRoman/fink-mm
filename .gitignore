@@ -130,5 +130,5 @@ dmypy.json
 
 
 # Custom
-conf/local_conf.conf
+*/local_conf.conf
 gcn_storage_test

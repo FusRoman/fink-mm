@@ -1,6 +1,15 @@
 [Unit]
-Description=Listen the GCN kafka stream and store them in parquet format
+Description=fink_grb_gcn_stream
 
 [Service]
-Type=forking
-ExecStart=fink_grb online start_gcn_stream
+Type=simple
+
+# Command to execute when the service is started
+ExecStart=fink_grb start_gcn_stream
+
+# Disable Python's buffering of STDOUT and STDERR, so that output from the
+# service shows up immediately in systemd's logs
+Environment=PYTHONUNBUFFERED=1
+
+# restart on failure
+Restart=on-failure
