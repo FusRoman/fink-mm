@@ -31,6 +31,57 @@ def signal_handler(signal, frame):
     exit(0)
 
 
+def write_and_parse_gcn(gcn, gcn_rawdatapath, logger):
+    logger.info("A new voevent is coming")
+    value = gcn.value()
+
+    decode = io.BytesIO(value).read()# .decode("UTF-8")
+
+    try:
+        voevent = gr.load_voevent(io.BytesIO(value))
+    except Exception as e:
+        logger.error(
+            "Error while reading the following voevent: \n\t {}\n\n\tcause: {}".format(
+                value, e
+            )
+        )
+        print()
+        return
+
+    if gr.is_observation(voevent) and gr.is_listened_packets_types(
+        voevent, LISTEN_PACKS
+    ):
+
+        logger.info("the voevent is a new obervation.")
+
+        df = gr.voevent_to_df(voevent)
+
+        df["year"] = df["timeUTC"].dt.strftime("%Y")
+        df["month"] = df["timeUTC"].dt.strftime("%m")
+        df["day"] = df["timeUTC"].dt.strftime("%d")
+
+        table = pa.Table.from_pandas(df)
+
+        pq.write_to_dataset(
+            table,
+            root_path=gcn_rawdatapath,
+            partition_cols=["year", "month", "day"],
+            basename_template="{}_{}".format(
+                str(df["trigger_id"].values[0]), "{i}"
+            ),
+            existing_data_behavior="overwrite_or_ignore",
+        )
+
+        logger.info(
+            "writing of the new voevent successfull at the location {}".format(
+                gcn_rawdatapath
+            )
+        )
+        return
+    
+    return
+
+
 def start_gcn_stream(arguments):
     """
     Start to listening the gcn stream. It is an infinite loop that wait messages and the write on disk
@@ -59,53 +110,12 @@ def start_gcn_stream(arguments):
 
     signal.signal(signal.SIGINT, signal_handler)
 
+    gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
+    gcn_rawdatapath = gcn_datapath_prefix + "/raw"
+
     while True:
         message = consumer.consume(timeout=2)
 
         if len(message) != 0:
             for gcn in message:
-                logger.info("A new voevent is coming")
-                value = gcn.value()
-
-                decode = io.BytesIO(value).read().decode("UTF-8")
-
-                try:
-                    voevent = gr.load_voevent(io.StringIO(decode))
-                except Exception as e:
-                    logger.error(
-                        "Error while reading the following voevent: \n\t {}\n\n\tcause: {}".format(
-                            decode, e
-                        )
-                    )
-                    print()
-                    continue
-
-                if gr.is_observation(voevent) and gr.is_listened_packets_types(
-                    voevent, LISTEN_PACKS
-                ):
-
-                    logger.info("the voevent is a new obervation.")
-
-                    df = gr.voevent_to_df(voevent)
-
-                    df["year"] = df["timeUTC"].dt.strftime("%Y")
-                    df["month"] = df["timeUTC"].dt.strftime("%m")
-                    df["day"] = df["timeUTC"].dt.strftime("%d")
-
-                    table = pa.Table.from_pandas(df)
-
-                    pq.write_to_dataset(
-                        table,
-                        root_path=config["PATH"]["online_gcn_data_prefix"],
-                        partition_cols=["year", "month", "day"],
-                        basename_template="{}_{}".format(
-                            str(df["trigger_id"].values[0]), "{i}"
-                        ),
-                        existing_data_behavior="overwrite_or_ignore",
-                    )
-
-                    logger.info(
-                        "writing of the new voevent successfull at the location {}".format(
-                            config["PATH"]["online_gcn_data_prefix"]
-                        )
-                    )
+                write_and_parse_gcn(gcn, gcn_rawdatapath, logger)

@@ -37,10 +37,11 @@ def init_fink_grb(arguments):
         config_path = files("fink_grb").joinpath("conf/fink_grb.conf")
         config.read(config_path)
 
-    output_path = config["PATH"]["gcn_path_storage"]
+    output_path = config["PATH"]["online_gcn_data_prefix"]
 
     if not os.path.isdir(output_path):
         os.mkdir(output_path)
+        os.mkdir(output_path + "/raw")
 
 
 def get_config(arguments):

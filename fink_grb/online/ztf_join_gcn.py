@@ -17,7 +17,22 @@ from fink_broker.science import ang2pix
 
 
 def compute_healpix_column(spark_df, ra, dec, nside):
+    """
+    Compute a columns of pixels id and add it to the spark_df dataframe.
 
+    Parameters
+    ----------
+    spark_df : Spark Distributed dataframe
+    ra: Spark dataframe columns
+    dec : Spark dataframe columns
+    nside : resolution of the healpix map.
+
+    Returns
+    -------
+    spark_df : Spark Distributed dataframe
+        The initial spark_df with a new columns called 'hpix' containing the pixel ids.
+    """
+    
     spark_df = spark_df.withColumn("hpix", ang2pix(ra, dec, F.lit(nside)))
 
     return spark_df
@@ -35,10 +50,39 @@ def grb_assoc(
     grb_error,
     units,
 ):
+    """
+    Find the ztf alerts falling in the error box of the notices and emits after the trigger time.
+    Then, Compute an association serendipitous probability for each of them and return it.
 
+    Parameters
+    ----------
+    ztf_ra : double spark column
+        right ascension coordinates of the ztf alerts
+    ztf_dec : double spark column
+        declination coordinates of the ztf alerts
+    jdstarthist : double spark column
+        Earliest Julian date of epoch corresponding to ndethist [days]
+        ndethist : Number of spatially-coincident detections falling within 1.5 arcsec 
+            going back to beginning of survey; 
+            only detections that fell on the same field and readout-channel ID 
+            where the input candidate was observed are counted. 
+            All raw detections down to a photometric S/N of ~ 3 are included.
+    instruments : string spark column
+    trigger_time : double spark column
+    grb_ra : double spark column
+    grb_dec : double spark column
+    grb_error : double spark column
+    units : string spark column
+
+    Returns
+    grb_proba : pandas Series
+        the serendipitous probability for each ztf alerts.
+    """
     grb_proba = np.ones_like(ztf_ra.values, dtype=float) * -1.0
     instruments = instruments.values
 
+    # array of events detection rates in events/years
+    # depending of the instruments
     condition = [
         np.equal(instruments, "Fermi"),
         np.equal(instruments, "SWIFT"),
@@ -46,9 +90,9 @@ def grb_assoc(
         np.equal(instruments, "ICECUBE"),
     ]
     choice_grb_rate = [250, 100, 60, 8]
-
     grb_det_rate = np.select(condition, choice_grb_rate)
 
+    # array of error units depending of the instruments
     grb_error = grb_error.values
     condition = [
         grb_error == 0,
@@ -72,9 +116,10 @@ def grb_assoc(
     # alerts falling within the grb_error_box
     spatial_condition = ztf_coords.separation(grb_coord).degree < 1.5 * grb_error
 
-    # compute serendipitous probability
+    # convert the delay in year
     delay_year = delay[time_condition & spatial_condition] / 365.25
 
+    # compute serendipitous probability
     p_ser = p_ser_grb_vect(
         grb_error[time_condition & spatial_condition],
         delay_year.values,
@@ -87,7 +132,18 @@ def grb_assoc(
 
 
 def ztf_join_gcn_stream(arguments):
+    """
+    Join the ztf alerts stream and the gcn stream to find the counterparts of the gcn alerts
+    in the ztf stream.
 
+    Parameters
+    ----------
+    arguments : dictionnary
+        arguments parse by docopt from the command line
+
+    Returns
+    -------
+    """
     config = get_config(arguments)
     logger = init_logging()
     _ = init_sparksession("fink_grb")
@@ -102,6 +158,7 @@ def ztf_join_gcn_stream(arguments):
     scitmpdatapath = ztf_datapath_prefix + "/science"
     checkpointpath_sci_tmp = ztf_datapath_prefix + "/science_checkpoint"
 
+    # connection to the ztf science stream
     df_ztf_stream = connect_to_raw_database(
         ztf_rawdatapath
         + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
@@ -113,6 +170,7 @@ def ztf_join_gcn_stream(arguments):
     gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
     gcn_rawdatapath = gcn_datapath_prefix + "/raw"
 
+    # connection to the gcn stream
     df_grb_stream = connect_to_raw_database(
         gcn_rawdatapath
         + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
@@ -138,6 +196,8 @@ def ztf_join_gcn_stream(arguments):
         df_grb_stream, df_ztf_stream["hpix"] == df_grb_stream["hpix"]
     )
 
+
+    # refine the association and compute the serendipitous probability
     df_grb = df_grb.withColumn(
         "grb_proba",
         grb_assoc(
@@ -153,6 +213,7 @@ def ztf_join_gcn_stream(arguments):
         ),
     )
 
+    # select a subset of columns before the writing
     df_grb = df_grb.select(
         [
             "objectId",
