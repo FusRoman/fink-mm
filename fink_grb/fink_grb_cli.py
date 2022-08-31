@@ -21,16 +21,16 @@ from fink_grb.online.gcn_stream import start_gcn_stream
 
 from fink_grb.init import init_fink_grb
 
+
 def main():
 
     # parse the command line and return options provided by the user.
     arguments = docopt(__doc__, version=fink_grb.__version__)
 
-
     if arguments["start_gcn_stream"]:
 
-            start_gcn_stream(arguments)
-    
+        start_gcn_stream(arguments)
+
     elif arguments["init"]:
 
         init_fink_grb(arguments)

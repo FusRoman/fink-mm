@@ -13,6 +13,7 @@ from fink_grb.init import get_config
 
 from fink_grb import __name__
 
+
 def signal_handler(signal, frame):
     """
     The signal handler function for the gcn stream.
@@ -22,7 +23,7 @@ def signal_handler(signal, frame):
     ----------
     signal : integer
         the signal number
-    frame : 
+    frame :
         the current stack frame
     Returns
     -------
@@ -55,7 +56,9 @@ def init_logging():
     ch.setLevel(logging.DEBUG)
 
     # create formatter
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s \n\t message: %(message)s')
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s \n\t message: %(message)s"
+    )
 
     # add formatter to ch
     ch.setFormatter(formatter)
@@ -76,7 +79,7 @@ def start_gcn_stream(arguments):
     arguments : dictionnary
         arguments parse by docopt from the command line
 
-    Returns 
+    Returns
     -------
     None
     """
@@ -101,34 +104,46 @@ def start_gcn_stream(arguments):
             for gcn in message:
                 logger.info("A new voevent is coming")
                 value = gcn.value()
-                
+
                 decode = io.BytesIO(value).read().decode("UTF-8")
 
                 try:
                     voevent = gr.load_voevent(io.StringIO(decode))
                 except Exception as e:
-                    logger.error("Error while reading the following voevent: \n\t {}\n\n\tcause: {}".format(decode, e))
+                    logger.error(
+                        "Error while reading the following voevent: \n\t {}\n\n\tcause: {}".format(
+                            decode, e
+                        )
+                    )
                     print()
                     continue
 
-                if gr.is_observation(voevent) and gr.is_listened_packets_types(voevent, LISTEN_PACKS):
-                    
+                if gr.is_observation(voevent) and gr.is_listened_packets_types(
+                    voevent, LISTEN_PACKS
+                ):
+
                     logger.info("the voevent is a new obervation.")
 
                     df = gr.voevent_to_df(voevent)
 
-                    df['year'] = df['timeUTC'].dt.strftime('%Y')
-                    df['month'] = df['timeUTC'].dt.strftime('%m')
-                    df['day'] = df['timeUTC'].dt.strftime('%d')
+                    df["year"] = df["timeUTC"].dt.strftime("%Y")
+                    df["month"] = df["timeUTC"].dt.strftime("%m")
+                    df["day"] = df["timeUTC"].dt.strftime("%d")
 
                     table = pa.Table.from_pandas(df)
 
                     pq.write_to_dataset(
                         table,
                         root_path=config["PATH"]["gcn_path_storage"],
-                        partition_cols=['year', 'month', 'day'],
-                        basename_template="{}_{}".format(str(df["trigger_id"].values[0]), "{i}"),
-                        existing_data_behavior="overwrite_or_ignore"
+                        partition_cols=["year", "month", "day"],
+                        basename_template="{}_{}".format(
+                            str(df["trigger_id"].values[0]), "{i}"
+                        ),
+                        existing_data_behavior="overwrite_or_ignore",
                     )
 
-                    logger.info("writing of the new voevent successfull at the location {}".format(config["PATH"]["gcn_path_storage"]))
+                    logger.info(
+                        "writing of the new voevent successfull at the location {}".format(
+                            config["PATH"]["gcn_path_storage"]
+                        )
+                    )

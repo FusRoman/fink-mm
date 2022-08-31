@@ -2,6 +2,7 @@ class Instrument:
     """
     Main class for the instrument.
     """
+
     def __init__(self, instruments_name, packet_type):
         """
         Initialise an instrument.
@@ -11,7 +12,7 @@ class Instrument:
         instruments : string
             Name of the instrument
         packet_type : int list
-            List of packet_type to listen.        
+            List of packet_type to listen.
         """
         self.instruments = instruments_name
         self.packet_type = packet_type
@@ -19,10 +20,12 @@ class Instrument:
     def __str__(self) -> str:
         return self.instruments
 
+
 class Fermi(Instrument):
     """
     Fermi instrument
     """
+
     def __init__(self):
 
         fermi_gbm_pt = [111, 112, 115]
@@ -61,6 +64,7 @@ class Swift(Instrument):
     """
     Swift Instrument
     """
+
     def __init__(self):
         super().__init__("SWIFT", [61, 65, 67, 81, 97])
 
@@ -120,6 +124,7 @@ class Integral(Instrument):
     """
     Integral instrument
     """
+
     def __init__(self):
         super().__init__("INTEGRAL", [53, 54, 56])
 
@@ -141,6 +146,7 @@ class IceCube(Instrument):
     """
     IceCube Instrument
     """
+
     def __init__(self):
         super().__init__("ICECUBE", [157, 173, 174, 176])
 
@@ -160,8 +166,12 @@ SWIFT = Swift()
 INTEGRAL = Integral()
 ICECUBE = IceCube()
 
-LISTEN_PACKS = FERMI.packet_type + SWIFT.packet_type + INTEGRAL.packet_type + ICECUBE.packet_type
-INSTR_SUBSCRIBES = FERMI.subscribe() + SWIFT.subscribe() + ICECUBE.subscribe() + INTEGRAL.subscribe()
+LISTEN_PACKS = (
+    FERMI.packet_type + SWIFT.packet_type + INTEGRAL.packet_type + ICECUBE.packet_type
+)
+INSTR_SUBSCRIBES = (
+    FERMI.subscribe() + SWIFT.subscribe() + ICECUBE.subscribe() + INTEGRAL.subscribe()
+)
 
 
 def detect_instruments(gcn_description):
@@ -172,7 +182,7 @@ def detect_instruments(gcn_description):
     ----------
     gcn_description : string
         Description field contains in the voevent.
-    
+
     Returns
     -------
     instrument : string
@@ -187,6 +197,6 @@ def detect_instruments(gcn_description):
     elif ICECUBE in str(gcn_description):
         return ICECUBE.__str__()
     else:
-        raise ValueError("Unknown instruments in the system: {}".format(gcn_description))
-
-
+        raise ValueError(
+            "Unknown instruments in the system: {}".format(gcn_description)
+        )

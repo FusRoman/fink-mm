@@ -3,10 +3,11 @@ import voeventparse as vp
 
 from fink_grb.online.instruments import detect_instruments
 
+
 def get_trigger_id(voevent):
     """
     Return the trigger_id from a voevent.
-    
+
     Parameters
     ----------
     voevent : voevent object
@@ -37,7 +38,7 @@ def voevent_to_df(voevent):
     voevent : voevent object
         The voevent object.
 
-    Returns 
+    Returns
     -------
     df : dataframe
         A dataframe object containing some informations from the voevent.
@@ -53,16 +54,16 @@ def voevent_to_df(voevent):
             - rawEvent : the original voevent in xml format.
     """
 
-    ivorn = voevent.attrib['ivorn']
+    ivorn = voevent.attrib["ivorn"]
     instruments = detect_instruments(ivorn)
 
     trigger_id = get_trigger_id(voevent)
-    
+
     coords = vp.get_event_position(voevent)
     time_utc = vp.get_event_time_as_utc(voevent)
 
     if instruments == "Fermi":
-        error_unit  = "deg"
+        error_unit = "deg"
     elif instruments == "SWIFT":
         error_unit = "arcmin"
     elif instruments == "INTEGRAL":
@@ -74,15 +75,15 @@ def voevent_to_df(voevent):
 
     df = pd.DataFrame.from_dict(
         {
-            'instruments': [instruments],
-            'ivorn': [ivorn],
-            'triggerId': [trigger_id],
-            'ra': [coords.ra],
-            'dec': [coords.dec],
-            'err': [coords.err],
-            'units': [error_unit],
-            'timeUTC': [time_utc],
-            'rawEvent': vp.prettystr(voevent)
+            "instruments": [instruments],
+            "ivorn": [ivorn],
+            "triggerId": [trigger_id],
+            "ra": [coords.ra],
+            "dec": [coords.dec],
+            "err": [coords.err],
+            "units": [error_unit],
+            "timeUTC": [time_utc],
+            "rawEvent": vp.prettystr(voevent),
         }
     )
 
@@ -117,7 +118,7 @@ def is_listened_packets_types(voevent, listen_packs):
         The voevent object.
     listen_pack : integer list
         The packet numbers type that we want to listen.
-    
+
     Returns
     -------
     is_listen : boolean
@@ -140,7 +141,7 @@ def load_voevent(file, verbose=False):
         the file object containing the voevent.
     verbose : boolean
         print additional information if an exception is raised.
-    
+
     Returns
     -------
     voevent : voevent object
@@ -149,9 +150,11 @@ def load_voevent(file, verbose=False):
         the exception if the voevent could not be read.
     """
     try:
-            voevent = vp.load(file)
-            return voevent
+        voevent = vp.load(file)
+        return voevent
     except Exception as e:
         if verbose:
-            print("failed to load the voevent:\n\tlocation={}\n\tcause={}".format(file, e))
+            print(
+                "failed to load the voevent:\n\tlocation={}\n\tcause={}".format(file, e)
+            )
         raise e

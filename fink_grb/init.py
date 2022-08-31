@@ -31,7 +31,7 @@ def init_fink_grb(arguments):
             )
             exit(1)
     else:
-        config_path = files('fink_grb').joinpath('conf/fink_grb.conf')
+        config_path = files("fink_grb").joinpath("conf/fink_grb.conf")
         config.read(config_path)
 
     output_path = config["PATH"]["gcn_path_storage"]
@@ -68,7 +68,7 @@ def get_config(arguments):
             )
             exit(1)
     else:
-        config_path = files('fink_grb').joinpath('conf/fink_grb.conf')
+        config_path = files("fink_grb").joinpath("conf/fink_grb.conf")
         config.read(config_path)
 
     return config
