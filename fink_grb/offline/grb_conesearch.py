@@ -7,6 +7,7 @@ import time as t
 
 from fink_grb.grb_utils.grb_prob import p_ser_grb_vect
 
+
 def grb_crossmatch(ra, dec, loc_error, error_units, trigger_time, instruments):
 
     if error_units == u.degree:
@@ -23,14 +24,14 @@ def grb_crossmatch(ra, dec, loc_error, error_units, trigger_time, instruments):
 
     t_before = t.time()
     r = requests.post(
-        'https://fink-portal.org/api/v1/explorer',
+        "https://fink-portal.org/api/v1/explorer",
         json={
-            'ra': str(ra),
-            'dec': str(dec),
-            'radius': str(loc_error),
-            'startdate_conesearch': str(pd.to_datetime(trigger_time).tz_convert(None)),
-            'window_days_conesearch': 2
-        }
+            "ra": str(ra),
+            "dec": str(dec),
+            "radius": str(loc_error),
+            "startdate_conesearch": str(pd.to_datetime(trigger_time).tz_convert(None)),
+            "window_days_conesearch": 2,
+        },
     )
 
     # Format output in a DataFrame
@@ -38,7 +39,7 @@ def grb_crossmatch(ra, dec, loc_error, error_units, trigger_time, instruments):
     print("query time: {}".format(t.time() - t_before))
     print("nb ztf alerts from query: {}".format(len(pdf)))
     if len(pdf) > 0:
-        
+
         t_before = t.time()
 
         if instruments == "Fermi":
@@ -52,15 +53,18 @@ def grb_crossmatch(ra, dec, loc_error, error_units, trigger_time, instruments):
         else:
             raise ValueError("bad instruments: {}".format(instruments))
 
-        trigger_time = Time(pd.to_datetime(trigger_time, utc=True), format="datetime").jd
+        trigger_time = Time(
+            pd.to_datetime(trigger_time, utc=True), format="datetime"
+        ).jd
         delay_year = (pdf["i:jdstarthist"] - trigger_time) / 365.25
 
         time_condition = delay_year > 0
-        
 
         proba = np.ones_like(delay_year) * -1.0
 
-        proba[time_condition] = p_ser_grb_vect(loc_error / 3600, delay_year[time_condition], grb_det_rate)[0]
+        proba[time_condition] = p_ser_grb_vect(
+            loc_error / 3600, delay_year[time_condition], grb_det_rate
+        )[0]
 
         pdf["pser_grb"] = proba
 
