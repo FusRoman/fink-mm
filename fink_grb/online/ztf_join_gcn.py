@@ -1,10 +1,14 @@
 import pandas as pd
 import numpy as np
 import time
+import os
+import subprocess
+import sys
 
 import astropy.units as u
 from astropy.coordinates import SkyCoord
 from astropy.time import Time
+import fink_grb
 
 from pyspark.sql import functions as F
 from pyspark.sql.functions import pandas_udf
@@ -131,29 +135,35 @@ def grb_assoc(
     return pd.Series(grb_proba)
 
 
-def ztf_join_gcn_stream(arguments):
+def ztf_join_gcn_stream(
+    ztf_datapath_prefix, gcn_datapath_prefix, night, exit_after, tinterval
+):
     """
     Join the ztf alerts stream and the gcn stream to find the counterparts of the gcn alerts
     in the ztf stream.
 
     Parameters
     ----------
-    arguments : dictionnary
-        arguments parse by docopt from the command line
+    ztf_datapath_prefix : string
+        the prefix path where are stored the ztf alerts
+    gcn_datapath_prefix : string
+        the prefix path where are stored the gcn alerts
+    night : string
+        the processing night
+    exit_after : int
+        the maximum active time in second of the streaming process
+    tinterval : int
+        the processing interval time in second between the data batch
 
     Returns
     -------
+    None
     """
-    config = get_config(arguments)
     logger = init_logging()
     _ = init_sparksession("fink_grb")
 
     NSIDE = 4
 
-    night = arguments["--night"]
-    exit_after = arguments["--exit_after"]
-
-    ztf_datapath_prefix = config["PATH"]["online_ztf_data_prefix"]
     ztf_rawdatapath = ztf_datapath_prefix + "/raw"
     scitmpdatapath = ztf_datapath_prefix + "/science"
     checkpointpath_sci_tmp = ztf_datapath_prefix + "/science_checkpoint"
@@ -167,7 +177,6 @@ def ztf_join_gcn_stream(arguments):
         latestfirst=False,
     )
 
-    gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
     gcn_rawdatapath = gcn_datapath_prefix + "/raw"
 
     # connection to the gcn stream
@@ -235,7 +244,7 @@ def ztf_join_gcn_stream(arguments):
         .option("checkpointLocation", checkpointpath_sci_tmp)
         .option("path", scitmpdatapath)
         .partitionBy("year", "month", "day")
-        .trigger(processingTime="{} seconds".format(int(config["STREAM"]["tinterval"])))
+        .trigger(processingTime="{} seconds".format(tinterval))
         .start()
     )
 
@@ -243,7 +252,102 @@ def ztf_join_gcn_stream(arguments):
     if exit_after is not None:
         time.sleep(exit_after)
         query_grb.stop()
-        logger.info("Exiting the science2grb service normally...")
+        logger.info("Exiting the science2grb streaming subprocess normally...")
     else:
         # Wait for the end of queries
         query_grb.awaitAnyTermination()
+
+
+def launch_joining_stream(arguments):
+
+    config = get_config(arguments)
+    logger = init_logging()
+
+    try:
+        master_manager = config["STREAM"]["manager"]
+        principal_group = config["STREAM"]["principal"]
+        secret = config["STREAM"]["secret"]
+        role = config["STREAM"]["role"]
+        executor_env = config["STREAM"]["exec_env"]
+        driver_mem = config["STREAM"]["driver_memory"]
+        exec_mem = config["STREAM"]["executor_memory"]
+        max_core = config["STREAM"]["max_core"]
+        exec_core = config["STREAM"]["executor_core"]
+
+        ztf_datapath_prefix = config["PATH"]["online_ztf_data_prefix"]
+        gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
+        tinterval = config["STREAM"]["tinterval"]
+    except Exception as e:
+        logger.error("Config entry not found \n\t {}".format(e))
+
+    night = arguments["--night"]
+    exit_after = arguments["--exit_after"]
+
+    application = os.path.join(
+        os.path.dirname(fink_grb.__file__),
+        "online",
+        "ztf_join_gcn.py",
+    )
+
+    application += " " + ztf_datapath_prefix
+    application += " " + gcn_datapath_prefix
+    application += " " + night
+    application += " " + exit_after
+    application += " " + tinterval
+
+    spark_submit = "spark-submit \
+        --master {} \
+        --conf spark.mesos.principal={} \
+        --conf spark.mesos.secret={} \
+        --conf spark.mesos.role={} \
+        --conf spark.executorEnv.HOME={} \
+        --driver-memory {}G \
+        --executor-memory {}G \
+        --conf spark.cores.max={} \
+        --conf spark.executor.cores={} \
+        {}".format(
+        master_manager,
+        principal_group,
+        secret,
+        role,
+        executor_env,
+        driver_mem,
+        exec_mem,
+        max_core,
+        exec_core,
+        application,
+    )
+
+    process = subprocess.Popen(
+        spark_submit,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        shell=True,
+    )
+
+    stdout, stderr = process.communicate()
+    if process.returncode != 0:
+        logger.error(
+            "Fink_GRB joining stream spark application has ended with a non-zero returncode.\
+                \n\t cause:\n\t\t{}\n\t\t{}".format(
+                stdout, stderr
+            )
+        )
+        exit(1)
+
+    logger.info("Fink_GRB joining stream spark application ended normally")
+    exit(0)
+
+
+if __name__ == "__main__":
+
+    ztf_datapath_prefix = sys.argv[1]
+    gcn_datapath_prefix = sys.argv[2]
+    night = sys.argv[3]
+    exit_after = sys.argv[4]
+    tinterval = sys.argv[5]
+
+    ztf_join_gcn_stream(
+        ztf_datapath_prefix, gcn_datapath_prefix, night, exit_after, tinterval
+    )
