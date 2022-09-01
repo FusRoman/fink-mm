@@ -3,7 +3,7 @@ import configparser
 from importlib.resources import files
 import logging
 
-from fink_grb import __name__
+import fink_grb
 
 
 def init_fink_grb(arguments):
@@ -19,23 +19,15 @@ def init_fink_grb(arguments):
     Returns
     -------
     None
-    """
-    # read the config file
-    config = configparser.ConfigParser(os.environ)
 
-    if arguments["--config"]:
-        if os.path.exists(arguments["--config"]):
-            config.read(arguments["--config"])
-        else:  # pragma: no cover
-            print(
-                "config file does not exist from this path: {} !!".format(
-                    arguments["--config"]
-                )
-            )
-            exit(1)
-    else:
-        config_path = files("fink_grb").joinpath("conf/fink_grb.conf")
-        config.read(config_path)
+    Examples
+    --------
+    >>> init_fink_grb({"--config" : None})
+    >>> os.path.isdir("gcn_storage_default/raw")
+    True
+    >>> shutil.rmtree("gcn_storage_default")
+    """
+    config = get_config(arguments)
 
     output_path = config["PATH"]["online_gcn_data_prefix"]
 
@@ -57,6 +49,20 @@ def get_config(arguments):
     -------
     config : ConfigParser
         the ConfigParser object containing the entry from the config file
+
+    Examples
+    --------
+    >>> c = get_config({"--config" : "fink_grb/conf/fink_grb.conf"})
+    >>> type(c)
+    <class 'configparser.ConfigParser'>
+    >>> c.sections()
+    ['CLIENT', 'PATH', 'STREAM']
+
+    >>> c = get_config({"--config" : None})
+    >>> type(c)
+    <class 'configparser.ConfigParser'>
+    >>> c.sections()
+    ['CLIENT', 'PATH', 'STREAM']
     """
     # read the config file
     config = configparser.ConfigParser(os.environ)
@@ -91,9 +97,14 @@ def init_logging():
     logger : Logger object
         A logger object for the logging management.
 
+    Examples
+    --------
+    >>> l = init_logging()
+    >>> type(l)
+    <class 'logging.Logger'>
     """
     # create logger
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger(fink_grb.__name__)
     logger.setLevel(logging.DEBUG)
 
     # create console handler and set level to debug
@@ -112,3 +123,17 @@ def init_logging():
     logger.addHandler(ch)
 
     return logger
+
+
+if __name__ == "__main__":  # pragma: no cover
+    import sys
+    import doctest
+    from pandas.testing import assert_frame_equal  # noqa: F401
+    import pandas as pd  # noqa: F401
+    import shutil  # noqa: F401
+
+    if "unittest.util" in __import__("sys").modules:
+        # Show full diff in self.assertEqual.
+        __import__("sys").modules["unittest.util"]._MAX_LENGTH = 999999999
+
+    sys.exit(doctest.testmod()[0])
