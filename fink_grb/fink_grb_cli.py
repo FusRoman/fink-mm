@@ -16,7 +16,7 @@ Options:
 """
 
 from docopt import docopt
-import fink_grb
+from fink_grb import __version__
 
 from fink_grb.online.gcn_stream import start_gcn_stream
 from fink_grb.init import init_fink_grb
@@ -26,7 +26,7 @@ from fink_grb.online.ztf_join_gcn import launch_joining_stream
 def main():
 
     # parse the command line and return options provided by the user.
-    arguments = docopt(__doc__, version=fink_grb.__version__)
+    arguments = docopt(__doc__, version=__version__)
 
     if arguments["start_gcn_stream"]:
 

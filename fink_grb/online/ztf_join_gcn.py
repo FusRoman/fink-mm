@@ -1,3 +1,7 @@
+import warnings
+
+warnings.filterwarnings("ignore")
+
 import pandas as pd
 import numpy as np
 import time
@@ -44,16 +48,16 @@ def compute_healpix_column(spark_df, ra, dec, nside):
 
 @pandas_udf(DoubleType())
 def grb_assoc(
-    ztf_ra,
-    ztf_dec,
-    jdstarthist,
-    instruments,
-    trigger_time,
-    grb_ra,
-    grb_dec,
-    grb_error,
-    units,
-):
+    ztf_ra: pd.Series,
+    ztf_dec: pd.Series,
+    jdstarthist: pd.Series,
+    instruments: pd.Series,
+    trigger_time: pd.Series,
+    grb_ra: pd.Series,
+    grb_dec: pd.Series,
+    grb_error: pd.Series,
+    units: pd.Series,
+) -> pd.Series:
     """
     Find the ztf alerts falling in the error box of the notices and emits after the trigger time.
     Then, Compute an association serendipitous probability for each of them and return it.
@@ -279,6 +283,7 @@ def launch_joining_stream(arguments):
         tinterval = config["STREAM"]["tinterval"]
     except Exception as e:
         logger.error("Config entry not found \n\t {}".format(e))
+        exit(1)
 
     night = arguments["--night"]
     exit_after = arguments["--exit_after"]

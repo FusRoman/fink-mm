@@ -1,6 +1,7 @@
 import signal
 import pyarrow as pa
 import pyarrow.parquet as pq
+import os
 
 from gcn_kafka import Consumer
 from fink_grb.online.instruments import LISTEN_PACKS, INSTR_SUBSCRIBES
@@ -31,18 +32,41 @@ def signal_handler(signal, frame):
     exit(0)
 
 
-def write_and_parse_gcn(gcn, gcn_rawdatapath, logger):
-    logger.info("A new voevent is coming")
-    value = gcn.value()
+def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False):
+    """
+    Load and parse a gcn coming from the gcn kafka stream.
 
-    # decode = io.BytesIO(value).read()  # .decode("UTF-8")
+    Parameters
+    ----------
+    gcn : bytes
+        the new gcn coming from the stream
+    gcn_rawdatapath : string
+        the path destination where to store the decoded gcn
+    logger : logger object
+        logger object for logs.
 
+    Returns 
+    -------
+    None
+
+    Examples
+    --------
+
+    >>> f = open('fink_grb/test/test_data/voevent_number=9897.xml').read().encode("UTF-8")
+    >>> logger = init_logging()
+    >>> gcn_test_path = 'fink_grb/test/test_output'
+    >>> load_and_parse_gcn(f, gcn_test_path, logger)
+    >>> base_gcn = pd.read_parquet(gcn_test_path + "/year=2022/month=08/day=30/683571622_0")
+    >>> test_gcn = pd.read_parquet("fink_grb/test/test_data/683571622_0_test")
+    >>> assert_frame_equal(base_gcn, test_gcn)
+    >>> shutil.rmtree(gcn_test_path + "/year=2022")
+    """
     try:
-        voevent = gr.load_voevent(io.BytesIO(value))
+        voevent = gr.load_voevent(io.BytesIO(gcn))
     except Exception as e:
         logger.error(
             "Error while reading the following voevent: \n\t {}\n\n\tcause: {}".format(
-                value, e
+                gcn, e
             )
         )
         print()
@@ -52,7 +76,8 @@ def write_and_parse_gcn(gcn, gcn_rawdatapath, logger):
         voevent, LISTEN_PACKS
     ):
 
-        logger.info("the voevent is a new obervation.")
+        if logs:
+            logger.info("the voevent is a new obervation.")
 
         df = gr.voevent_to_df(voevent)
 
@@ -66,21 +91,22 @@ def write_and_parse_gcn(gcn, gcn_rawdatapath, logger):
             table,
             root_path=gcn_rawdatapath,
             partition_cols=["year", "month", "day"],
-            basename_template="{}_{}".format(str(df["trigger_id"].values[0]), "{i}"),
+            basename_template="{}_{}".format(str(df["triggerId"].values[0]), "{i}"),
             existing_data_behavior="overwrite_or_ignore",
         )
 
-        logger.info(
-            "writing of the new voevent successfull at the location {}".format(
-                gcn_rawdatapath
+        if logs:
+            logger.info(
+                "writing of the new voevent successfull at the location {}".format(
+                    gcn_rawdatapath
+                )
             )
-        )
         return
 
     return
 
 
-def start_gcn_stream(arguments):
+def start_gcn_stream(arguments, logs=False):
     """
     Start to listening the gcn stream. It is an infinite loop that wait messages and the write on disk
     the gnc.
@@ -89,6 +115,8 @@ def start_gcn_stream(arguments):
     ----------
     arguments : dictionnary
         arguments parse by docopt from the command line
+    logs : boolean
+        activate the logs messages
 
     Returns
     -------
@@ -97,23 +125,55 @@ def start_gcn_stream(arguments):
     config = get_config(arguments)
     logger = init_logging()
 
-    # Connect as a consumer.
-    # Warning: don't share the client secret with others.
-    consumer = Consumer(
-        client_id=config["CLIENT"]["id"], client_secret=config["CLIENT"]["secret"]
-    )
+    try:
+        # Connect as a consumer.
+        # Warning: don't share the client secret with others.
+        consumer = Consumer(
+            client_id=config["CLIENT"]["id"], client_secret=config["CLIENT"]["secret"]
+        )
+    except Exception as e:
+        logger.error("Config entry not found \n\t {}".format(e))
+        exit(1)
+
 
     # Subscribe to topics and receive alerts
     consumer.subscribe(INSTR_SUBSCRIBES)
 
     signal.signal(signal.SIGINT, signal_handler)
 
-    gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
-    gcn_rawdatapath = gcn_datapath_prefix + "/raw"
+    try:
+        gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
+        gcn_rawdatapath = gcn_datapath_prefix + "/raw"
+    except Exception as e:
+        logger.error("Config entry not found \n\t {}".format(e))
+        exit(1)
+
+    if not os.path.exists(gcn_rawdatapath):
+        logger.error("Path of the gcn stream output not found : {}\nRun fink_grb init before".format(gcn_rawdatapath))
+
 
     while True:
         message = consumer.consume(timeout=2)
 
         if len(message) != 0:
             for gcn in message:
-                write_and_parse_gcn(gcn, gcn_rawdatapath, logger)
+                
+                if logs:
+                    logger.info("A new voevent is coming")
+                value = gcn.value()
+
+                load_and_parse_gcn(value, gcn_rawdatapath, logger, logs)
+
+
+if __name__ == "__main__":  # pragma: no cover
+    import sys
+    import doctest
+    from pandas.testing import assert_frame_equal  # noqa: F401
+    import pandas as pd  # noqa: F401
+    import shutil  # noqa: F401
+
+    if "unittest.util" in __import__("sys").modules:
+        # Show full diff in self.assertEqual.
+        __import__("sys").modules["unittest.util"]._MAX_LENGTH = 999999999
+
+    sys.exit(doctest.testmod()[0])
