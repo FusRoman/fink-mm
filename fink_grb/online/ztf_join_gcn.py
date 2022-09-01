@@ -1,4 +1,5 @@
 import warnings
+
 warnings.filterwarnings("ignore")
 
 
@@ -93,8 +94,8 @@ def grb_assoc(
     ... "candidate.jd",
     ... "instruments",
     ... "trigger_id",
-    ... col("ra").alias("grb_ra"), 
-    ... col("dec").alias("grb_dec"), 
+    ... col("ra").alias("grb_ra"),
+    ... col("dec").alias("grb_dec"),
     ... col("err").alias("grb_loc_error"),
     ... "timeUTC",
     ... "grb_proba"
@@ -235,21 +236,12 @@ def ztf_join_gcn_stream(
 
     # compute healpix column for each streaming df
     df_ztf_stream = df_ztf_stream.withColumn(
-        "hpix", 
-        ang2pix(
-            df_ztf_stream.candidate.ra, 
-            df_ztf_stream.candidate.dec, 
-            F.lit(NSIDE)
-        )
+        "hpix",
+        ang2pix(df_ztf_stream.candidate.ra, df_ztf_stream.candidate.dec, F.lit(NSIDE)),
     )
-    
+
     df_grb_stream = df_grb_stream.withColumn(
-        "hpix", 
-        ang2pix(
-            df_grb_stream.ra, 
-            df_grb_stream.dec, 
-            F.lit(NSIDE)
-        )
+        "hpix", ang2pix(df_grb_stream.ra, df_grb_stream.dec, F.lit(NSIDE))
     )
 
     if logs:
@@ -280,39 +272,37 @@ def ztf_join_gcn_stream(
     )
 
     # select a subset of columns before the writing
-    df_grb = df_grb.select([
-        "objectId",
-        "candid",
-        col("candidate.ra").alias("ztf_ra"),
-        col("candidate.dec").alias("ztf_dec"),
-        "candidate.jd",
-        "instruments",
-        "trigger_id",
-        col("ra").alias("grb_ra"), 
-        col("dec").alias("grb_dec"), 
-        col("err").alias("grb_loc_error"),
-        "timeUTC",
-        "grb_proba"
-    ])
+    df_grb = df_grb.select(
+        [
+            "objectId",
+            "candid",
+            col("candidate.ra").alias("ztf_ra"),
+            col("candidate.dec").alias("ztf_dec"),
+            "candidate.jd",
+            "instruments",
+            "trigger_id",
+            col("ra").alias("grb_ra"),
+            col("dec").alias("grb_dec"),
+            col("err").alias("grb_loc_error"),
+            "timeUTC",
+            "grb_proba",
+        ]
+    )
 
     # re-create partitioning columns if needed.
-    timecol = 'jd'
-    converter = lambda x: convert_to_datetime(x)
-    if 'timestamp' not in df_grb.columns:
-        df_grb = df_grb\
-            .withColumn("timestamp", converter(df_grb[timecol]))
+    timecol = "jd"
+    converter = lambda x: convert_to_datetime(x)  # noqa: E731
+    if "timestamp" not in df_grb.columns:
+        df_grb = df_grb.withColumn("timestamp", converter(df_grb[timecol]))
 
     if "year" not in df_grb.columns:
-        df_grb = df_grb\
-            .withColumn("year", F.date_format("timestamp", "yyyy"))
+        df_grb = df_grb.withColumn("year", F.date_format("timestamp", "yyyy"))
 
     if "month" not in df_grb.columns:
-        df_grb = df_grb\
-            .withColumn("month", F.date_format("timestamp", "MM"))
+        df_grb = df_grb.withColumn("month", F.date_format("timestamp", "MM"))
 
     if "day" not in df_grb.columns:
-        df_grb = df_grb\
-            .withColumn("day", F.date_format("timestamp", "dd"))
+        df_grb = df_grb.withColumn("day", F.date_format("timestamp", "dd"))
 
     query_grb = (
         df_grb.writeStream.outputMode("append")
@@ -338,9 +328,7 @@ def ztf_join_gcn_stream(
 
 
 def launch_joining_stream(arguments):
-    """
-    
-    """
+    """ """
     config = get_config(arguments)
     logger = init_logging()
 

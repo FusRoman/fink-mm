@@ -19,7 +19,7 @@ def get_trigger_id(voevent):
     -------
     trigger_id : integer
         the trigger_id of the voevent, return -1 if not find.
-    
+
     Examples
     --------
     >>> f = open('fink_grb/test/test_data/voevent_number=9897.xml', 'rb')
@@ -66,7 +66,7 @@ def voevent_to_df(voevent):
             - units : units of the error box
             - timeUTC : trigger time of the voevent in UTC
             - rawEvent : the original voevent in xml format.
-    
+
     Examples
     --------
     >>> f = open('fink_grb/test/test_data/voevent_number=9897.xml', 'rb')
@@ -213,7 +213,6 @@ if __name__ == "__main__":  # pragma: no cover
     import sys
     import doctest
     from pandas.testing import assert_frame_equal  # noqa: F401
-    import pandas as pd  # noqa: F401
     import shutil  # noqa: F401
     import io  # noqa: F401
 
