@@ -1,6 +1,8 @@
 import pandas as pd
 import voeventparse as vp
 
+from astropy.time import Time
+
 from fink_grb.online.instruments import detect_instruments
 
 
@@ -17,6 +19,18 @@ def get_trigger_id(voevent):
     -------
     trigger_id : integer
         the trigger_id of the voevent, return -1 if not find.
+    
+    Examples
+    --------
+    >>> f = open('fink_grb/test/test_data/voevent_number=9897.xml', 'rb')
+    >>> v = load_voevent(f)
+    >>> get_trigger_id(v)
+    683571622
+
+    >>> f = open('fink_grb/test/test_data/voevent_number=8727.xml', 'rb')
+    >>> v = load_voevent(f)
+    >>> get_trigger_id(v)
+    13698560401984
     """
     toplevel_params = vp.get_toplevel_params(voevent)
 
@@ -52,6 +66,14 @@ def voevent_to_df(voevent):
             - units : units of the error box
             - timeUTC : trigger time of the voevent in UTC
             - rawEvent : the original voevent in xml format.
+    
+    Examples
+    --------
+    >>> f = open('fink_grb/test/test_data/voevent_number=9897.xml', 'rb')
+    >>> v = load_voevent(f)
+    >>> v_pdf = voevent_to_df(v)
+    >>> test_pdf = pd.read_parquet("fink_grb/test/test_data/683571622_0_test")
+    >>> assert_frame_equal(v_pdf, test_pdf)
     """
 
     ivorn = voevent.attrib["ivorn"]
@@ -61,6 +83,8 @@ def voevent_to_df(voevent):
 
     coords = vp.get_event_position(voevent)
     time_utc = vp.get_event_time_as_utc(voevent)
+
+    time_jd = Time(time_utc, format="datetime").jd
 
     if instruments == "Fermi":
         error_unit = "deg"
@@ -78,6 +102,7 @@ def voevent_to_df(voevent):
             "instruments": [instruments],
             "ivorn": [ivorn],
             "triggerId": [trigger_id],
+            "jd": [time_jd],
             "ra": [coords.ra],
             "dec": [coords.dec],
             "err": [coords.err],
@@ -103,6 +128,13 @@ def is_observation(voevent):
     -------
     is_observation : boolean
         Return True if the voevent is of observation type, otherwise return False
+
+    Examples
+    --------
+    >>> f = open('fink_grb/test/test_data/voevent_number=9897.xml', 'rb')
+    >>> v = load_voevent(f)
+    >>> is_observation(v)
+    True
     """
     gcn_role = voevent.attrib["role"]
     return gcn_role == "observation"
@@ -123,6 +155,14 @@ def is_listened_packets_types(voevent, listen_packs):
     -------
     is_listen : boolean
         True if the voevent packet type is contained in listen pack, otherwise return False.
+
+    Examples
+    --------
+    >>> f = open('fink_grb/test/test_data/voevent_number=9897.xml', 'rb')
+    >>> v = load_voevent(f)
+    >>> from fink_grb.online.instruments import LISTEN_PACKS
+    >>> is_listened_packets_types(v, LISTEN_PACKS)
+    True
     """
     toplevel_params = vp.get_toplevel_params(voevent)
     gcn_packet_type = toplevel_params["Packet_Type"]["value"]
@@ -148,6 +188,15 @@ def load_voevent(file, verbose=False):
         The voevent object.
     e : exception object
         the exception if the voevent could not be read.
+
+    Examples
+    --------
+    >>> f = open('fink_grb/test/test_data/voevent_number=9897.xml', 'rb')
+    >>> v = load_voevent(f)
+    >>> type(v)
+    <class 'lxml.objectify.ObjectifiedElement'>
+    >>> v.attrib['ivorn']
+    'ivo://nasa.gsfc.gcn/Fermi#GBM_Fin_Pos2022-08-30T17:00:17.49_683571622_0-865'
     """
     try:
         voevent = vp.load(file)
@@ -158,3 +207,18 @@ def load_voevent(file, verbose=False):
                 "failed to load the voevent:\n\tlocation={}\n\tcause={}".format(file, e)
             )
         raise e
+
+
+if __name__ == "__main__":  # pragma: no cover
+    import sys
+    import doctest
+    from pandas.testing import assert_frame_equal  # noqa: F401
+    import pandas as pd  # noqa: F401
+    import shutil  # noqa: F401
+    import io  # noqa: F401
+
+    if "unittest.util" in __import__("sys").modules:
+        # Show full diff in self.assertEqual.
+        __import__("sys").modules["unittest.util"]._MAX_LENGTH = 999999999
+
+    sys.exit(doctest.testmod()[0])

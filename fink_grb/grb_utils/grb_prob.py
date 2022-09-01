@@ -43,7 +43,6 @@ def p_ser_grb_vect(
     r_lgrb = r_grb - r_sgrb
 
     # Poisson probability of detecting a GRB during a searching time window
-
     p_grb_detect_ser = 1 - poisson.cdf(1, r_grb * size_time_window)
     p_lgrb_detect_ser = 1 - poisson.cdf(1, r_lgrb * size_time_window)
     p_sgrb_detect_ser = 1 - poisson.cdf(1, r_sgrb * size_time_window)

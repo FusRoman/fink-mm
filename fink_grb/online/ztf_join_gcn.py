@@ -15,34 +15,14 @@ from astropy.time import Time
 import fink_grb
 
 from pyspark.sql import functions as F
-from pyspark.sql.functions import pandas_udf
+from pyspark.sql.functions import pandas_udf, col
 from pyspark.sql.types import DoubleType
 
+from fink_broker.partitioning import convert_to_datetime
 from fink_broker.sparkUtils import init_sparksession, connect_to_raw_database
 from fink_grb.grb_utils.grb_prob import p_ser_grb_vect
 from fink_grb.init import get_config, init_logging
 from fink_broker.science import ang2pix
-
-def compute_healpix_column(spark_df, ra, dec, nside):
-    """
-    Compute a columns of pixels id and add it to the spark_df dataframe.
-
-    Parameters
-    ----------
-    spark_df : Spark Distributed dataframe
-    ra: Spark dataframe columns
-    dec : Spark dataframe columns
-    nside : resolution of the healpix map.
-
-    Returns
-    -------
-    spark_df : Spark Distributed dataframe
-        The initial spark_df with a new columns called 'hpix' containing the pixel ids.
-    """
-
-    spark_df = spark_df.withColumn("hpix", ang2pix(ra, dec, F.lit(nside)))
-
-    return spark_df
 
 
 @pandas_udf(DoubleType())
@@ -84,6 +64,45 @@ def grb_assoc(
     Returns
     grb_proba : pandas Series
         the serendipitous probability for each ztf alerts.
+
+    Examples
+    --------
+
+    >>> sparkDF = spark.read.format('parquet').load(join_data)
+
+    >>> df_grb = sparkDF.withColumn(
+    ... "grb_proba",
+    ... grb_assoc(
+    ...    sparkDF.candidate.ra,
+    ...     sparkDF.candidate.dec,
+    ...     sparkDF.candidate.jdstarthist,
+    ...     sparkDF.instruments,
+    ...     sparkDF.timeUTC,
+    ...     sparkDF.ra,
+    ...     sparkDF.dec,
+    ...     sparkDF.err,
+    ...     sparkDF.units,
+    ...  ),
+    ... )
+
+    >>> df_grb = df_grb.select([
+    ... "objectId",
+    ... "candid",
+    ... col("candidate.ra").alias("ztf_ra"),
+    ... col("candidate.dec").alias("ztf_dec"),
+    ... "candidate.jd",
+    ... "instruments",
+    ... "trigger_id",
+    ... col("ra").alias("grb_ra"), 
+    ... col("dec").alias("grb_dec"), 
+    ... col("err").alias("grb_loc_error"),
+    ... "timeUTC",
+    ... "grb_proba"
+    ... ])
+
+    >>> grb_prob = df_grb.toPandas()
+    >>> grb_test = pd.read_parquet("fink_grb/test/test_data/grb_prob_test.parquet")
+    >>> assert_frame_equal(grb_prob, grb_test)
     """
     grb_proba = np.ones_like(ztf_ra.values, dtype=float) * -1.0
     instruments = instruments.values
@@ -139,7 +158,7 @@ def grb_assoc(
 
 
 def ztf_join_gcn_stream(
-    ztf_datapath_prefix, gcn_datapath_prefix, night, exit_after, tinterval
+    ztf_datapath_prefix, gcn_datapath_prefix, night, exit_after, tinterval, logs=False
 ):
     """
     Join the ztf alerts stream and the gcn stream to find the counterparts of the gcn alerts
@@ -161,21 +180,41 @@ def ztf_join_gcn_stream(
     Returns
     -------
     None
+
+    Examples
+    --------
+    >>> ztf_datatest = "fink_grb/test/test_data/ztf_test/online"
+    >>> gcn_datatest = "fink_grb/test/test_data/gcn_test"
+    >>> ztf_join_gcn_stream(
+    ... ztf_datatest,
+    ... gcn_datatest,
+    ... "20190903",
+    ... 20,
+    ... 10
+    ... )
+
+    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
+    >>> datajoin = pd.read_parquet(ztf_datatest + "/grb/year=2019")
+    >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
+
+    >>> shutil.rmtree(ztf_datatest + "/grb/_spark_metadata")
+    >>> shutil.rmtree(ztf_datatest + "/grb/year=2019")
+    >>> shutil.rmtree(ztf_datatest + "/grb_checkpoint")
     """
     logger = init_logging()
-    _ = init_sparksession("fink_grb")
+    spark = init_sparksession("fink_grb")
 
     NSIDE = 4
 
-    ztf_rawdatapath = ztf_datapath_prefix + "/raw"
-    scitmpdatapath = ztf_datapath_prefix + "/science"
-    checkpointpath_sci_tmp = ztf_datapath_prefix + "/science_checkpoint"
+    scidatapath = ztf_datapath_prefix + "/science"
+    grbdatapath = ztf_datapath_prefix + "/grb"
+    checkpointpath_grb_tmp = ztf_datapath_prefix + "/grb_checkpoint"
 
     # connection to the ztf science stream
     df_ztf_stream = connect_to_raw_database(
-        ztf_rawdatapath
+        scidatapath
         + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
-        ztf_rawdatapath
+        scidatapath
         + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
         latestfirst=False,
     )
@@ -191,14 +230,30 @@ def ztf_join_gcn_stream(
         latestfirst=True,
     )
 
+    if logs:
+        logger.info("connection to the database successfull")
+
     # compute healpix column for each streaming df
-    df_ztf_stream = compute_healpix_column(
-        df_ztf_stream, df_ztf_stream.candidate.ra, df_ztf_stream.candidate.dec, NSIDE
+    df_ztf_stream = df_ztf_stream.withColumn(
+        "hpix", 
+        ang2pix(
+            df_ztf_stream.candidate.ra, 
+            df_ztf_stream.candidate.dec, 
+            F.lit(NSIDE)
+        )
+    )
+    
+    df_grb_stream = df_grb_stream.withColumn(
+        "hpix", 
+        ang2pix(
+            df_grb_stream.ra, 
+            df_grb_stream.dec, 
+            F.lit(NSIDE)
+        )
     )
 
-    df_grb_stream = compute_healpix_column(
-        df_grb_stream, df_grb_stream.ra, df_grb_stream.dec, NSIDE
-    )
+    if logs:
+        logger.info("Healpix columns computing successfull")
 
     # join the two streams according to the healpix columns.
     # A pixel id will be assign to each alerts / gcn according to their position in the sky.
@@ -206,7 +261,7 @@ def ztf_join_gcn_stream(
     # The NSIDE correspond to a resolution of ~15 degree/pixel.
     df_grb = df_ztf_stream.join(
         df_grb_stream, df_ztf_stream["hpix"] == df_grb_stream["hpix"]
-    )
+    ).drop("hpix")
 
     # refine the association and compute the serendipitous probability
     df_grb = df_grb.withColumn(
@@ -225,31 +280,52 @@ def ztf_join_gcn_stream(
     )
 
     # select a subset of columns before the writing
-    df_grb = df_grb.select(
-        [
-            "objectId",
-            "candidate.ra",
-            "candidate.dec",
-            "candidate.jd",
-            "instruments",
-            "trigger_id",
-            "ra",
-            "dec",
-            "err",
-            "timeUTC",
-            "grb_proba",
-        ]
-    )
+    df_grb = df_grb.select([
+        "objectId",
+        "candid",
+        col("candidate.ra").alias("ztf_ra"),
+        col("candidate.dec").alias("ztf_dec"),
+        "candidate.jd",
+        "instruments",
+        "trigger_id",
+        col("ra").alias("grb_ra"), 
+        col("dec").alias("grb_dec"), 
+        col("err").alias("grb_loc_error"),
+        "timeUTC",
+        "grb_proba"
+    ])
+
+    # re-create partitioning columns if needed.
+    timecol = 'jd'
+    converter = lambda x: convert_to_datetime(x)
+    if 'timestamp' not in df_grb.columns:
+        df_grb = df_grb\
+            .withColumn("timestamp", converter(df_grb[timecol]))
+
+    if "year" not in df_grb.columns:
+        df_grb = df_grb\
+            .withColumn("year", F.date_format("timestamp", "yyyy"))
+
+    if "month" not in df_grb.columns:
+        df_grb = df_grb\
+            .withColumn("month", F.date_format("timestamp", "MM"))
+
+    if "day" not in df_grb.columns:
+        df_grb = df_grb\
+            .withColumn("day", F.date_format("timestamp", "dd"))
 
     query_grb = (
         df_grb.writeStream.outputMode("append")
         .format("parquet")
-        .option("checkpointLocation", checkpointpath_sci_tmp)
-        .option("path", scitmpdatapath)
+        .option("checkpointLocation", checkpointpath_grb_tmp)
+        .option("path", grbdatapath)
         .partitionBy("year", "month", "day")
         .trigger(processingTime="{} seconds".format(tinterval))
         .start()
     )
+
+    if logs:
+        logger.info("Stream launching successfull")
 
     # Keep the Streaming running until something or someone ends it!
     if exit_after is not None:
@@ -258,11 +334,13 @@ def ztf_join_gcn_stream(
         logger.info("Exiting the science2grb streaming subprocess normally...")
     else:
         # Wait for the end of queries
-        query_grb.awaitAnyTermination()
+        spark.streams.awaitAnyTermination()
 
 
 def launch_joining_stream(arguments):
-
+    """
+    
+    """
     config = get_config(arguments)
     logger = init_logging()
 
@@ -290,7 +368,7 @@ def launch_joining_stream(arguments):
     application = os.path.join(
         os.path.dirname(fink_grb.__file__),
         "online",
-        "ztf_join_gcn.py",
+        "ztf_join_gcn.py prod",
     )
 
     application += " " + ztf_datapath_prefix
@@ -346,12 +424,27 @@ def launch_joining_stream(arguments):
 
 if __name__ == "__main__":
 
-    ztf_datapath_prefix = sys.argv[1]
-    gcn_datapath_prefix = sys.argv[2]
-    night = sys.argv[3]
-    exit_after = sys.argv[4]
-    tinterval = sys.argv[5]
+    if sys.argv[1] == "test":
+        from fink_science.tester import spark_unit_tests
+        from pandas.testing import assert_frame_equal  # noqa: F401
+        import shutil  # noqa: F401
 
-    ztf_join_gcn_stream(
-        ztf_datapath_prefix, gcn_datapath_prefix, night, exit_after, tinterval
-    )
+        globs = globals()
+
+        join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
+        globs["join_data"] = join_data
+
+        # Run the test suite
+        spark_unit_tests(globs)
+
+    elif sys.argv[1] == "prod":
+
+        ztf_datapath_prefix = sys.argv[2]
+        gcn_datapath_prefix = sys.argv[3]
+        night = sys.argv[4]
+        exit_after = sys.argv[5]
+        tinterval = sys.argv[6]
+
+        ztf_join_gcn_stream(
+            ztf_datapath_prefix, gcn_datapath_prefix, night, exit_after, tinterval
+        )
