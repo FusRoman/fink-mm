@@ -187,16 +187,39 @@ def detect_instruments(gcn_description):
     -------
     instrument : string
         The emitting instrument of the voevent.
+
+    Examples
+    --------
+
+    >>> detect_instruments('ivo://nasa.gsfc.gcn/SWIFT#Point_Dir_2022-08-31T23:32:00.00_53435214-375')
+    'SWIFT'
+    >>> detect_instruments('ivo://nasa.gsfc.gcn/INTEGRAL#Point_Dir_2022-08-31T11:07:20.99_000000-179')
+    'INTEGRAL'
+    >>> detect_instruments('ivo://nasa.gsfc.gcn/Fermi#Point_Dir_2022-08-30T23:16:00.00_000000-0-274')
+    'Fermi'
+    >>> detect_instruments('ivo://nasa.gsfc.gcn/AMON#ICECUBE_BRONZE_Event2022-08-08T07:59:57.26_25_136918_045252263_0')
+    'ICECUBE'
     """
-    if FERMI in str(gcn_description):
+    if FERMI.__str__() in str(gcn_description):
         return FERMI.__str__()
-    elif SWIFT in str(gcn_description):
+    elif SWIFT.__str__() in str(gcn_description):
         return SWIFT.__str__()
-    elif INTEGRAL in str(gcn_description):
+    elif INTEGRAL.__str__() in str(gcn_description):
         return INTEGRAL.__str__()
-    elif ICECUBE in str(gcn_description):
+    elif ICECUBE.__str__() in str(gcn_description):
         return ICECUBE.__str__()
     else:
         raise ValueError(
             "Unknown instruments in the system: {}".format(gcn_description)
         )
+
+
+if __name__ == "__main__":  # pragma: no cover
+    import sys
+    import doctest
+
+    if "unittest.util" in __import__("sys").modules:
+        # Show full diff in self.assertEqual.
+        __import__("sys").modules["unittest.util"]._MAX_LENGTH = 999999999
+
+    sys.exit(doctest.testmod()[0])
