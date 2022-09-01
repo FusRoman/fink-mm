@@ -1,7 +1,4 @@
 import warnings
-
-warnings.filterwarnings("ignore")
-
 import pandas as pd
 import numpy as np
 import time
@@ -23,6 +20,7 @@ from fink_grb.grb_utils.grb_prob import p_ser_grb_vect
 from fink_grb.init import get_config, init_logging
 from fink_broker.science import ang2pix
 
+warnings.filterwarnings("ignore")
 
 def compute_healpix_column(spark_df, ra, dec, nside):
     """

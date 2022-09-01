@@ -45,7 +45,7 @@ def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False):
     logger : logger object
         logger object for logs.
 
-    Returns 
+    Returns
     -------
     None
 
@@ -135,7 +135,6 @@ def start_gcn_stream(arguments, logs=False):
         logger.error("Config entry not found \n\t {}".format(e))
         exit(1)
 
-
     # Subscribe to topics and receive alerts
     consumer.subscribe(INSTR_SUBSCRIBES)
 
@@ -149,15 +148,18 @@ def start_gcn_stream(arguments, logs=False):
         exit(1)
 
     if not os.path.exists(gcn_rawdatapath):
-        logger.error("Path of the gcn stream output not found : {}\nRun fink_grb init before".format(gcn_rawdatapath))
-
+        logger.error(
+            "Path of the gcn stream output not found : {}\nRun fink_grb init before".format(
+                gcn_rawdatapath
+            )
+        )
 
     while True:
         message = consumer.consume(timeout=2)
 
         if len(message) != 0:
             for gcn in message:
-                
+
                 if logs:
                     logger.info("A new voevent is coming")
                 value = gcn.value()
