@@ -190,7 +190,7 @@ def ztf_join_gcn_stream(
     ... ztf_datatest,
     ... gcn_datatest,
     ... "20190903",
-    ... 20,
+    ... 120,
     ... 10
     ... )
 
@@ -347,7 +347,7 @@ def launch_joining_stream(arguments):
     >>> launch_joining_stream({
     ... "--config" : None,
     ... "--night" : "20190903",
-    ... "--exit_after" : 60
+    ... "--exit_after" : 120
     ... })
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
