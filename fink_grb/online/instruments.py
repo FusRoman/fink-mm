@@ -208,7 +208,7 @@ def detect_instruments(gcn_description):
         return INTEGRAL.__str__()
     elif ICECUBE.__str__() in str(gcn_description):
         return ICECUBE.__str__()
-    else:
+    else:  # pragma: no cover
         raise ValueError(
             "Unknown instruments in the system: {}".format(gcn_description)
         )
