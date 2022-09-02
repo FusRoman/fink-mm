@@ -104,6 +104,7 @@ def grb_assoc(
     >>> grb_prob = df_grb.toPandas()
     >>> grb_test = pd.read_parquet("fink_grb/test/test_data/grb_prob_test.parquet")
     >>> assert_frame_equal(grb_prob, grb_test)
+
     """
     grb_proba = np.ones_like(ztf_ra.values, dtype=float) * -1.0
     instruments = instruments.values
@@ -191,7 +192,7 @@ def ztf_join_gcn_stream(
     ... gcn_datatest,
     ... "20190903",
     ... 120,
-    ... 10
+    ... 40
     ... )
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
