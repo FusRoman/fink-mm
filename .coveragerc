@@ -7,3 +7,4 @@ omit=
     */pyspark/*
     */fink-broker/*
     */tmp/*
+    src/*
