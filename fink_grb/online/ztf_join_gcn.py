@@ -384,11 +384,13 @@ def launch_joining_stream(arguments):
     except Exception as e:
         logger.error("Command line arguments not found: {}\n{}".format("--night", e))
         exit(1)
-    
+
     try:
         exit_after = arguments["--exit_after"]
     except Exception as e:
-        logger.error("Command line arguments not found: {}\n{}".format("--exit_after", e))
+        logger.error(
+            "Command line arguments not found: {}\n{}".format("--exit_after", e)
+        )
         exit(1)
 
     application = os.path.join(
