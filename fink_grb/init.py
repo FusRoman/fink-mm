@@ -39,7 +39,6 @@ def init_fink_grb(arguments):
         pathlib.Path(ztf_path + "/grb").mkdir(parents=True, exist_ok=True)
 
 
-
 def get_config(arguments):
     """
     Get, read and return the configuration file of fink_grb

@@ -33,6 +33,15 @@ jobs:
       run: |
         echo "PYTHONPATH="${PYTHONPATH}:${SPARKLIB}:${FINK_GRB}"" >> $GITHUB_ENV
 
+    - name: Install fink-broker
+      run: |
+        git clone https://github.com/astrolabsoftware/fink-broker.git
+        cd fink-broker
+        pip install .
+        cd ../
+        export FINK_HOME=$HOME/fink-broker
+        export PATH=$PATH:$FINK_HOME/bin
+        export PYTHONPATH=$PYTHONPATH:$FINK_HOME
     - name: Check env
       run: |
         echo "FINK_GRB: $FINK_GRB"
@@ -40,6 +49,7 @@ jobs:
         echo "SPARKLIB: $SPARKLIB"
         echo "PYTHONPATH: $PYTHONPATH"
         echo "JAVA_HOME: $JAVA_HOME"
+        echo "FINK_HOME: $FINK_HOME"
         echo `python -V`
 
     - name: Run test suites
