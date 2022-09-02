@@ -4,3 +4,5 @@ parallel = true
 data_file = ${PWD}/.coverage
 omit=
     $SPARK_HOME/*
+    */pyspark/*
+    */fink-broker/*
