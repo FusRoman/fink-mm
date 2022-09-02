@@ -1,6 +1,7 @@
 import os
 import configparser
-from importlib.resources import files
+# from importlib.resources import files
+from importlib_resources import files
 import logging
 import pathlib
 
