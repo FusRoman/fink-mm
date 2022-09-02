@@ -2,6 +2,7 @@ import os
 import configparser
 from importlib.resources import files
 import logging
+import pathlib
 
 import fink_grb
 
@@ -23,17 +24,20 @@ def init_fink_grb(arguments):
     Examples
     --------
     >>> init_fink_grb({"--config" : None})
-    >>> os.path.isdir("gcn_storage_default/raw")
+    >>> os.path.isdir("fink_grb/test/test_data/gcn_test/raw")
     True
-    >>> shutil.rmtree("gcn_storage_default")
     """
     config = get_config(arguments)
 
-    output_path = config["PATH"]["online_gcn_data_prefix"]
+    gcn_path = config["PATH"]["online_gcn_data_prefix"]
+    ztf_path = config["PATH"]["online_ztf_data_prefix"]
 
-    if not os.path.isdir(output_path):
-        os.mkdir(output_path)
-        os.mkdir(output_path + "/raw")
+    if not os.path.isdir(gcn_path):
+        pathlib.Path(gcn_path + "/raw").mkdir(parents=True, exist_ok=True)
+
+    if not os.path.isdir(ztf_path):
+        pathlib.Path(ztf_path + "/grb").mkdir(parents=True, exist_ok=True)
+
 
 
 def get_config(arguments):

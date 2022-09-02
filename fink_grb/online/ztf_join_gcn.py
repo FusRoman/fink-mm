@@ -231,7 +231,7 @@ def ztf_join_gcn_stream(
         latestfirst=True,
     )
 
-    if logs:
+    if logs:  # pragma: no cover
         logger.info("connection to the database successfull")
 
     # compute healpix column for each streaming df
@@ -244,7 +244,7 @@ def ztf_join_gcn_stream(
         "hpix", ang2pix(df_grb_stream.ra, df_grb_stream.dec, F.lit(NSIDE))
     )
 
-    if logs:
+    if logs:  # pragma: no cover
         logger.info("Healpix columns computing successfull")
 
     # join the two streams according to the healpix columns.
@@ -314,7 +314,7 @@ def ztf_join_gcn_stream(
         .start()
     )
 
-    if logs:
+    if logs:  # pragma: no cover
         logger.info("Stream launching successfull")
 
     # Keep the Streaming running until something or someone ends it!
@@ -322,7 +322,7 @@ def ztf_join_gcn_stream(
         time.sleep(int(exit_after))
         query_grb.stop()
         logger.info("Exiting the science2grb streaming subprocess normally...")
-    else:
+    else:  # pragma: no cover
         # Wait for the end of queries
         spark.streams.awaitAnyTermination()
 
@@ -375,19 +375,19 @@ def launch_joining_stream(arguments):
         ztf_datapath_prefix = config["PATH"]["online_ztf_data_prefix"]
         gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
         tinterval = config["STREAM"]["tinterval"]
-    except Exception as e:
+    except Exception as e:  # pragma: no cover
         logger.error("Config entry not found \n\t {}".format(e))
         exit(1)
 
     try:
         night = arguments["--night"]
-    except Exception as e:
+    except Exception as e:  # pragma: no cover
         logger.error("Command line arguments not found: {}\n{}".format("--night", e))
         exit(1)
 
     try:
         exit_after = arguments["--exit_after"]
-    except Exception as e:
+    except Exception as e:  # pragma: no cover
         logger.error(
             "Command line arguments not found: {}\n{}".format("--exit_after", e)
         )
@@ -437,7 +437,7 @@ def launch_joining_stream(arguments):
     )
 
     stdout, stderr = process.communicate()
-    if process.returncode != 0:
+    if process.returncode != 0:  # pragma: no cover
         logger.error(
             "Fink_GRB joining stream spark application has ended with a non-zero returncode.\
                 \n\t cause:\n\t\t{}\n\t\t{}".format(
