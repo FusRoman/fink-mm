@@ -42,6 +42,11 @@ jobs:
         export FINK_HOME=$HOME/fink-broker
         export PATH=$PATH:$FINK_HOME/bin
         export PYTHONPATH=$PYTHONPATH:$FINK_HOME
+    
+    -name: Install requirements
+      run: |
+        pip install -r requirements.txt
+
     - name: Check env
       run: |
         echo "FINK_GRB: $FINK_GRB"
