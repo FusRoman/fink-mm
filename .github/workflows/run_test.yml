@@ -43,7 +43,7 @@ jobs:
         export PATH=$PATH:$FINK_HOME/bin
         export PYTHONPATH=$PYTHONPATH:$FINK_HOME
     
-    -name: Install requirements
+    - name: Install requirements
       run: |
         pip install -r requirements.txt
 
