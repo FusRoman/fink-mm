@@ -31,7 +31,8 @@ setup(
         "healpy>=1.15.2",
         "voevent-parse>=1.0.3",
         "pyarrow>=8.0.0",
-        "fastavro>=1.5.3"
+        "fastavro>=1.5.3",
+        "pyspark>=3.3.0"
     ],
     entry_points={"console_scripts": ["fink_grb=fink_grb.fink_grb_cli:main"]},
     license="Apache-2.0 License",
