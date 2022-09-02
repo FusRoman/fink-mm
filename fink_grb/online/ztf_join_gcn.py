@@ -319,7 +319,7 @@ def ztf_join_gcn_stream(
 
     # Keep the Streaming running until something or someone ends it!
     if exit_after is not None:
-        time.sleep(exit_after)
+        time.sleep(int(exit_after))
         query_grb.stop()
         logger.info("Exiting the science2grb streaming subprocess normally...")
     else:
@@ -328,7 +328,36 @@ def ztf_join_gcn_stream(
 
 
 def launch_joining_stream(arguments):
-    """ """
+    """
+    Launch the joining stream job.
+
+    Parameters
+    ----------
+    arguments : dictionnary
+        arguments parse by docopt from the command line
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    >>> ztf_datatest = "fink_grb/test/test_data/ztf_test/online"
+    >>> gcn_datatest = "fink_grb/test/test_data/gcn_test"
+    >>> launch_joining_stream({
+    ... "--config" : None,
+    ... "--night" : "20190903",
+    ... "--exit_after" : 60
+    ... })
+
+    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
+    >>> datajoin = pd.read_parquet(ztf_datatest + "/grb/year=2019")
+    >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
+
+    >>> shutil.rmtree(ztf_datatest + "/grb/_spark_metadata")
+    >>> shutil.rmtree(ztf_datatest + "/grb/year=2019")
+    >>> shutil.rmtree(ztf_datatest + "/grb_checkpoint")
+    """
     config = get_config(arguments)
     logger = init_logging()
 
@@ -350,8 +379,17 @@ def launch_joining_stream(arguments):
         logger.error("Config entry not found \n\t {}".format(e))
         exit(1)
 
-    night = arguments["--night"]
-    exit_after = arguments["--exit_after"]
+    try:
+        night = arguments["--night"]
+    except Exception as e:
+        logger.error("Command line arguments not found: {}\n{}".format("--night", e))
+        exit(1)
+    
+    try:
+        exit_after = arguments["--exit_after"]
+    except Exception as e:
+        logger.error("Command line arguments not found: {}\n{}".format("--exit_after", e))
+        exit(1)
 
     application = os.path.join(
         os.path.dirname(fink_grb.__file__),
@@ -362,7 +400,7 @@ def launch_joining_stream(arguments):
     application += " " + ztf_datapath_prefix
     application += " " + gcn_datapath_prefix
     application += " " + night
-    application += " " + exit_after
+    application += " " + str(exit_after)
     application += " " + tinterval
 
     spark_submit = "spark-submit \
@@ -407,7 +445,7 @@ def launch_joining_stream(arguments):
         exit(1)
 
     logger.info("Fink_GRB joining stream spark application ended normally")
-    exit(0)
+    return
 
 
 if __name__ == "__main__":
