@@ -159,7 +159,13 @@ def grb_assoc(
 
 
 def ztf_join_gcn_stream(
-    ztf_datapath_prefix, gcn_datapath_prefix, grb_datapath_prefix, night, exit_after, tinterval, logs=False
+    ztf_datapath_prefix,
+    gcn_datapath_prefix,
+    grb_datapath_prefix,
+    night,
+    exit_after,
+    tinterval,
+    logs=False,
 ):
     """
     Join the ztf alerts stream and the gcn stream to find the counterparts of the gcn alerts
@@ -305,7 +311,6 @@ def ztf_join_gcn_stream(
 
     if "day" not in df_grb.columns:
         df_grb = df_grb.withColumn("day", F.date_format("timestamp", "dd"))
-
 
     grbdatapath = grb_datapath_prefix + "/grb"
     checkpointpath_grb_tmp = grb_datapath_prefix + "/grb_checkpoint"
@@ -483,5 +488,10 @@ if __name__ == "__main__":
         tinterval = sys.argv[7]
 
         ztf_join_gcn_stream(
-            ztf_datapath_prefix, gcn_datapath_prefix, grb_datapath_prefix, night, exit_after, tinterval
+            ztf_datapath_prefix,
+            gcn_datapath_prefix,
+            grb_datapath_prefix,
+            night,
+            exit_after,
+            tinterval,
         )
