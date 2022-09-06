@@ -104,7 +104,6 @@ def grb_assoc(
     >>> grb_prob = df_grb.toPandas()
     >>> grb_test = pd.read_parquet("fink_grb/test/test_data/grb_prob_test.parquet")
     >>> assert_frame_equal(grb_prob, grb_test)
-
     """
     grb_proba = np.ones_like(ztf_ra.values, dtype=float) * -1.0
     instruments = instruments.values
@@ -160,7 +159,7 @@ def grb_assoc(
 
 
 def ztf_join_gcn_stream(
-    ztf_datapath_prefix, gcn_datapath_prefix, night, exit_after, tinterval, logs=False
+    ztf_datapath_prefix, gcn_datapath_prefix, grb_datapath_prefix, night, exit_after, tinterval, logs=False
 ):
     """
     Join the ztf alerts stream and the gcn stream to find the counterparts of the gcn alerts
@@ -169,9 +168,11 @@ def ztf_join_gcn_stream(
     Parameters
     ----------
     ztf_datapath_prefix : string
-        the prefix path where are stored the ztf alerts
+        the prefix path where are stored the ztf alerts.
     gcn_datapath_prefix : string
-        the prefix path where are stored the gcn alerts
+        the prefix path where are stored the gcn alerts.
+    grb_datapath_prefix : string
+        the prefix path to save GRB join ZTF outputs.
     night : string
         the processing night
     exit_after : int
@@ -187,21 +188,23 @@ def ztf_join_gcn_stream(
     --------
     >>> ztf_datatest = "fink_grb/test/test_data/ztf_test/online"
     >>> gcn_datatest = "fink_grb/test/test_data/gcn_test"
+    >>> grb_dataoutput = "fink_grb/test/test_output"
     >>> ztf_join_gcn_stream(
     ... ztf_datatest,
     ... gcn_datatest,
+    ... grb_dataoutput,
     ... "20190903",
     ... 90,
     ... 5
     ... )
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
-    >>> datajoin = pd.read_parquet(ztf_datatest + "/grb/year=2019")
+    >>> datajoin = pd.read_parquet(grb_dataoutput + "/grb/year=2019")
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
-    >>> shutil.rmtree(ztf_datatest + "/grb/_spark_metadata")
-    >>> shutil.rmtree(ztf_datatest + "/grb/year=2019")
-    >>> shutil.rmtree(ztf_datatest + "/grb_checkpoint")
+    >>> shutil.rmtree(grb_dataoutput + "/grb/_spark_metadata")
+    >>> shutil.rmtree(grb_dataoutput + "/grb/year=2019")
+    >>> shutil.rmtree(grb_dataoutput + "/grb_checkpoint")
     """
     logger = init_logging()
     spark = init_sparksession("fink_grb")
@@ -209,8 +212,6 @@ def ztf_join_gcn_stream(
     NSIDE = 4
 
     scidatapath = ztf_datapath_prefix + "/science"
-    grbdatapath = ztf_datapath_prefix + "/grb"
-    checkpointpath_grb_tmp = ztf_datapath_prefix + "/grb_checkpoint"
 
     # connection to the ztf science stream
     df_ztf_stream = connect_to_raw_database(
@@ -305,6 +306,10 @@ def ztf_join_gcn_stream(
     if "day" not in df_grb.columns:
         df_grb = df_grb.withColumn("day", F.date_format("timestamp", "dd"))
 
+
+    grbdatapath = grb_datapath_prefix + "/grb"
+    checkpointpath_grb_tmp = grb_datapath_prefix + "/grb_checkpoint"
+
     query_grb = (
         df_grb.writeStream.outputMode("append")
         .format("parquet")
@@ -343,7 +348,7 @@ def launch_joining_stream(arguments):
 
     Examples
     --------
-    >>> ztf_datatest = "fink_grb/test/test_data/ztf_test/online"
+    >>> grb_datatest = "fink_grb/test/test_output"
     >>> gcn_datatest = "fink_grb/test/test_data/gcn_test"
     >>> launch_joining_stream({
     ... "--config" : None,
@@ -352,12 +357,12 @@ def launch_joining_stream(arguments):
     ... })
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
-    >>> datajoin = pd.read_parquet(ztf_datatest + "/grb/year=2019")
+    >>> datajoin = pd.read_parquet(grb_datatest + "/grb/year=2019")
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
-    >>> shutil.rmtree(ztf_datatest + "/grb/_spark_metadata")
-    >>> shutil.rmtree(ztf_datatest + "/grb/year=2019")
-    >>> shutil.rmtree(ztf_datatest + "/grb_checkpoint")
+    >>> shutil.rmtree(grb_datatest + "/grb/_spark_metadata")
+    >>> shutil.rmtree(grb_datatest + "/grb/year=2019")
+    >>> shutil.rmtree(grb_datatest + "/grb_checkpoint")
     """
     config = get_config(arguments)
     logger = init_logging()
@@ -375,6 +380,7 @@ def launch_joining_stream(arguments):
 
         ztf_datapath_prefix = config["PATH"]["online_ztf_data_prefix"]
         gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
+        grb_datapath_prefix = config["PATH"]["online_grb_data_prefix"]
         tinterval = config["STREAM"]["tinterval"]
     except Exception as e:  # pragma: no cover
         logger.error("Config entry not found \n\t {}".format(e))
@@ -402,6 +408,7 @@ def launch_joining_stream(arguments):
 
     application += " " + ztf_datapath_prefix
     application += " " + gcn_datapath_prefix
+    application += " " + grb_datapath_prefix
     application += " " + night
     application += " " + str(exit_after)
     application += " " + tinterval
@@ -466,14 +473,15 @@ if __name__ == "__main__":
         # Run the test suite
         spark_unit_tests(globs)
 
-    elif sys.argv[1] == "prod":
+    elif sys.argv[1] == "prod":  # pragma: no cover
 
         ztf_datapath_prefix = sys.argv[2]
         gcn_datapath_prefix = sys.argv[3]
-        night = sys.argv[4]
-        exit_after = sys.argv[5]
-        tinterval = sys.argv[6]
+        grb_datapath_prefix = sys.argv[4]
+        night = sys.argv[5]
+        exit_after = sys.argv[6]
+        tinterval = sys.argv[7]
 
         ztf_join_gcn_stream(
-            ztf_datapath_prefix, gcn_datapath_prefix, night, exit_after, tinterval
+            ztf_datapath_prefix, gcn_datapath_prefix, grb_datapath_prefix, night, exit_after, tinterval
         )

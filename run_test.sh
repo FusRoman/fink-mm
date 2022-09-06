@@ -38,6 +38,15 @@ do
   fi
 done
 
+for filename in fink_grb/grb_utils/*.py
+do
+  echo $filename
+  # Run test suite + coverage
+  coverage run \
+    --source=${ROOTPATH} \
+    --rcfile ${ROOTPATH}/.coveragerc $filename
+done
+
 echo "fink_grb/init.py test"
 coverage run \
     --source=${ROOTPATH} \

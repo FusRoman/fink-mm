@@ -13,7 +13,7 @@ import fink_grb.online.gcn_reader as gr
 from fink_grb.init import get_config, init_logging
 
 
-def signal_handler(signal, frame):
+def signal_handler(signal, frame):  # pragma: no cover
     """
     The signal handler function for the gcn stream.
     Quit the gcn stream by using keyboard command (like Ctrl+C).
@@ -63,7 +63,7 @@ def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False):
     """
     try:
         voevent = gr.load_voevent(io.BytesIO(gcn))
-    except Exception as e:
+    except Exception as e:  # pragma: no cover
         logger.error(
             "Error while reading the following voevent: \n\t {}\n\n\tcause: {}".format(
                 gcn, e
@@ -76,7 +76,7 @@ def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False):
         voevent, LISTEN_PACKS
     ):
 
-        if logs:
+        if logs:  # pragma: no cover
             logger.info("the voevent is a new obervation.")
 
         df = gr.voevent_to_df(voevent)
@@ -95,7 +95,7 @@ def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False):
             existing_data_behavior="overwrite_or_ignore",
         )
 
-        if logs:
+        if logs:  # pragma: no cover
             logger.info(
                 "writing of the new voevent successfull at the location {}".format(
                     gcn_rawdatapath
@@ -103,7 +103,7 @@ def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False):
             )
         return
 
-    return
+    return  # pragma: no cover
 
 
 def start_gcn_stream(arguments, logs=False):

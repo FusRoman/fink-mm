@@ -40,7 +40,7 @@ def get_trigger_id(voevent):
     if "AMON_ID" in toplevel_params:
         return int(toplevel_params["AMON_ID"]["value"])
 
-    return -1
+    return -1  # pragma: no cover
 
 
 def voevent_to_df(voevent):
@@ -88,13 +88,13 @@ def voevent_to_df(voevent):
 
     if instruments == "Fermi":
         error_unit = "deg"
-    elif instruments == "SWIFT":
+    elif instruments == "SWIFT":  # pragma: no cover
         error_unit = "arcmin"
-    elif instruments == "INTEGRAL":
+    elif instruments == "INTEGRAL":  # pragma: no cover
         error_unit = "arcmin"
-    elif instruments == "ICECUBE":
+    elif instruments == "ICECUBE":  # pragma: no cover
         error_unit = "deg"
-    else:
+    else:  # pragma: no cover
         raise ValueError("bad instruments: {}".format(instruments))
 
     df = pd.DataFrame.from_dict(
@@ -201,7 +201,7 @@ def load_voevent(file, verbose=False):
     try:
         voevent = vp.load(file)
         return voevent
-    except Exception as e:
+    except Exception as e:  # pragma: no cover
         if verbose:
             print(
                 "failed to load the voevent:\n\tlocation={}\n\tcause={}".format(file, e)

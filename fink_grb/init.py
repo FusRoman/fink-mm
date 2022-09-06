@@ -28,17 +28,20 @@ def init_fink_grb(arguments):
     >>> init_fink_grb({"--config" : None})
     >>> os.path.isdir("fink_grb/test/test_data/gcn_test/raw")
     True
+
+    >>> os.path.isdir("fink_grb/test/test_output/grb")
+    True
     """
     config = get_config(arguments)
 
     gcn_path = config["PATH"]["online_gcn_data_prefix"]
-    ztf_path = config["PATH"]["online_ztf_data_prefix"]
+    grb_path = config["PATH"]["online_grb_data_prefix"]
 
-    if not os.path.isdir(gcn_path):
+    if not os.path.isdir(gcn_path):  # pragma: no cover
         pathlib.Path(gcn_path + "/raw").mkdir(parents=True, exist_ok=True)
 
-    if not os.path.isdir(ztf_path):
-        pathlib.Path(ztf_path + "/grb").mkdir(parents=True, exist_ok=True)
+    if not os.path.isdir(grb_path):  # pragma: no cover
+        pathlib.Path(grb_path + "/grb").mkdir(parents=True, exist_ok=True)
 
 
 def get_config(arguments):
