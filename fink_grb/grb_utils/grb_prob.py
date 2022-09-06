@@ -30,6 +30,26 @@ def p_ser_grb_vect(
         The first items correspond to the association probability with a GRB in general, the second correspond
         to the association with a long GRB and finally, the last items correspond to the associations with a
         short GRB.
+
+    Examples
+    --------
+
+    # alerts from the object ZTF21aagwbjr
+    >>> ztf_alerts = pd.read_parquet("fink_grb/test/test_data/ztf_alerts_sample.parquet")
+
+    # gcn contains the notice 634112970 (GRB210204270)
+    >>> grb_alerts = pd.read_parquet("fink_grb/test/test_data/grb_samples.parquet")
+
+    >>> proba = grb_alerts.apply(
+    ... lambda x: p_ser_grb_vect(
+    ...     x["gm_error"],
+    ...     (ztf_alerts["i:jdstarthist"].values - Time(x["Trig Time"].to_datetime64(), format="datetime64").jd) / 365.25,
+    ...     250)[0][0],
+    ... axis=1
+    ... )
+
+    >>> (1 - proba.values[1]) > special.erf(5 / sqrt(2))
+    True
     """
 
     # omega = 2*pi*(1-cos(radians(error_radius))) # solid angle in steradians
@@ -79,3 +99,18 @@ def p_ser_grb_vect(
     p_sers = [p_ser_grb, p_ser_lgrb, p_ser_sgrb]
 
     return p_sers
+
+
+if __name__ == "__main__":  # pragma: no cover
+    import sys
+    import doctest
+    import pandas as pd  # noqa: F401
+    from astropy.time import Time  # noqa: F401
+    from math import sqrt  # noqa: F401
+    from scipy import special  # noqa: F401
+
+    if "unittest.util" in __import__("sys").modules:
+        # Show full diff in self.assertEqual.
+        __import__("sys").modules["unittest.util"]._MAX_LENGTH = 999999999
+
+    sys.exit(doctest.testmod()[0])
