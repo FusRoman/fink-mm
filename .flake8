@@ -1,0 +1,13 @@
+[flake8]
+ignore = 
+    E302
+    E501
+exclude =
+    .git,
+    __pycache__,
+    docs/source/conf.py,
+    old,
+    build,
+    dist
+per-file-ignores =
+    ../Fink_GRB/fink_grb/online/ztf_join_gcn.py:W503,E402

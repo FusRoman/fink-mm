@@ -1,0 +1,10 @@
+[run]
+branch = false
+parallel = true
+data_file = ${PWD}/.coverage
+omit=
+    $SPARK_HOME/*
+    */pyspark/*
+    */fink-broker/*
+    */tmp/*
+    src/*

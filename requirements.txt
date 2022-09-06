@@ -1,0 +1,24 @@
+scikit-learn==1.0.2
+torch
+
+#xmatch
+astroquery
+
+# Microlensing
+# You would simply use pip install git+https://github.com/JulienPeloton/LIA.git@4513654b15a0760312eff2661b0fcf4989171ce3 --upgrade
+-e git+https://github.com/JulienPeloton/LIA.git@4513654b15a0760312eff2661b0fcf4989171ce3#egg=LIA
+
+# Supernnova
+supernnova
+h5py
+natsort
+colorama
+seaborn
+scikit-image
+
+# KN
+-e git+https://github.com/b-biswas/kndetect@kndetect#egg=kndetect
+
+# SNAD
+light-curve-python>=0.3.5
+light-curve>=0.4.0
