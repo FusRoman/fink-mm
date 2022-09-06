@@ -34,8 +34,8 @@ def init_fink_grb(arguments):
     """
     config = get_config(arguments)
 
-    gcn_path = config["PATH"]["online_gcn_data_prefix"]
-    grb_path = config["PATH"]["online_grb_data_prefix"]
+    gcn_path = config["PATH"]["online_gcn_data_prefix"] + "/raw"
+    grb_path = config["PATH"]["online_grb_data_prefix"] + "/grb"
 
     if not os.path.isdir(gcn_path):  # pragma: no cover
         pathlib.Path(gcn_path + "/raw").mkdir(parents=True, exist_ok=True)
