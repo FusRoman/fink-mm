@@ -30,7 +30,7 @@ setup(
         "importlib-resources==5.9.0",
         "pyarrow==8.0.0",
         "pyspark==3.3.0",
-        "scipy==1.8.1",
+        "scipy>=1.6.0",
         "voevent-parse==1.0.3",
         "fastavro>=1.5.3",
         "healpy>=1.16.1"
