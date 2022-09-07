@@ -1,16 +1,17 @@
+# fink_broker==2.2 -> to install via github
+
 astropy==5.1
 docopt==0.6.2
-fink_broker==2.2
-fink_science==2.0.0
-gcn_kafka==0.1.2
-importlib_resources==5.9.0
+fink-science==2.0.0
+gcn-kafka==0.1.2
+importlib-resources==5.9.0
 numpy==1.22.4
 pandas==1.4.3
 pyarrow==8.0.0
 pyspark==3.3.0
 requests==2.28.1
 scipy==1.8.1
-voevent_parse==1.0.3
+voevent-parse==1.0.3
 
 scikit-learn==1.0.2
 torch
