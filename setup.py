@@ -23,7 +23,7 @@ setup(
         "docopt>=0.6.2",
         "fink-science>=0.5.1",
         "fink-utils>=0.3.0",
-        "numpy>=1.23.2",
+        "numpy>=1.20.0",
         "pandas>=1.3.5",
         "astropy>=4.2.1",
         "gcn-kafka>=0.1.2",
