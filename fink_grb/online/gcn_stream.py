@@ -158,7 +158,9 @@ def start_gcn_stream(arguments):
         )
 
     if logs:
-        logger.info("GCN stream initialisation successfull.\nThe deamon is in running and wait for gcn arrivals.")
+        logger.info(
+            "GCN stream initialisation successfull.\nThe deamon is in running and wait for gcn arrivals."
+        )
 
     while True:
         message = consumer.consume(timeout=2)
