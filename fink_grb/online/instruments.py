@@ -20,6 +20,9 @@ class Instrument:
     def __str__(self) -> str:
         return self.instruments
 
+    def __repr__(self) -> str:
+        return self.instruments
+
 
 class Fermi(Instrument):
     """
@@ -172,6 +175,8 @@ LISTEN_PACKS = (
 INSTR_SUBSCRIBES = (
     FERMI.subscribe() + SWIFT.subscribe() + ICECUBE.subscribe() + INTEGRAL.subscribe()
 )
+
+ALL_INSTRUMENTS = [FERMI, SWIFT, INTEGRAL, ICECUBE]
 
 
 def detect_instruments(gcn_description):

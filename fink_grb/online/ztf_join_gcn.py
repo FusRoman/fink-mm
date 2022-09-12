@@ -21,7 +21,7 @@ from pyspark.sql.types import DoubleType
 
 from fink_broker.partitioning import convert_to_datetime
 from fink_broker.sparkUtils import init_sparksession, connect_to_raw_database
-from fink_grb.grb_utils.grb_prob import p_ser_grb_vect
+from fink_grb.utils.grb_prob import p_ser_grb_vect
 from fink_grb.init import get_config, init_logging
 from fink_broker.science import ang2pix
 

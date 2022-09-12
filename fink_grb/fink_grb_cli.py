@@ -1,6 +1,6 @@
 """
 Usage:
-    fink_grb start_gcn_stream [options]
+    fink_grb gcn_stream (start|monitor) [options]
     fink_grb launch_joining_stream --night=<date> --exit_after=<second> [options]
     fink_grb init [options]
     fink_grb -h | --help
@@ -26,11 +26,16 @@ def main():
 
     # The import are in the if statements to speed-up the cli execution.
 
-    if arguments["start_gcn_stream"]:
+    if arguments["gcn_stream"]:
 
-        from fink_grb.online.gcn_stream import start_gcn_stream
+        if arguments["start"]:
+            from fink_grb.online.gcn_stream import start_gcn_stream
 
-        start_gcn_stream(arguments)
+            start_gcn_stream(arguments)
+        elif arguments["monitor"]:
+            from fink_grb.utils.monitoring import gcn_stream_monitoring
+
+            gcn_stream_monitoring(arguments)
 
     elif arguments["init"]:
 

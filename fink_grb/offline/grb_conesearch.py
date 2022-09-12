@@ -5,7 +5,7 @@ import numpy as np
 import astropy.units as u
 import time as t
 
-from fink_grb.grb_utils.grb_prob import p_ser_grb_vect
+from fink_grb.utils.grb_prob import p_ser_grb_vect
 
 
 def grb_crossmatch(ra, dec, loc_error, error_units, trigger_time, instruments):

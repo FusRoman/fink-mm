@@ -38,7 +38,7 @@ do
   fi
 done
 
-for filename in fink_grb/grb_utils/*.py
+for filename in fink_grb/utils/*.py
 do
   echo $filename
   # Run test suite + coverage
