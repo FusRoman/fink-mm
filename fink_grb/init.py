@@ -78,7 +78,7 @@ def get_config(arguments):
     >>> type(c)
     <class 'configparser.ConfigParser'>
     >>> c.sections()
-    ['CLIENT', 'PATH', 'STREAM']
+    ['CLIENT', 'PATH', 'STREAM', 'ADMIN']
     """
     # read the config file
     config = configparser.ConfigParser(os.environ)
