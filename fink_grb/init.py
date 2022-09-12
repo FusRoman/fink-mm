@@ -72,7 +72,7 @@ def get_config(arguments):
     >>> type(c)
     <class 'configparser.ConfigParser'>
     >>> c.sections()
-    ['CLIENT', 'PATH', 'STREAM']
+    ['CLIENT', 'PATH', 'STREAM', 'ADMIN']
 
     >>> c = get_config({"--config" : None})
     >>> type(c)
