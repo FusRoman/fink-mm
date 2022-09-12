@@ -1,5 +1,7 @@
 import os
 import configparser
+import datetime
+import pytz
 
 # from importlib.resources import files
 from importlib_resources import files
@@ -7,7 +9,7 @@ import logging
 import pathlib
 
 import fink_grb
-from fink_grb.grb_utils.fun_utils import return_verbose_level
+from fink_grb.utils.fun_utils import return_verbose_level
 
 
 def init_fink_grb(arguments):
@@ -100,6 +102,28 @@ def get_config(arguments):
     return config
 
 
+
+
+class CustomTZFormatter(logging.Formatter):
+    """override logging.Formatter to use an aware datetime object"""
+    def converter(self, timestamp):
+        dt = datetime.datetime.fromtimestamp(timestamp)
+        tzinfo = pytz.timezone('Europe/Paris')
+        return tzinfo.localize(dt)
+        
+    def formatTime(self, record, datefmt=None):
+        dt = self.converter(record.created)
+        if datefmt:
+            s = dt.strftime(datefmt)
+        else:
+            try:
+                s = dt.isoformat(timespec='milliseconds')
+            except TypeError:
+                s = dt.isoformat()
+        return s
+
+
+
 def init_logging():
     """
     Initialise a logger for the gcn stream
@@ -128,7 +152,7 @@ def init_logging():
     ch.setLevel(logging.DEBUG)
 
     # create formatter
-    formatter = logging.Formatter(
+    formatter = CustomTZFormatter(
         "%(asctime)s - %(name)s - %(levelname)s \n\t message: %(message)s"
     )
 

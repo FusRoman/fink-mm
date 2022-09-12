@@ -1,3 +1,6 @@
+from tkinter import SW
+
+
 class Instrument:
     """
     Main class for the instrument.
@@ -18,6 +21,9 @@ class Instrument:
         self.packet_type = packet_type
 
     def __str__(self) -> str:
+        return self.instruments
+
+    def __repr__(self) -> str:
         return self.instruments
 
 
@@ -173,6 +179,7 @@ INSTR_SUBSCRIBES = (
     FERMI.subscribe() + SWIFT.subscribe() + ICECUBE.subscribe() + INTEGRAL.subscribe()
 )
 
+ALL_INSTRUMENTS = [FERMI, SWIFT, INTEGRAL, ICECUBE]
 
 def detect_instruments(gcn_description):
     """
