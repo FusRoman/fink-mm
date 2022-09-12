@@ -18,28 +18,30 @@ Options:
 from docopt import docopt
 from fink_grb import __version__
 
-from fink_grb.online.gcn_stream import start_gcn_stream
-from fink_grb.init import init_fink_grb
-from fink_grb.online.ztf_join_gcn import launch_joining_stream
-
 
 def main():
 
     # parse the command line and return options provided by the user.
     arguments = docopt(__doc__, version=__version__)
 
+    # The import are in the if statements to speed-up the cli execution.
+
     if arguments["start_gcn_stream"]:
 
+        from fink_grb.online.gcn_stream import start_gcn_stream
         start_gcn_stream(arguments)
 
     elif arguments["init"]:
 
+
+        from fink_grb.init import init_fink_grb
         init_fink_grb(arguments)
 
         exit(0)
 
     elif arguments["launch_joining_stream"]:
 
+        from fink_grb.online.ztf_join_gcn import launch_joining_stream
         launch_joining_stream(arguments)
 
     else:
