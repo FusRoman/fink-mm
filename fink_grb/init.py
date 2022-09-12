@@ -102,7 +102,7 @@ def get_config(arguments):
     return config
 
 
-class CustomTZFormatter(logging.Formatter):
+class CustomTZFormatter(logging.Formatter):  # pragma: no cover
     """override logging.Formatter to use an aware datetime object"""
 
     def converter(self, timestamp):
