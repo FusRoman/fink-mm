@@ -73,18 +73,18 @@ def grb_crossmatch(ra, dec, loc_error, error_units, trigger_time, instruments):
         return pdf
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    import datetime
+#     import datetime
 
-    pdf_gcn = pd.read_parquet("gcn_test/raw/").astype({"day": int, "month": int, "year": int})
+#     pdf_gcn = pd.read_parquet("gcn_test/raw/").astype({"day": int, "month": int, "year": int})
 
 
-    print(pdf_gcn)
+#     print(pdf_gcn)
 
-    d = datetime.datetime.now() - datetime.timedelta(days=3)
+#     d = datetime.datetime.now() - datetime.timedelta(days=3)
 
-    last_gcn = pdf_gcn[(pdf_gcn["day"] >= int(d.day)) & (pdf_gcn["month"] >= int(d.month)) & (pdf_gcn["year"] >= int(d.year))]
+#     last_gcn = pdf_gcn[(pdf_gcn["day"] >= int(d.day)) & (pdf_gcn["month"] >= int(d.month)) & (pdf_gcn["year"] >= int(d.year))]
 
-    
+
 
