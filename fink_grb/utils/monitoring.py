@@ -27,28 +27,27 @@ def gcn_stream_monitoring(arguments):
     ):
         pr_i = proc.info
 
-        for el in pr_i["cmdline"]:
-            if el == "gcn_stream":
+        if "gcn_stream" in pr_i["cmdline"] and "start" in pr_i["cmdline"]:
 
-                table_info = [
-                    ["proc_name", pr_i["name"]],
-                    ["pid", pr_i["pid"]],
-                    ["cmdline", pr_i["cmdline"][-3:]],
-                    ["status", pr_i["status"]],
-                    ["memory_percent", "{:.2f} %".format(pr_i["memory_percent"] * 100)],
-                    ["cpu_times (in second)", pr_i["cpu_times"]],
-                    [
-                        "create_time",
-                        datetime.datetime.fromtimestamp(
-                            pr_i["create_time"], paris_tz
-                        ).strftime("%Y-%m-%d %H:%M:%S"),
-                    ],
-                ]
+            table_info = [
+                ["proc_name", pr_i["name"]],
+                ["pid", pr_i["pid"]],
+                ["cmdline", pr_i["cmdline"][-4:]],
+                ["status", pr_i["status"]],
+                ["memory_percent", "{:.2f} %".format(pr_i["memory_percent"] * 100)],
+                ["cpu_times (in second)", pr_i["cpu_times"]],
+                [
+                    "create_time",
+                    datetime.datetime.fromtimestamp(
+                        pr_i["create_time"], paris_tz
+                    ).strftime("%Y-%m-%d %H:%M:%S"),
+                ],
+            ]
 
-                proc_status = DoubleTable(table_info, "stream gcn status")
+            proc_status = DoubleTable(table_info, "stream gcn status")
 
-                print()
-                print(proc_status.table)
+            print()
+            print(proc_status.table)
 
     if len(table_info) == 0:
         logger.info("gcn_stream process not found")
