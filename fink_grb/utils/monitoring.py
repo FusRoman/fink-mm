@@ -28,7 +28,7 @@ def gcn_stream_monitoring(arguments):
         pr_i = proc.info
 
         for el in pr_i["cmdline"]:
-            if el == "start_gcn_stream":
+            if el == "gcn_stream":
 
                 table_info = [
                     ["proc_name", pr_i["name"]],
