@@ -30,9 +30,11 @@ def main():
 
         if arguments["start"]:
             from fink_grb.online.gcn_stream import start_gcn_stream
+
             start_gcn_stream(arguments)
         elif arguments["monitor"]:
             from fink_grb.utils.monitoring import gcn_stream_monitoring
+
             gcn_stream_monitoring(arguments)
 
     elif arguments["init"]:

@@ -1,6 +1,3 @@
-from tkinter import SW
-
-
 class Instrument:
     """
     Main class for the instrument.
@@ -180,6 +177,7 @@ INSTR_SUBSCRIBES = (
 )
 
 ALL_INSTRUMENTS = [FERMI, SWIFT, INTEGRAL, ICECUBE]
+
 
 def detect_instruments(gcn_description):
     """
