@@ -1,4 +1,3 @@
-from datetime import date
 import pandas as pd
 import requests
 from astropy.time import Time
@@ -85,6 +84,3 @@ def grb_crossmatch(ra, dec, loc_error, error_units, trigger_time, instruments):
 #     d = datetime.datetime.now() - datetime.timedelta(days=3)
 
 #     last_gcn = pdf_gcn[(pdf_gcn["day"] >= int(d.day)) & (pdf_gcn["month"] >= int(d.month)) & (pdf_gcn["year"] >= int(d.year))]
-
-
-
