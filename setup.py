@@ -33,7 +33,7 @@ setup(
         "scipy>=1.6.0",
         "voevent-parse==1.0.3",
         "fastavro>=1.5.3",
-        "healpy>=1.16.1"
+        "healpy>=1.16.1",
     ],
     entry_points={"console_scripts": ["fink_grb=fink_grb.fink_grb_cli:main"]},
     license="Apache-2.0 License",
