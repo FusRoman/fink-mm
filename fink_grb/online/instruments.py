@@ -20,7 +20,7 @@ class Instrument:
     def __str__(self) -> str:
         return self.instruments
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> str:  # pragma: no cover
         return self.instruments
 
 

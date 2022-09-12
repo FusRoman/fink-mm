@@ -7,8 +7,20 @@ import pandas as pd
 from fink_grb.online.instruments import ALL_INSTRUMENTS
 
 
-def gcn_stream_monitoring(arguments):
+def gcn_stream_monitoring(arguments):  # pragma: no cover
+    """
+    Print on the terminal informations about the status of the gcn_stream process
+    and the gcn data store in disk.
 
+    Parameters
+    ----------
+    arguments : dictionnary
+        arguments parse by docopt from the command line
+
+    Returns
+    -------
+    None
+    """
     config = get_config(arguments)
     logger = init_logging()
     paris_tz = pytz.timezone("Europe/Paris")
@@ -34,7 +46,7 @@ def gcn_stream_monitoring(arguments):
                 ["pid", pr_i["pid"]],
                 ["cmdline", pr_i["cmdline"][-4:]],
                 ["status", pr_i["status"]],
-                ["memory_percent", "{:.2f} %".format(pr_i["memory_percent"] * 100)],
+                ["memory_percent", "{:.4f} %".format(pr_i["memory_percent"])],
                 ["cpu_times (in second)", pr_i["cpu_times"]],
                 [
                     "create_time",
@@ -63,7 +75,7 @@ def gcn_stream_monitoring(arguments):
     if len(pdf_gcn) == 0:
         logger.info("no gcn store at the location {}".format(gcn_rawdatapath))
         exit(0)
-    # print(pdf_gcn[["instruments", "timeUTC"]].iloc[[0, -1]])
+
     print()
     print()
 
