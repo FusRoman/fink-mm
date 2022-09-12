@@ -11,6 +11,7 @@ import logging
 
 import fink_grb.online.gcn_reader as gr
 from fink_grb.init import get_config, init_logging
+from fink_grb.grb_utils.fun_utils import return_verbose_level
 
 
 def signal_handler(signal, frame):  # pragma: no cover
@@ -106,7 +107,7 @@ def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False):
     return  # pragma: no cover
 
 
-def start_gcn_stream(arguments, logs=False):
+def start_gcn_stream(arguments):
     """
     Start to listening the gcn stream. It is an infinite loop that wait messages and the write on disk
     the gnc.
@@ -124,6 +125,8 @@ def start_gcn_stream(arguments, logs=False):
     """
     config = get_config(arguments)
     logger = init_logging()
+
+    logs = return_verbose_level(config, logger)
 
     try:
         # Connect as a consumer.
@@ -152,6 +155,11 @@ def start_gcn_stream(arguments, logs=False):
             "Path of the gcn stream output not found : {}\nRun fink_grb init before".format(
                 gcn_rawdatapath
             )
+        )
+
+    if logs:
+        logger.info(
+            "GCN stream initialisation successfull.\nThe deamon is in running and wait for gcn arrivals."
         )
 
     while True:

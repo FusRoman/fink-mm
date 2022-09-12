@@ -7,6 +7,7 @@ import logging
 import pathlib
 
 import fink_grb
+from fink_grb.grb_utils.fun_utils import return_verbose_level
 
 
 def init_fink_grb(arguments):
@@ -33,15 +34,22 @@ def init_fink_grb(arguments):
     True
     """
     config = get_config(arguments)
+    logger = init_logging()
+
+    logs = return_verbose_level(config, logger)
 
     gcn_path = config["PATH"]["online_gcn_data_prefix"] + "/raw"
     grb_path = config["PATH"]["online_grb_data_prefix"] + "/grb"
 
     if not os.path.isdir(gcn_path):  # pragma: no cover
         pathlib.Path(gcn_path).mkdir(parents=True, exist_ok=True)
+        if logs:
+            logger.info("{} directory successfully created".format(gcn_path))
 
     if not os.path.isdir(grb_path):  # pragma: no cover
         pathlib.Path(grb_path).mkdir(parents=True, exist_ok=True)
+        if logs:
+            logger.info("{} directory successfully created".format(grb_path))
 
 
 def get_config(arguments):
@@ -64,13 +72,13 @@ def get_config(arguments):
     >>> type(c)
     <class 'configparser.ConfigParser'>
     >>> c.sections()
-    ['CLIENT', 'PATH', 'STREAM']
+    ['CLIENT', 'PATH', 'STREAM', 'ADMIN']
 
     >>> c = get_config({"--config" : None})
     >>> type(c)
     <class 'configparser.ConfigParser'>
     >>> c.sections()
-    ['CLIENT', 'PATH', 'STREAM']
+    ['CLIENT', 'PATH', 'STREAM', 'ADMIN']
     """
     # read the config file
     config = configparser.ConfigParser(os.environ)
