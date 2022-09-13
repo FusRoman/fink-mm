@@ -1,14 +1,18 @@
 """
 Usage:
     fink_grb gcn_stream (start|monitor) [options]
-    fink_grb launch_joining_stream --night=<date> --exit_after=<second> [options]
+    fink_grb join_stream --night=<date> --exit_after=<second> [options]
     fink_grb init [options]
     fink_grb -h | --help
     fink_grb --version
 
 Options:
   init                             initialise the environment for fink_grb.
-  start_gcn_stream                 start to listen the gcn stream.
+  gcn_stream                       used to manage the gcn stream.
+  start                            start to listening the gcn stream
+  monitor                          print informations about the status of the gcn stream process
+                                   and the collected data.
+  join_stream                      launch the script that join the ztf stream and the gcn stream
   -h --help                        Show help and quit.
   --version                        Show version.
   --config FILE                    Specify the config file.
@@ -45,7 +49,7 @@ def main():
 
         exit(0)
 
-    elif arguments["launch_joining_stream"]:
+    elif arguments["join_stream"]:
 
         from fink_grb.online.ztf_join_gcn import launch_joining_stream
 
