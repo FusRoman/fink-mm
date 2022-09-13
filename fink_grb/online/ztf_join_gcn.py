@@ -31,7 +31,7 @@ def grb_assoc(
     ztf_ra: pd.Series,
     ztf_dec: pd.Series,
     jdstarthist: pd.Series,
-    instruments: pd.Series,
+    platform: pd.Series,
     trigger_time: pd.Series,
     grb_ra: pd.Series,
     grb_dec: pd.Series,
@@ -55,12 +55,18 @@ def grb_assoc(
             only detections that fell on the same field and readout-channel ID
             where the input candidate was observed are counted.
             All raw detections down to a photometric S/N of ~ 3 are included.
-    instruments : string spark column
+    platform : string spark column
+        voevent emitting platform 
     trigger_time : double spark column
+        grb trigger time (UTC)
     grb_ra : double spark column
+        grb right ascension
     grb_dec : double spark column
+        grb declination
     grb_error : double spark column
+        grb error radius
     units : string spark column
+        error radius unit (example: degree, arcminute, arcsecond)
 
     Returns
     grb_proba : pandas Series
@@ -77,7 +83,7 @@ def grb_assoc(
     ...    sparkDF.candidate.ra,
     ...     sparkDF.candidate.dec,
     ...     sparkDF.candidate.jdstarthist,
-    ...     sparkDF.instruments,
+    ...     sparkDF.platform,
     ...     sparkDF.timeUTC,
     ...     sparkDF.ra,
     ...     sparkDF.dec,
@@ -106,15 +112,15 @@ def grb_assoc(
     >>> assert_frame_equal(grb_prob, grb_test)
     """
     grb_proba = np.ones_like(ztf_ra.values, dtype=float) * -1.0
-    instruments = instruments.values
+    platform = platform.values
 
     # array of events detection rates in events/years
     # depending of the instruments
     condition = [
-        np.equal(instruments, "Fermi"),
-        np.equal(instruments, "SWIFT"),
-        np.equal(instruments, "INTEGRAL"),
-        np.equal(instruments, "ICECUBE"),
+        np.equal(platform, "Fermi"),
+        np.equal(platform, "SWIFT"),
+        np.equal(platform, "INTEGRAL"),
+        np.equal(platform, "ICECUBE"),
     ]
     choice_grb_rate = [250, 100, 60, 8]
     grb_det_rate = np.select(condition, choice_grb_rate)
@@ -228,6 +234,10 @@ def ztf_join_gcn_stream(
         latestfirst=False,
     )
 
+
+    # TODO: filter ztf alerts to keep only the grb likes.
+
+
     gcn_rawdatapath = gcn_datapath_prefix + "/raw"
 
     # connection to the gcn stream
@@ -270,7 +280,7 @@ def ztf_join_gcn_stream(
             df_grb.candidate.ra,
             df_grb.candidate.dec,
             df_grb.candidate.jdstarthist,
-            df_grb.instruments,
+            df_grb.platform,
             df_grb.timeUTC,
             df_grb.ra,
             df_grb.dec,
@@ -287,7 +297,8 @@ def ztf_join_gcn_stream(
             col("candidate.ra").alias("ztf_ra"),
             col("candidate.dec").alias("ztf_dec"),
             "candidate.jd",
-            "instruments",
+            "instrument",
+            "platform",
             "trigger_id",
             col("ra").alias("grb_ra"),
             col("dec").alias("grb_dec"),
