@@ -23,7 +23,7 @@ while true; do
          # LEASETIME must be computed by taking the difference between now and max end 
          LEASETIME=$(( `date +'%s' -d '17:00 today'` - `date +'%s' -d 'now'` ))
  
-         fink_grb join_stream --config ${FINK_GRB_HOME}/local.conf --night ${NIGHT} --exit_after ${LEASETIME}
+         nohup fink_grb join_stream --config ${FINK_GRB_HOME}/local.conf --night ${NIGHT} --exit_after ${LEASETIME} > ${FINK_GRB_HOME}/join_stream.log &
          exit
      fi
      DDATE=`date`
