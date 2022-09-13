@@ -3,7 +3,7 @@ import voeventparse as vp
 
 from astropy.time import Time
 
-from fink_grb.online.instruments import detect_instruments
+from fink_grb.online.instruments import detect_platform, detect_instruments
 
 
 def get_trigger_id(voevent):
@@ -77,7 +77,8 @@ def voevent_to_df(voevent):
     """
 
     ivorn = voevent.attrib["ivorn"]
-    instruments = detect_instruments(ivorn)
+    platform = detect_platform(ivorn)
+    instrument = detect_instruments(ivorn)
 
     trigger_id = get_trigger_id(voevent)
 
@@ -86,20 +87,21 @@ def voevent_to_df(voevent):
 
     time_jd = Time(time_utc, format="datetime").jd
 
-    if instruments == "Fermi":
+    if platform == "Fermi":
         error_unit = "deg"
-    elif instruments == "SWIFT":  # pragma: no cover
+    elif platform == "SWIFT":  # pragma: no cover
         error_unit = "arcmin"
-    elif instruments == "INTEGRAL":  # pragma: no cover
+    elif platform == "INTEGRAL":  # pragma: no cover
         error_unit = "arcmin"
-    elif instruments == "ICECUBE":  # pragma: no cover
+    elif platform == "ICECUBE":  # pragma: no cover
         error_unit = "deg"
     else:  # pragma: no cover
-        raise ValueError("bad instruments: {}".format(instruments))
+        raise ValueError("bad instruments: {}".format(platform))
 
     df = pd.DataFrame.from_dict(
         {
-            "instruments": [instruments],
+            "platform": [platform],
+            "instrument": [instrument],
             "ivorn": [ivorn],
             "triggerId": [trigger_id],
             "jd": [time_jd],

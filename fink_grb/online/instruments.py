@@ -35,7 +35,11 @@ class Fermi(Instrument):
 
         fermi_lat_pt = [120, 121, 127]
 
-        super().__init__("Fermi", fermi_gbm_pt + fermi_lat_pt)
+        fermi_lat_transient_monitor = [123, 125]
+
+        super().__init__(
+            "Fermi", fermi_gbm_pt + fermi_lat_pt + fermi_lat_transient_monitor
+        )
 
     def subscribe(self):
         """
@@ -69,7 +73,8 @@ class Swift(Instrument):
     """
 
     def __init__(self):
-        super().__init__("SWIFT", [61, 65, 67, 81, 97])
+        swift_transient_pt = [84]
+        super().__init__("SWIFT", [61, 63, 65, 67, 81, 97] + swift_transient_pt)
 
     def subscribe(self):
         """
@@ -179,9 +184,9 @@ INSTR_SUBSCRIBES = (
 ALL_INSTRUMENTS = [FERMI, SWIFT, INTEGRAL, ICECUBE]
 
 
-def detect_instruments(gcn_description):
+def detect_platform(gcn_description):
     """
-    Detect the instrument that emitted the voevent in the description field.
+    Detect the platform that emitted the voevent in the description field.
 
     Parameters
     ----------
@@ -191,18 +196,18 @@ def detect_instruments(gcn_description):
     Returns
     -------
     instrument : string
-        The emitting instrument of the voevent.
+        The emitting platform of the voevent.
 
     Examples
     --------
 
-    >>> detect_instruments('ivo://nasa.gsfc.gcn/SWIFT#Point_Dir_2022-08-31T23:32:00.00_53435214-375')
+    >>> detect_platform('ivo://nasa.gsfc.gcn/SWIFT#Point_Dir_2022-08-31T23:32:00.00_53435214-375')
     'SWIFT'
-    >>> detect_instruments('ivo://nasa.gsfc.gcn/INTEGRAL#Point_Dir_2022-08-31T11:07:20.99_000000-179')
+    >>> detect_platform('ivo://nasa.gsfc.gcn/INTEGRAL#Point_Dir_2022-08-31T11:07:20.99_000000-179')
     'INTEGRAL'
-    >>> detect_instruments('ivo://nasa.gsfc.gcn/Fermi#Point_Dir_2022-08-30T23:16:00.00_000000-0-274')
+    >>> detect_platform('ivo://nasa.gsfc.gcn/Fermi#Point_Dir_2022-08-30T23:16:00.00_000000-0-274')
     'Fermi'
-    >>> detect_instruments('ivo://nasa.gsfc.gcn/AMON#ICECUBE_BRONZE_Event2022-08-08T07:59:57.26_25_136918_045252263_0')
+    >>> detect_platform('ivo://nasa.gsfc.gcn/AMON#ICECUBE_BRONZE_Event2022-08-08T07:59:57.26_25_136918_045252263_0')
     'ICECUBE'
     """
     if FERMI.__str__() in str(gcn_description):
@@ -217,6 +222,39 @@ def detect_instruments(gcn_description):
         raise ValueError(
             "Unknown instruments in the system: {}".format(gcn_description)
         )
+
+
+def detect_instruments(ivorn):
+    """
+    Detect the instrument that emitted the voevent in the ivorn field.
+
+    Parameters
+    ----------
+    ivorn : string
+        ivorn field contains in the voevent.
+
+    Returns
+    -------
+    instrument : string
+        The emitting instrument of the voevent.
+
+    Examples
+    --------
+
+    >>> detect_instruments('ivo://nasa.gsfc.gcn/SWIFT#Point_Dir_2022-08-31T23:32:00.00_53435214-375')
+    'Point'
+    >>> detect_instruments('ivo://nasa.gsfc.gcn/INTEGRAL#Point_Dir_2022-08-31T11:07:20.99_000000-179')
+    'Point'
+    >>> detect_instruments('ivo://nasa.gsfc.gcn/Fermi#Point_Dir_2022-08-30T23:16:00.00_000000-0-274')
+    'Point'
+    >>> detect_instruments('ivo://nasa.gsfc.gcn/AMON#ICECUBE_BRONZE_Event2022-08-08T07:59:57.26_25_136918_045252263_0')
+    'BRONZE'
+    """
+    split_ivorn = ivorn.split("#")[1].split("_")
+    if split_ivorn[0] == "ICECUBE":
+        return split_ivorn[1]
+    else:
+        return split_ivorn[0]
 
 
 if __name__ == "__main__":  # pragma: no cover
