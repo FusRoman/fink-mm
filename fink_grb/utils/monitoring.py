@@ -1,3 +1,4 @@
+from collections import Counter
 import psutil
 from terminaltables import DoubleTable, AsciiTable
 import datetime
@@ -81,13 +82,21 @@ def gcn_stream_monitoring(arguments):  # pragma: no cover
 
     gcn_table = [["number of gcn", len(pdf_gcn)]]
 
-    gcn_table += [
-        [
-            "number of gcn for {}".format(str(instr)),
-            len(pdf_gcn[pdf_gcn["instruments"] == str(instr)]),
+    tmp_table = []
+    for instr in ALL_INSTRUMENTS:
+        df_platform = pdf_gcn[pdf_gcn["platform"] == str(instr)]
+        tmp_table += [
+            [
+                "number of gcn for {}".format(str(instr)),
+                len(df_platform),
+            ]
         ]
-        for instr in ALL_INSTRUMENTS
-    ]
+
+        instr_count = Counter(df_platform["instrument_or_event"])
+        for k, v in instr_count.items():
+            tmp_table += [["", "{} count: {}".format(k, v)]]
+
+    gcn_table += tmp_table
 
     gcn_table += [
         ["first gcn data (UTC)", pdf_gcn.iloc[0]["timeUTC"]],
