@@ -1,5 +1,6 @@
 import pandas as pd
 import voeventparse as vp
+import datetime as dt
 
 from astropy.time import Time
 
@@ -72,10 +73,12 @@ def voevent_to_df(voevent):
     >>> f = open('fink_grb/test/test_data/voevent_number=9897.xml', 'rb')
     >>> v = load_voevent(f)
     >>> v_pdf = voevent_to_df(v)
+    >>> v_pdf = v_pdf.drop(columns="ackTime")
     >>> test_pdf = pd.read_parquet("fink_grb/test/test_data/683571622_0_test")
     >>> assert_frame_equal(v_pdf, test_pdf)
     """
 
+    ack_time = dt.datetime.now()
     ivorn = voevent.attrib["ivorn"]
     platform = detect_platform(ivorn)
     instrument = detect_instruments(ivorn)
@@ -104,12 +107,13 @@ def voevent_to_df(voevent):
             "instrument_or_event": [instrument],
             "ivorn": [ivorn],
             "triggerId": [trigger_id],
-            "jd": [time_jd],
             "ra": [coords.ra],
             "dec": [coords.dec],
             "err": [coords.err],
             "units": [error_unit],
-            "timeUTC": [time_utc],
+            "ackTime": [ack_time],
+            "triggerTimejd": [time_jd],
+            "triggerTimeUTC": [time_utc],
             "rawEvent": vp.prettystr(voevent),
         }
     )
