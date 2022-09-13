@@ -58,6 +58,7 @@ def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False):
     >>> gcn_test_path = 'fink_grb/test/test_output'
     >>> load_and_parse_gcn(f, gcn_test_path, logger)
     >>> base_gcn = pd.read_parquet(gcn_test_path + "/year=2022/month=08/day=30/683571622_0")
+    >>> base_gcn = base_gcn.drop(columns="ackTime")
     >>> test_gcn = pd.read_parquet("fink_grb/test/test_data/683571622_0_test")
     >>> assert_frame_equal(base_gcn, test_gcn)
     >>> shutil.rmtree(gcn_test_path + "/year=2022")
@@ -82,9 +83,9 @@ def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False):
 
         df = gr.voevent_to_df(voevent)
 
-        df["year"] = df["timeUTC"].dt.strftime("%Y")
-        df["month"] = df["timeUTC"].dt.strftime("%m")
-        df["day"] = df["timeUTC"].dt.strftime("%d")
+        df["year"] = df["triggerTimeUTC"].dt.strftime("%Y")
+        df["month"] = df["triggerTimeUTC"].dt.strftime("%m")
+        df["day"] = df["triggerTimeUTC"].dt.strftime("%d")
 
         table = pa.Table.from_pandas(df)
 
