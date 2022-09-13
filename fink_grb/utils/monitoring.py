@@ -85,10 +85,12 @@ def gcn_stream_monitoring(arguments):  # pragma: no cover
     tmp_table = []
     for instr in ALL_INSTRUMENTS:
         df_platform = pdf_gcn[pdf_gcn["platform"] == str(instr)]
-        tmp_table += [[ 
-            "number of gcn for {}".format(str(instr)),
-            len(df_platform),
-            ]]
+        tmp_table += [
+            [
+                "number of gcn for {}".format(str(instr)),
+                len(df_platform),
+            ]
+        ]
 
         instr_count = Counter(df_platform["instrument_or_event"])
         for k, v in instr_count.items():
