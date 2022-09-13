@@ -99,8 +99,8 @@ def gcn_stream_monitoring(arguments):  # pragma: no cover
     gcn_table += tmp_table
 
     gcn_table += [
-        ["first gcn data (UTC)", pdf_gcn.iloc[0]["timeUTC"]],
-        ["last gcn data (UTC)", pdf_gcn.iloc[-1]["timeUTC"]],
+        ["first gcn data (UTC)", pdf_gcn.iloc[0]["triggerTimeUTC"]],
+        ["last gcn data (UTC)", pdf_gcn.iloc[-1]["triggerTimeUTC"]],
     ]
 
     gcn_data = AsciiTable(gcn_table, "gcn data")

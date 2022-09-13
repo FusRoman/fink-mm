@@ -220,7 +220,7 @@ def ztf_join_gcn_stream(
     >>> shutil.rmtree(grb_dataoutput + "/grb_checkpoint")
     """
     logger = init_logging()
-    spark = init_sparksession("fink_grb")
+    spark = init_sparksession("science2grb")
 
     NSIDE = 4
 
@@ -280,7 +280,7 @@ def ztf_join_gcn_stream(
             df_grb.candidate.dec,
             df_grb.candidate.jdstarthist,
             df_grb.platform,
-            df_grb.timeUTC,
+            df_grb.triggerTimeUTC,
             df_grb.ra,
             df_grb.dec,
             df_grb.err,
@@ -296,13 +296,13 @@ def ztf_join_gcn_stream(
             col("candidate.ra").alias("ztf_ra"),
             col("candidate.dec").alias("ztf_dec"),
             "candidate.jd",
-            "instrument",
+            "instrument_or_event",
             "platform",
-            "trigger_id",
+            "triggerId",
             col("ra").alias("grb_ra"),
             col("dec").alias("grb_dec"),
             col("err").alias("grb_loc_error"),
-            "timeUTC",
+            "triggerTimeUTC",
             "grb_proba",
         ]
     )
