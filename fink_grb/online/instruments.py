@@ -37,7 +37,9 @@ class Fermi(Instrument):
 
         fermi_lat_transient_monitor = [123, 125]
 
-        super().__init__("Fermi", fermi_gbm_pt + fermi_lat_pt + fermi_lat_transient_monitor)
+        super().__init__(
+            "Fermi", fermi_gbm_pt + fermi_lat_pt + fermi_lat_transient_monitor
+        )
 
     def subscribe(self):
         """

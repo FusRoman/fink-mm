@@ -56,7 +56,7 @@ def grb_assoc(
             where the input candidate was observed are counted.
             All raw detections down to a photometric S/N of ~ 3 are included.
     platform : string spark column
-        voevent emitting platform 
+        voevent emitting platform
     trigger_time : double spark column
         grb trigger time (UTC)
     grb_ra : double spark column
@@ -234,9 +234,7 @@ def ztf_join_gcn_stream(
         latestfirst=False,
     )
 
-
     # TODO: filter ztf alerts to keep only the grb likes.
-
 
     gcn_rawdatapath = gcn_datapath_prefix + "/raw"
 

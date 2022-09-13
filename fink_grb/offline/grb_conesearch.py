@@ -89,8 +89,8 @@ def grb_crossmatch(ra, dec, loc_error, error_units, trigger_time, instruments):
 
 #     t_before = t.time()
 #     res_crossmatch = last_gcn.apply(lambda x: grb_crossmatch(
-#         x["ra"], 
-#         x["dec"], 
+#         x["ra"],
+#         x["dec"],
 #         x["err"],
 #         x["units"],
 #         x["timeUTC"],

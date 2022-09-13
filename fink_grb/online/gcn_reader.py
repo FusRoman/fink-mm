@@ -3,7 +3,7 @@ import voeventparse as vp
 
 from astropy.time import Time
 
-from fink_grb.online.instruments import Instrument, detect_platform, detect_instruments
+from fink_grb.online.instruments import detect_platform, detect_instruments
 
 
 def get_trigger_id(voevent):
