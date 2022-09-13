@@ -101,7 +101,7 @@ def voevent_to_df(voevent):
     df = pd.DataFrame.from_dict(
         {
             "platform": [platform],
-            "instrument": [instrument],
+            "instrument_or_event": [instrument],
             "ivorn": [ivorn],
             "triggerId": [trigger_id],
             "jd": [time_jd],
