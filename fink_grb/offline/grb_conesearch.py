@@ -4,12 +4,15 @@ from astropy.time import Time
 import numpy as np
 import astropy.units as u
 import time as t
+import io
 
 from fink_grb.utils.grb_prob import p_ser_grb_vect
 
 
 def grb_crossmatch(ra, dec, loc_error, error_units, trigger_time, instruments):
 
+    print("error units ", error_units)
+    print("loc_error before ", loc_error)
     if error_units == u.degree:
         loc_error = loc_error * 3600
         if loc_error > 5 * 3600:
@@ -19,6 +22,7 @@ def grb_crossmatch(ra, dec, loc_error, error_units, trigger_time, instruments):
     else:
         raise ValueError("incorrect unit: {}".format(error_units))
 
+    print("loc_error after ", loc_error)
     if loc_error == 0:
         loc_error = 1
 
@@ -35,7 +39,7 @@ def grb_crossmatch(ra, dec, loc_error, error_units, trigger_time, instruments):
     )
 
     # Format output in a DataFrame
-    pdf = pd.read_json(r.content)
+    pdf = pd.read_json(io.BytesIO(r.content))
     print("query time: {}".format(t.time() - t_before))
     print("nb ztf alerts from query: {}".format(len(pdf)))
     if len(pdf) > 0:
@@ -79,8 +83,21 @@ def grb_crossmatch(ra, dec, loc_error, error_units, trigger_time, instruments):
 #     pdf_gcn = pd.read_parquet("gcn_test/raw/").astype({"day": int, "month": int, "year": int})
 
 
-#     print(pdf_gcn)
-
-#     d = datetime.datetime.now() - datetime.timedelta(days=3)
+#     d = datetime.datetime.now() - datetime.timedelta(days=4)
 
 #     last_gcn = pdf_gcn[(pdf_gcn["day"] >= int(d.day)) & (pdf_gcn["month"] >= int(d.month)) & (pdf_gcn["year"] >= int(d.year))]
+
+#     t_before = t.time()
+#     res_crossmatch = last_gcn.apply(lambda x: grb_crossmatch(
+#         x["ra"], 
+#         x["dec"], 
+#         x["err"],
+#         x["units"],
+#         x["timeUTC"],
+#         x["instruments"]
+#         ),
+#         axis=1)
+#     print(t.time() - t_before)
+#     print()
+#     for res in res_crossmatch:
+#         print(res)

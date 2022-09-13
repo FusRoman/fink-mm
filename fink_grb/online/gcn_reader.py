@@ -3,7 +3,7 @@ import voeventparse as vp
 
 from astropy.time import Time
 
-from fink_grb.online.instruments import detect_instruments
+from fink_grb.online.instruments import detect_platform
 
 
 def get_trigger_id(voevent):
@@ -77,7 +77,7 @@ def voevent_to_df(voevent):
     """
 
     ivorn = voevent.attrib["ivorn"]
-    instruments = detect_instruments(ivorn)
+    instruments = detect_platform(ivorn)
 
     trigger_id = get_trigger_id(voevent)
 
