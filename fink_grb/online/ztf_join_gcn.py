@@ -268,6 +268,8 @@ def ztf_join_gcn_stream(
     # A pixel id will be assign to each alerts / gcn according to their position in the sky.
     # Each alerts / gcn with the same pixel id are in the same area of the sky.
     # The NSIDE correspond to a resolution of ~15 degree/pixel.
+
+    # TODO: add time condition to the join (ztf_alert_jd > grb_alert_jd + 1 hour)
     df_grb = df_ztf_stream.join(
         df_grb_stream, df_ztf_stream["hpix"] == df_grb_stream["hpix"]
     ).drop("hpix")
