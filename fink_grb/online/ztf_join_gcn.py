@@ -506,4 +506,5 @@ if __name__ == "__main__":
             night,
             exit_after,
             tinterval,
+            True
         )

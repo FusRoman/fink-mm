@@ -47,12 +47,12 @@ do
     --rcfile ${ROOTPATH}/.coveragerc $filename
 done
 
-echo "fink_grb/init.py test"
+echo "fink_grb/init.py"
 coverage run \
     --source=${ROOTPATH} \
     --rcfile=${ROOTPATH}/.coveragerc fink_grb/init.py
 
-echo "fink_grb/online/ztf_join_gcn.py test"
+echo "fink_grb/online/ztf_join_gcn.py"
 coverage run \
     --source=${ROOTPATH} \
     --rcfile=${ROOTPATH}/.coveragerc fink_grb/online/ztf_join_gcn.py "test"

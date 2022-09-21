@@ -1,7 +1,6 @@
 """
 Usage:
     fink_grb gcn_stream (start|monitor) [options]
-    fink_grb join_stream --night=<date> --exit_after=<second> [options]
     fink_grb init [options]
     fink_grb -h | --help
     fink_grb --version
@@ -48,12 +47,6 @@ def main():
         init_fink_grb(arguments)
 
         exit(0)
-
-    elif arguments["join_stream"]:
-
-        from fink_grb.online.ztf_join_gcn import launch_joining_stream
-
-        launch_joining_stream(arguments)
 
     else:
         exit(0)
