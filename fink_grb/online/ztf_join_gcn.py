@@ -422,7 +422,7 @@ def launch_joining_stream(arguments):
 
     try:
         external_python_libs = config["STREAM"]["executor_core"]
-    except:
+    except Exception:
         if verbose:
             logger.info("No external python dependencies specify in the following config file: {}".format(arguments["--config"]))
         external_python_libs = ""
