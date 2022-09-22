@@ -1,5 +1,7 @@
 import warnings
 
+from fink_grb.utils.fun_utils import return_verbose_level
+
 warnings.filterwarnings("ignore")
 
 import pandas as pd
@@ -383,6 +385,8 @@ def launch_joining_stream(arguments):
     config = get_config(arguments)
     logger = init_logging()
 
+    verbose = return_verbose_level(config, logger)
+
     try:
         master_manager = config["STREAM"]["manager"]
         principal_group = config["STREAM"]["principal"]
@@ -416,6 +420,13 @@ def launch_joining_stream(arguments):
         )
         exit(1)
 
+    try:
+        external_python_libs = config["STREAM"]["executor_core"]
+    except:
+        if verbose:
+            logger.info("No external python dependencies specify in the following config file: {}".format(arguments["--config"]))
+        external_python_libs = ""
+
     application = os.path.join(
         os.path.dirname(fink_grb.__file__),
         "online",
@@ -431,6 +442,7 @@ def launch_joining_stream(arguments):
 
     spark_submit = "spark-submit \
         --master {} \
+        --py-files {} \
         --conf spark.mesos.principal={} \
         --conf spark.mesos.secret={} \
         --conf spark.mesos.role={} \
@@ -441,6 +453,7 @@ def launch_joining_stream(arguments):
         --conf spark.executor.cores={} \
         {}".format(
         master_manager,
+        external_python_libs,
         principal_group,
         secret,
         role,
