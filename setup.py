@@ -22,8 +22,7 @@ setup(
     install_requires=[
         "docopt>=0.6.2",
         "terminaltables>=3.1.10",
-        "fink-science>=0.5.1",
-        "fink-utils>=0.3.0",
+        "fink-utils>=0.8.0",
         "numpy>=1.20.0",
         "pandas>=1.3.5",
         "astropy>=4.2.1",

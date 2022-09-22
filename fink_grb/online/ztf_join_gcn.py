@@ -2,7 +2,6 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-
 import pandas as pd
 import numpy as np
 import time
@@ -13,18 +12,18 @@ import sys
 import astropy.units as u
 from astropy.coordinates import SkyCoord
 from astropy.time import Time
-import fink_grb
 
 from pyspark.sql import functions as F
 from pyspark.sql.functions import pandas_udf, col
 from pyspark.sql.types import DoubleType
 
-from fink_broker.partitioning import convert_to_datetime
-from fink_broker.sparkUtils import init_sparksession, connect_to_raw_database
+from fink_utils.science.utils import ang2pix
+from fink_utils.spark.partitioning import convert_to_datetime
+from fink_utils.broker.sparkUtils import init_sparksession, connect_to_raw_database
+
+import fink_grb
 from fink_grb.utils.grb_prob import p_ser_grb_vect
 from fink_grb.init import get_config, init_logging
-from fink_broker.science import ang2pix
-
 
 @pandas_udf(DoubleType())
 def grb_assoc(
@@ -478,7 +477,7 @@ def launch_joining_stream(arguments):
 if __name__ == "__main__":
 
     if sys.argv[1] == "test":
-        from fink_science.tester import spark_unit_tests
+        from fink_utils.test.tester import spark_unit_tests_science
         from pandas.testing import assert_frame_equal  # noqa: F401
         import shutil  # noqa: F401
 
@@ -488,7 +487,7 @@ if __name__ == "__main__":
         globs["join_data"] = join_data
 
         # Run the test suite
-        spark_unit_tests(globs)
+        spark_unit_tests_science(globs)
 
     elif sys.argv[1] == "prod":  # pragma: no cover
 
