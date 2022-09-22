@@ -47,6 +47,14 @@ jobs:
       run: |
         pip install -r requirements.txt
 
+    - name: Install fink-utils>=0.8.0
+      run: |
+        git clone https://github.com/FusRoman/fink-utils.git
+        cd fink-utils
+        git checkout issue/3/functions_to_add_from_fink_broker
+        pip install .
+        cd ../
+
     - name: Check env
       run: |
         echo "FINK_GRB: $FINK_GRB"
