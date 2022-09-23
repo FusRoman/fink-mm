@@ -163,7 +163,7 @@ def start_gcn_stream(arguments):
         logger.error("Config entry not found \n\t {}".format(e))
         exit(1)
 
-    if not os.path.exists(gcn_rawdatapath):
+    if not os.path.exists(gcn_rawdatapath) and gcn_fs is None:
         logger.error(
             "Path of the gcn stream output not found : {}\nRun fink_grb init before".format(
                 gcn_rawdatapath
@@ -185,7 +185,7 @@ def start_gcn_stream(arguments):
                     logger.info("A new voevent is coming")
                 value = gcn.value()
 
-                load_and_parse_gcn(value, gcn_rawdatapath, logger, logs, fn=gcn_fs)
+                load_and_parse_gcn(value, gcn_rawdatapath, logger, logs, gcn_fs=gcn_fs)
 
 
 if __name__ == "__main__":  # pragma: no cover
