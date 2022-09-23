@@ -440,59 +440,62 @@ def launch_joining_stream(arguments):
     application += " " + str(exit_after)
     application += " " + tinterval
 
-    if external_python_libs == "":
-        spark_submit = "spark-submit \
-            --master {} \
-            --conf spark.mesos.principal={} \
-            --conf spark.mesos.secret={} \
-            --conf spark.mesos.role={} \
-            --conf spark.executorEnv.HOME={} \
-            --driver-memory {}G \
-            --executor-memory {}G \
-            --conf spark.cores.max={} \
-            --conf spark.executor.cores={} \
-            {}".format(
-            master_manager,
-            principal_group,
-            secret,
-            role,
-            executor_env,
-            driver_mem,
-            exec_mem,
-            max_core,
-            exec_core,
-            application,
-        )
-    else:
-        spark_submit = "spark-submit \
-            --master {} \
-            --py-files {} \
-            --conf spark.mesos.principal={} \
-            --conf spark.mesos.secret={} \
-            --conf spark.mesos.role={} \
-            --conf spark.executorEnv.HOME={} \
-            --driver-memory {}G \
-            --executor-memory {}G \
-            --conf spark.cores.max={} \
-            --conf spark.executor.cores={} \
-            {}".format(
-            master_manager,
-            external_python_libs,
-            principal_group,
-            secret,
-            role,
-            executor_env,
-            driver_mem,
-            exec_mem,
-            max_core,
-            exec_core,
-            application,
-        )
+    # if external_python_libs == "":
+    spark_submit = "spark-submit \
+        --master {} \
+        --conf spark.mesos.principal={} \
+        --conf spark.mesos.secret={} \
+        --conf spark.mesos.role={} \
+        --conf spark.executorEnv.HOME={} \
+        --driver-memory {}G \
+        --executor-memory {}G \
+        --conf spark.cores.max={} \
+        --conf spark.executor.cores={} \
+        {}".format(
+        master_manager,
+        principal_group,
+        secret,
+        role,
+        executor_env,
+        driver_mem,
+        exec_mem,
+        max_core,
+        exec_core,
+        application,
+    )
+    # else:
+    #     spark_submit = "spark-submit \
+    #         --master {} \
+    #         --py-files {} \
+    #         --conf spark.mesos.principal={} \
+    #         --conf spark.mesos.secret={} \
+    #         --conf spark.mesos.role={} \
+    #         --conf spark.executorEnv.HOME={} \
+    #         --driver-memory {}G \
+    #         --executor-memory {}G \
+    #         --conf spark.cores.max={} \
+    #         --conf spark.executor.cores={} \
+    #         {}".format(
+    #         master_manager,
+    #         external_python_libs,
+    #         principal_group,
+    #         secret,
+    #         role,
+    #         executor_env,
+    #         driver_mem,
+    #         exec_mem,
+    #         max_core,
+    #         exec_core,
+    #         application,
+    #     )
+
+
+    print(spark_submit)
 
     process = subprocess.Popen(
         spark_submit,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stdout=subprocess.STDOUT,
+        stderr=subprocess.STDOUT,
         universal_newlines=True,
         shell=True,
     )
