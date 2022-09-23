@@ -142,7 +142,7 @@ def start_gcn_stream(arguments):
 
     try:
         fs_host = config["HDFS"]["host"]
-        fs_port = config["HDFS"]["port"]
+        fs_port = int(config["HDFS"]["port"])
         fs_user = config["HDFS"]["user"]
         gcn_fs = get_hdfs_connector(fs_host, fs_port, fs_user)
 
