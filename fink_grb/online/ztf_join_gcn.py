@@ -27,6 +27,7 @@ import fink_grb
 from fink_grb.utils.grb_prob import p_ser_grb_vect
 from fink_grb.init import get_config, init_logging
 
+
 @pandas_udf(DoubleType())
 def grb_assoc(
     ztf_ra: pd.Series,
@@ -424,7 +425,11 @@ def launch_joining_stream(arguments):
         external_python_libs = config["STREAM"]["external_python_libs"]
     except Exception as e:
         if verbose:
-            logger.info("No external python dependencies specify in the following config file: {}\n\t{}".format(arguments["--config"], e))
+            logger.info(
+                "No external python dependencies specify in the following config file: {}\n\t{}".format(
+                    arguments["--config"], e
+                )
+            )
         external_python_libs = ""
 
     application = os.path.join(

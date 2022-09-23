@@ -1,3 +1,6 @@
+import pyarrow
+
+
 def return_verbose_level(config, logger):
     """
     Get the verbose level from the config file and return it.
@@ -33,6 +36,26 @@ def return_verbose_level(config, logger):
         logs = True
 
     return logs
+
+
+def get_hdfs_connector(host: str, port: int, user: str):
+    """
+    Initialise a connector to HDFS.
+
+    Parameters
+    ----------
+    host: str
+        IP address for the host machine
+    port: int
+        Port to access HDFS data.
+    user: str
+        Username on Hadoop.
+
+    Returns
+    -------
+    fs: pyarrow.hdfs.HadoopFileSystem
+    """
+    return pyarrow.hdfs.connect(host=host, port=port, user=user)
 
 
 if __name__ == "__main__":  # pragma: no cover
