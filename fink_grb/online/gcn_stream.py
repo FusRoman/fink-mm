@@ -11,7 +11,7 @@ import logging
 
 import fink_grb.online.gcn_reader as gr
 from fink_grb.init import get_config, init_logging
-from fink_grb.utils.fun_utils import return_verbose_level
+from fink_grb.utils.fun_utils import return_verbose_level, get_hdfs_connector
 
 
 def signal_handler(signal, frame):  # pragma: no cover
@@ -33,7 +33,7 @@ def signal_handler(signal, frame):  # pragma: no cover
     exit(0)
 
 
-def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False):
+def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False, gcn_fs=None):
     """
     Load and parse a gcn coming from the gcn kafka stream.
 
@@ -95,6 +95,7 @@ def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False):
             partition_cols=["year", "month", "day"],
             basename_template="{}_{}".format(str(df["triggerId"].values[0]), "{i}"),
             existing_data_behavior="overwrite_or_ignore",
+            filesystem=gcn_fs
         )
 
         if logs:  # pragma: no cover
@@ -139,6 +140,15 @@ def start_gcn_stream(arguments):
         logger.error("Config entry not found \n\t {}".format(e))
         exit(1)
 
+    try:
+        fs_host = config["HDFS"]["host"]
+        fs_port = config["HDFS"]["port"]
+        fs_user = config["HDFS"]["user"]
+        gcn_fs = get_hdfs_connector(fs_host, fs_port, fs_user)
+
+    except Exception as e:
+        gcn_fs = None
+
     # Subscribe to topics and receive alerts
     consumer.subscribe(INSTR_SUBSCRIBES)
 
@@ -173,7 +183,7 @@ def start_gcn_stream(arguments):
                     logger.info("A new voevent is coming")
                 value = gcn.value()
 
-                load_and_parse_gcn(value, gcn_rawdatapath, logger, logs)
+                load_and_parse_gcn(value, gcn_rawdatapath, logger, logs, fn=gcn_fs)
 
 
 if __name__ == "__main__":  # pragma: no cover
