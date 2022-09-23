@@ -95,7 +95,7 @@ def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False, gcn_fs=None):
             partition_cols=["year", "month", "day"],
             basename_template="{}_{}".format(str(df["triggerId"].values[0]), "{i}"),
             existing_data_behavior="overwrite_or_ignore",
-            filesystem=gcn_fs
+            filesystem=gcn_fs,
         )
 
         if logs:  # pragma: no cover
@@ -147,6 +147,8 @@ def start_gcn_stream(arguments):
         gcn_fs = get_hdfs_connector(fs_host, fs_port, fs_user)
 
     except Exception as e:
+        if logs:
+            logger.info("config entry not found for hdfs filesystem: \n\t{}".format(e))
         gcn_fs = None
 
     # Subscribe to topics and receive alerts

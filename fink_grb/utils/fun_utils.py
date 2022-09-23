@@ -1,5 +1,6 @@
 import pyarrow
 
+
 def return_verbose_level(config, logger):
     """
     Get the verbose level from the config file and return it.
@@ -38,7 +39,7 @@ def return_verbose_level(config, logger):
 
 
 def get_hdfs_connector(host: str, port: int, user: str):
-    """ 
+    """
     Initialise a connector to HDFS.
 
     Parameters
