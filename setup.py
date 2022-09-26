@@ -20,6 +20,7 @@ setup(
     packages=find_packages(),
     package_data={"fink_grb": ["conf/fink_grb.conf"]},
     install_requires=[
+        "fink-utils>=0.8.0",
         "docopt>=0.6.2",
         "terminaltables>=3.1.10",
         "numpy>=1.20.0",
