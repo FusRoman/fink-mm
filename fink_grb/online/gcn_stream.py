@@ -163,12 +163,13 @@ def start_gcn_stream(arguments):
         logger.error("Config entry not found \n\t {}".format(e))
         exit(1)
 
-    if not os.path.exists(gcn_rawdatapath) and gcn_fs is None:
-        logger.error(
-            "Path of the gcn stream output not found : {}\nRun fink_grb init before".format(
-                gcn_rawdatapath
+    if gcn_fs is None:
+        if not os.path.exists(gcn_rawdatapath):
+            logger.error(
+                "Path of the gcn stream output not found in your local file system : {}\nRun fink_grb init before".format(
+                    gcn_rawdatapath
+                )
             )
-        )
 
     if logs:
         logger.info(

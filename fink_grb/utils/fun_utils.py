@@ -1,4 +1,4 @@
-import pyarrow
+from pyarrow import fs
 
 
 def return_verbose_level(config, logger):
@@ -42,6 +42,12 @@ def get_hdfs_connector(host: str, port: int, user: str):
     """
     Initialise a connector to HDFS.
 
+    To work, please read :
+    https://arrow.apache.org/docs/python/filesystems.html#hadoop-distributed-file-system-hdfs
+
+    The following command line can be used to locate the libhdfs.so file:
+        `locate -l 1 libhdfs.so`
+
     Parameters
     ----------
     host: str
@@ -55,7 +61,7 @@ def get_hdfs_connector(host: str, port: int, user: str):
     -------
     fs: pyarrow.hdfs.HadoopFileSystem
     """
-    return pyarrow.hdfs.connect(host=host, port=port, user=user)
+    return fs.HadoopFileSystem(host, port, user=user)  # work only for pyarrow >= 2.0.0
 
 
 if __name__ == "__main__":  # pragma: no cover
