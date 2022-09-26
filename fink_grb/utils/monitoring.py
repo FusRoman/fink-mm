@@ -5,7 +5,9 @@ import datetime
 import pytz
 from fink_grb.init import get_config, init_logging
 import pandas as pd
+import pyarrow.parquet as pq
 from fink_grb.online.instruments import ALL_INSTRUMENTS
+from fink_grb.utils.fun_utils import get_hdfs_connector, return_verbose_level
 
 
 def gcn_stream_monitoring(arguments):  # pragma: no cover
@@ -24,6 +26,8 @@ def gcn_stream_monitoring(arguments):  # pragma: no cover
     """
     config = get_config(arguments)
     logger = init_logging()
+    logs = return_verbose_level(config, logger)
+
     paris_tz = pytz.timezone("Europe/Paris")
 
     table_info = []
@@ -66,13 +70,29 @@ def gcn_stream_monitoring(arguments):  # pragma: no cover
         logger.info("gcn_stream process not found")
 
     try:
-        gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
-        gcn_rawdatapath = gcn_datapath_prefix + "/raw"
-    except Exception as e:
-        logger.error("Config entry not found \n\t {}".format(e))
-        exit(1)
+        fs_host = config["HDFS"]["host"]
+        fs_port = int(config["HDFS"]["port"])
+        fs_user = config["HDFS"]["user"]
+        gcn_fs = get_hdfs_connector(fs_host, fs_port, fs_user)
 
-    pdf_gcn = pd.read_parquet(gcn_rawdatapath)
+    except Exception as e:
+        if logs:
+            logger.info("config entry not found for hdfs filesystem: \n\t{}".format(e))
+        gcn_fs = None
+
+    if gcn_fs is None:
+        try:
+            gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
+            gcn_rawdatapath = gcn_datapath_prefix + "/raw"
+            pdf_gcn = pd.read_parquet(gcn_rawdatapath)
+        except Exception as e:
+            logger.error("Config entry not found \n\t {}".format(e))
+            exit(1)
+    else:
+        root_gcn_data = config["PATH"]["hdfs_gcn_storage"]
+        dataset = pq.ParquetDataset(root_gcn_data, filesystem=gcn_fs)
+        pdf_gcn = dataset.read().to_pandas()
+
     if len(pdf_gcn) == 0:
         logger.info("no gcn store at the location {}".format(gcn_rawdatapath))
         exit(0)
