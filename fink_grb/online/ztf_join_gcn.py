@@ -167,6 +167,26 @@ def grb_assoc(
     return pd.Series(grb_proba)
 
 
+def ztf_grb_filter(spark_ztf):
+
+    spark_filter = (
+        spark_ztf.filter(
+            spark_ztf.candidate.ssdistnr
+            > 30  # distance to nearest known SSO above 30 arcsecond
+        )
+        .filter(
+            spark_ztf.candidate.distpsnr1
+            > 30  # distance of closest source from Pan-Starrs 1 catalog above 30 arcsecond
+        )
+        .filter(
+            spark_ztf.candidate.neargaia
+            > 60  # distance of closest source from Gaia DR1 catalog above 60 arcsecond
+        )
+    )
+
+    return spark_filter
+
+
 def ztf_join_gcn_stream(
     ztf_datapath_prefix,
     gcn_datapath_prefix,
@@ -238,6 +258,7 @@ def ztf_join_gcn_stream(
     )
 
     # TODO: filter ztf alerts to keep only the grb likes.
+    df_ztf_stream = ztf_grb_filter(df_ztf_stream)
 
     gcn_rawdatapath = gcn_datapath_prefix + "/raw"
 
@@ -272,9 +293,11 @@ def ztf_join_gcn_stream(
     # The NSIDE correspond to a resolution of ~15 degree/pixel.
 
     # TODO: add time condition to the join (ztf_alert_jd > grb_alert_jd + 1 hour)
-    df_grb = df_ztf_stream.join(
-        df_grb_stream, df_ztf_stream["hpix"] == df_grb_stream["hpix"]
-    ).drop("hpix")
+    join_condition = [
+        df_ztf_stream.hpix == df_grb_stream.hpix,
+        df_ztf_stream.candidate.jdstarthist > df_grb_stream.triggerTimejd,
+    ]
+    df_grb = df_ztf_stream.join(df_grb_stream, join_condition).drop("hpix")
 
     # refine the association and compute the serendipitous probability
     df_grb = df_grb.withColumn(
