@@ -171,7 +171,6 @@ def start_gcn_stream(arguments):
                 )
             )
 
-
     if logs:
         logger.info(
             "GCN stream initialisation successfull.\nThe deamon is in running and wait for gcn arrivals."
