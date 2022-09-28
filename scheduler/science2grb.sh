@@ -14,6 +14,7 @@ ZTF_ONLINE="/user/julien.peloton/online"
 GCN_ONLINE="/user/roman.le-montagner/gcn_storage"
 
 HDFS_HOME="/opt/hadoop-2/bin/"
+JAVA_HOME="/etc/alternatives/java_sdk_openjdk"
 
 while true; do
      $(${HDFS_HOME}hdfs dfs -test -d ${ZTF_ONLINE}/science/year=${YEAR}/month=${MONTH}/day=${DAY})
