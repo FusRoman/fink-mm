@@ -13,10 +13,12 @@ FINK_GRB_HOME="/home/roman.le-montagner/Doctorat/GRB/Fink_GRB_test"
 ZTF_ONLINE="/user/julien.peloton/online"
 GCN_ONLINE="/user/roman.le-montagner/gcn_storage"
 
+HDFS_HOME="/opt/hadoop-2/bin/"
+
 while true; do
-     $(hdfs dfs -test -d ${ZTF_ONLINE}/science/year=${YEAR}/month=${MONTH}/day=${DAY})
+     $(${HDFS_HOME}hdfs dfs -test -d ${ZTF_ONLINE}/science/year=${YEAR}/month=${MONTH}/day=${DAY})
      if [[ $? == 0 ]]; then
-        $(hdfs dfs -test -d ${GCN_ONLINE}/raw/year=${YEAR}/month=${MONTH}/day=${DAY})
+        $(${HDFS_HOME}hdfs dfs -test -d ${GCN_ONLINE}/raw/year=${YEAR}/month=${MONTH}/day=${DAY})
         if [[ $? == 0 ]]; then
             echo "Launching service"
     
