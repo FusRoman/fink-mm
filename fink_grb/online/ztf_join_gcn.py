@@ -171,16 +171,22 @@ def ztf_grb_filter(spark_ztf):
 
     spark_filter = (
         spark_ztf.filter(
-            spark_ztf.candidate.ssdistnr
-            > 30  # distance to nearest known SSO above 30 arcsecond
+            (spark_ztf.candidate.ssdistnr > 5)
+            | (
+                spark_ztf.candidate.ssdistnr == -999.0
+            )  # distance to nearest known SSO above 30 arcsecond
         )
         .filter(
-            spark_ztf.candidate.distpsnr1
-            > 30  # distance of closest source from Pan-Starrs 1 catalog above 30 arcsecond
+            (spark_ztf.candidate.distpsnr1 > 2)
+            | (
+                spark_ztf.candidate.ssdistnr == -999.0
+            )  # distance of closest source from Pan-Starrs 1 catalog above 30 arcsecond
         )
         .filter(
-            spark_ztf.candidate.neargaia
-            > 60  # distance of closest source from Gaia DR1 catalog above 60 arcsecond
+            (spark_ztf.candidate.neargaia > 5)
+            | (
+                spark_ztf.candidate.ssdistnr == -999.0
+            )  # distance of closest source from Gaia DR1 catalog above 60 arcsecond
         )
     )
 
@@ -242,7 +248,9 @@ def ztf_join_gcn_stream(
     >>> shutil.rmtree(grb_dataoutput + "/grb_checkpoint")
     """
     logger = init_logging()
-    spark = init_sparksession("science2grb_{}{}{}".format(night[0:4], night[4:6], night[6:8]))
+    spark = init_sparksession(
+        "science2grb_{}{}{}".format(night[0:4], night[4:6], night[6:8])
+    )
 
     NSIDE = 4
 
@@ -292,12 +300,12 @@ def ztf_join_gcn_stream(
     # Each alerts / gcn with the same pixel id are in the same area of the sky.
     # The NSIDE correspond to a resolution of ~15 degree/pixel.
 
-    # TODO: add time condition to the join (ztf_alert_jd > grb_alert_jd + 1 hour)
+    # TODO: add time condition to the join (ztf_alert_jd > grb_alert_jd)
     join_condition = [
         df_ztf_stream.hpix == df_grb_stream.hpix,
         df_ztf_stream.candidate.jdstarthist > df_grb_stream.triggerTimejd,
     ]
-    df_grb = df_ztf_stream.join(df_grb_stream, join_condition).drop("hpix")
+    df_grb = df_ztf_stream.join(df_grb_stream, join_condition, "inner")
 
     # refine the association and compute the serendipitous probability
     df_grb = df_grb.withColumn(
