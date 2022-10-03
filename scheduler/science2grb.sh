@@ -9,14 +9,16 @@ MONTH=${NIGHT:4:2}
 DAY=${NIGHT:6:2}
  
 FINK_GRB_HOME="/home/roman.le-montagner/Doctorat/GRB/Fink_GRB_test"
-
 ZTF_ONLINE="/user/julien.peloton/online"
 GCN_ONLINE="/user/roman.le-montagner/gcn_storage"
 
 HDFS_HOME="/opt/hadoop-2/bin/"
-JAVA_HOME="/etc/alternatives/java_sdk_openjdk"
 
 while true; do
+
+     LEASETIME=$(( `date +'%s' -d '17:00 today'` - `date +'%s' -d 'now'` ))
+     echo $LEASETIME
+
      $(${HDFS_HOME}hdfs dfs -test -d ${ZTF_ONLINE}/science/year=${YEAR}/month=${MONTH}/day=${DAY})
      if [[ $? == 0 ]]; then
         $(${HDFS_HOME}hdfs dfs -test -d ${GCN_ONLINE}/raw/year=${YEAR}/month=${MONTH}/day=${DAY})
@@ -29,6 +31,11 @@ while true; do
             nohup fink_grb join_stream --config ${FINK_GRB_HOME}/local.conf --night ${NIGHT} --exit_after ${LEASETIME} > ${FINK_GRB_HOME}/join_stream_${YEAR}${MONTH}${DAY}.log &
             exit
         fi
+     fi
+     if [[ $LEASETIME -le 0 ]]
+     then
+        echo "exit scheduler, no data for this night."
+        exit
      fi
      DDATE=`date`
      echo "${DDATE}: no data yet. Sleeping..."
