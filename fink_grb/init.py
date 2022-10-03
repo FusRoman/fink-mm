@@ -33,7 +33,7 @@ def init_fink_grb(arguments):
     True
 
     >>> os.path.isdir("fink_grb/test/test_output/grb")
-    True
+    False
     """
     config = get_config(arguments)
     logger = init_logging()
