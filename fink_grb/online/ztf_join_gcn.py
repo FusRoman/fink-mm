@@ -38,7 +38,6 @@ def grb_assoc(
     grb_ra: pd.Series,
     grb_dec: pd.Series,
     grb_error: pd.Series,
-    units: pd.Series,
 ) -> pd.Series:
     """
     Find the ztf alerts falling in the error box of the notices and emits after the trigger time.
@@ -66,9 +65,7 @@ def grb_assoc(
     grb_dec : double spark column
         grb declination
     grb_error : double spark column
-        grb error radius
-    units : string spark column
-        error radius unit (example: degree, arcminute, arcsecond)
+        grb error radius (in arcminute)
 
     Returns
     grb_proba : pandas Series
@@ -89,8 +86,7 @@ def grb_assoc(
     ...     sparkDF.timeUTC,
     ...     sparkDF.ra,
     ...     sparkDF.dec,
-    ...     sparkDF.err,
-    ...     sparkDF.units,
+    ...     sparkDF.err
     ...  ),
     ... )
 
@@ -105,7 +101,7 @@ def grb_assoc(
     ... "trigger_id",
     ... col("ra").alias("grb_ra"),
     ... col("dec").alias("grb_dec"),
-    ... col("err").alias("grb_loc_error"),
+    ... col("err_arcmin").alias("grb_loc_error"),
     ... "timeUTC",
     ... "grb_proba"
     ... ])
@@ -128,15 +124,8 @@ def grb_assoc(
     choice_grb_rate = [250, 100, 60, 8]
     grb_det_rate = np.select(condition, choice_grb_rate)
 
-    # array of error units depending of the instruments
+    # array of error box
     grb_error = grb_error.values
-    condition = [
-        grb_error == 0,
-        np.equal(units, u.degree),
-        np.equal(units, u.arcminute),
-    ]
-    conversion_units = [1 / 3600, grb_error, grb_error / 60]
-    grb_error = np.select(condition, conversion_units)
 
     trigger_time = Time(
         pd.to_datetime(trigger_time.values, utc=True), format="datetime"
@@ -150,7 +139,7 @@ def grb_assoc(
     grb_coord = SkyCoord(grb_ra, grb_dec, unit=u.degree)
 
     # alerts falling within the grb_error_box
-    spatial_condition = ztf_coords.separation(grb_coord).degree < 1.5 * grb_error
+    spatial_condition = ztf_coords.separation(grb_coord).arcminute < 63.5 * grb_error
 
     # convert the delay in year
     delay_year = delay[time_condition & spatial_condition] / 365.25
@@ -241,6 +230,7 @@ def ztf_join_gcn_stream(
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/grb/year=2019")
+
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
     >>> shutil.rmtree(grb_dataoutput + "/grb/_spark_metadata")
@@ -318,8 +308,7 @@ def ztf_join_gcn_stream(
             df_grb.triggerTimeUTC,
             df_grb.ra,
             df_grb.dec,
-            df_grb.err,
-            df_grb.units,
+            df_grb.err_arcmin,
         ),
     )
 
@@ -336,7 +325,7 @@ def ztf_join_gcn_stream(
             "triggerId",
             col("ra").alias("grb_ra"),
             col("dec").alias("grb_dec"),
-            col("err").alias("grb_loc_error"),
+            col("err_arcmin").alias("grb_loc_error"),
             "triggerTimeUTC",
             "grb_proba",
         ]
