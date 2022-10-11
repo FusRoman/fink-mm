@@ -60,7 +60,7 @@ def err_to_arcminute(instrument, error_box):
     -------
     error_box: float
         the original error box in arcminute
-    
+
     Examples
     --------
     >>> err_to_arcminute("BAT", 30)
@@ -83,7 +83,6 @@ def err_to_arcminute(instrument, error_box):
         return error_box
     else:
         raise ValueError("Unknown instrument or event: {}".format(instrument))
-
 
 
 def voevent_to_df(voevent):
@@ -133,7 +132,7 @@ def voevent_to_df(voevent):
 
     voevent_error = err_to_arcminute(instrument, coords.err)
     if voevent_error == 0:
-        voevent_error = 1/60
+        voevent_error = 1 / 60
 
     df = pd.DataFrame.from_dict(
         {

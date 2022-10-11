@@ -37,7 +37,7 @@ def grb_assoc(
     trigger_time: pd.Series,
     grb_ra: pd.Series,
     grb_dec: pd.Series,
-    grb_error: pd.Series
+    grb_error: pd.Series,
 ) -> pd.Series:
     """
     Find the ztf alerts falling in the error box of the notices and emits after the trigger time.
@@ -230,7 +230,7 @@ def ztf_join_gcn_stream(
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/grb/year=2019")
-    
+
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
     >>> shutil.rmtree(grb_dataoutput + "/grb/_spark_metadata")
@@ -308,7 +308,7 @@ def ztf_join_gcn_stream(
             df_grb.triggerTimeUTC,
             df_grb.ra,
             df_grb.dec,
-            df_grb.err_arcmin
+            df_grb.err_arcmin,
         ),
     )
 
