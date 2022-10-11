@@ -143,7 +143,7 @@ def voevent_to_df(voevent):
             "triggerId": [trigger_id],
             "ra": [coords.ra],
             "dec": [coords.dec],
-            "err(arcminute)": [voevent_error],
+            "err_arcmin": [voevent_error],
             "ackTime": [ack_time],
             "triggerTimejd": [time_jd],
             "triggerTimeUTC": [time_utc],
