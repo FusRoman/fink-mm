@@ -44,9 +44,19 @@ def spark_offline(gcn_read_path, grbxztf_write_path, night, time_window):
     Parameters
     ----------
 
+    gcn_read_path : string
+        path to the gcn database
+    grbxztf_write_path : string
+        path to store the cross match ZTF/GCN results
+    night : string
+        launching night of the script
     time_window : int
         Number of day between now and now - time_window to join ztf alerts and gcn.
         time_window are in days.
+
+    Returns
+    -------
+    None
     """
     path_to_catalog = (
         "/home/julien.peloton/fink-broker/ipynb/hbase_catalogs/ztf_season1.class.json"
