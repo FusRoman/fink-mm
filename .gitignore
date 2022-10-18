@@ -132,3 +132,6 @@ dmypy.json
 # Custom
 local_conf.conf
 gcn_storage_test
+gcn_test
+inspect_testdata.py
+tmp_alert
