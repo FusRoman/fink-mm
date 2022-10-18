@@ -11,6 +11,8 @@ from fink_grb.init import get_config
 import sys
 import datetime
 
+from fink_utils.spark.partitioning import convert_to_datetime
+
 
 def ztf_grb_filter(spark_ztf):
 
@@ -38,12 +40,16 @@ def ztf_grb_filter(spark_ztf):
     return spark_filter
 
 
-def spark_offline(gcn_read_path, grbxztf_write_path, night, time_window):
+def spark_offline(hbase_catalog, gcn_read_path, grbxztf_write_path, night, time_window):
     """
+    Cross-match Fink and the GNC in order to find the optical alerts falling in the error box of a GCN.
+
 
     Parameters
     ----------
-
+    hbase_catalog : string
+        path to the hbase catalog (json format)
+        Key index must be jd_objectId
     gcn_read_path : string
         path to the gcn database
     grbxztf_write_path : string
@@ -58,11 +64,7 @@ def spark_offline(gcn_read_path, grbxztf_write_path, night, time_window):
     -------
     None
     """
-    path_to_catalog = (
-        "/home/julien.peloton/fink-broker/ipynb/hbase_catalogs/ztf_season1.class.json"
-    )
-
-    with open(path_to_catalog) as f:
+    with open(hbase_catalog) as f:
         catalog = json.load(f)
 
     spark = init_sparksession(
@@ -78,13 +80,14 @@ def spark_offline(gcn_read_path, grbxztf_write_path, night, time_window):
     )
 
     ztf_alert = ztf_alert.select(
+        "jd_objectId",
         "objectId",
         "candid",
         "ra",
         "dec",
         "jd",
         "jdstarthist",
-        "class_jd_objectId",
+        "jdendhist",
         "ssdistnr",
         "distpsnr1",
         "neargaia",
@@ -93,19 +96,13 @@ def spark_offline(gcn_read_path, grbxztf_write_path, night, time_window):
     now = Time.now().jd
     low_bound = now - TimeDelta(time_window * 24 * 3600, format="sec").jd
 
-    request_class = ["SN candidate", "Ambiguous", "Unknown", "Solar System candidate"]
-    ztf_class = spark.createDataFrame([], ztf_alert.schema)
+    ztf_alert = ztf_alert.filter(
+        ztf_alert["jd_objectId"] >= "{}".format(low_bound)
+    ).filter(ztf_alert["jd_objectId"] < "{}".format(now))
 
-    for _class in request_class:
-        ztf_class = ztf_class.union(
-            ztf_alert.filter(
-                ztf_alert["class_jd_objectId"] >= "{}_{}".format(_class, low_bound)
-            ).filter(ztf_alert["class_jd_objectId"] < "{}_{}".format(_class, now))
-        )
+    ztf_alert = ztf_grb_filter(ztf_alert)
 
-    ztf_class.cache().count()
-
-    ztf_class = ztf_grb_filter(ztf_class)
+    ztf_alert.cache().count()
 
     grb_alert = spark.read.format("parquet").load(gcn_read_path)
 
@@ -117,16 +114,16 @@ def spark_offline(gcn_read_path, grbxztf_write_path, night, time_window):
 
     NSIDE = 4
 
-    ztf_class = ztf_class.withColumn(
+    ztf_alert = ztf_alert.withColumn(
         "hpix",
-        ang2pix(ztf_class.ra, ztf_class.dec, F.lit(NSIDE)),
+        ang2pix(ztf_alert.ra, ztf_alert.dec, F.lit(NSIDE)),
     )
 
     grb_alert = grb_alert.withColumn(
         "hpix", ang2pix(grb_alert.ra, grb_alert.dec, F.lit(NSIDE))
     )
 
-    ztf_class = ztf_class.withColumnRenamed("ra", "ztf_ra").withColumnRenamed(
+    ztf_alert = ztf_alert.withColumnRenamed("ra", "ztf_ra").withColumnRenamed(
         "dec", "ztf_dec"
     )
 
@@ -135,10 +132,11 @@ def spark_offline(gcn_read_path, grbxztf_write_path, night, time_window):
     )
 
     join_condition = [
-        ztf_class.hpix == grb_alert.hpix,
-        ztf_class.jdstarthist > grb_alert.triggerTimejd,
+        ztf_alert.hpix == grb_alert.hpix,
+        ztf_alert.jdstarthist > grb_alert.triggerTimejd,
+        ztf_alert.jdendhist - grb_alert.triggerTimejd <= 10,
     ]
-    join_ztf_grb = ztf_class.join(grb_alert, join_condition, "inner")
+    join_ztf_grb = ztf_alert.join(grb_alert, join_condition, "inner")
 
     df_grb = join_ztf_grb.withColumn(
         "grb_proba",
@@ -150,8 +148,7 @@ def spark_offline(gcn_read_path, grbxztf_write_path, night, time_window):
             join_ztf_grb.triggerTimeUTC,
             join_ztf_grb.grb_ra,
             join_ztf_grb.grb_dec,
-            join_ztf_grb.err,
-            join_ztf_grb.units,
+            join_ztf_grb.err_arcmin,
         ),
     )
 
@@ -167,13 +164,29 @@ def spark_offline(gcn_read_path, grbxztf_write_path, night, time_window):
             "triggerId",
             "grb_ra",
             "grb_dec",
-            col("err").alias("grb_loc_error"),
+            col("err_arcmin").alias("grb_loc_error"),
             "triggerTimeUTC",
             "grb_proba",
         ]
     ).filter(df_grb.grb_proba != -1.0)
 
-    df_grb.write.parquet(grbxztf_write_path)
+    timecol = "jd"
+    converter = lambda x: convert_to_datetime(x)  # noqa: E731
+    if "timestamp" not in df_grb.columns:
+        df_grb = df_grb.withColumn("timestamp", converter(df_grb[timecol]))
+
+    if "year" not in df_grb.columns:
+        df_grb = df_grb.withColumn("year", F.date_format("timestamp", "yyyy"))
+
+    if "month" not in df_grb.columns:
+        df_grb = df_grb.withColumn("month", F.date_format("timestamp", "MM"))
+
+    if "day" not in df_grb.columns:
+        df_grb = df_grb.withColumn("day", F.date_format("timestamp", "dd"))
+
+    df_grb.write.mode("append").partitionBy("year", "month", "day").parquet(
+        grbxztf_write_path
+    )
 
 
 if __name__ == "__main__":
@@ -189,8 +202,12 @@ if __name__ == "__main__":
     config = get_config({"--config": config_path})
 
     # ztf_datapath_prefix = config["PATH"]["online_ztf_data_prefix"]
+
+    hbase_catalog = config["PATH"]["hbase_catalog"]
     gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
     grb_datapath_prefix = config["PATH"]["online_grb_data_prefix"]
-    time_window = config["OFFLINE"]["time_window"]
+    time_window = int(config["OFFLINE"]["time_window"])
 
-    spark_offline(gcn_datapath_prefix, grb_datapath_prefix, night, time_window)
+    spark_offline(
+        hbase_catalog, gcn_datapath_prefix, grb_datapath_prefix, night, time_window
+    )

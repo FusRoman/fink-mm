@@ -139,14 +139,16 @@ def grb_assoc(
     grb_coord = SkyCoord(grb_ra, grb_dec, unit=u.degree)
 
     # alerts falling within the grb_error_box
-    spatial_condition = ztf_coords.separation(grb_coord).arcminute < 63.5 * grb_error
+    spatial_condition = (
+        ztf_coords.separation(grb_coord).arcminute < 1.5 * grb_error
+    )  # 63.5 * grb_error
 
     # convert the delay in year
     delay_year = delay[time_condition & spatial_condition] / 365.25
 
     # compute serendipitous probability
     p_ser = p_ser_grb_vect(
-        grb_error[time_condition & spatial_condition],
+        grb_error[time_condition & spatial_condition] / 60,
         delay_year.values,
         grb_det_rate[time_condition & spatial_condition],
     )

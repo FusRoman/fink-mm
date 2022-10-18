@@ -1,5 +1,19 @@
 #!/bin/bash
 
+source ~/.bash_profile
+export SPARK_HOME="/opt/spark-3/"
+export PYSPARK_PYTHON="/opt/anaconda/bin/python"
+export HADOOP_HOME="/opt/hadoop-2"
+export HADOOP_COMMON_LIB_NATIVE_DIR="/opt/hadoop-2/lib/native"
+export HADOOP_HDFS_HOME="/opt/hadoop-2"
+export HADOOP_COMMON_HOME="/opt/hadoop-2"
+export HADOOP_INSTALL="/opt/hadoop-2"
+export HADOOP_CONF_DIR="/opt/hadoop-2/etc/hadoop"
+export HADOOP_OPTS=-Djava.library.path="/opt/hadoop-2/lib/native"
+export HADOOP_MAPRED_HOME="/opt/hadoop-2"
+
+PATH=$PATH:/opt/hadoop-2/bin
+
 # Other dependencies (incl. Scala part of Fink)
 FINK_JARS=${FINK_HOME}/libs/fink-broker_2.11-1.2.jar,\
 ${FINK_HOME}/libs/hbase-spark-hbase2.2_spark3_scala2.11_hadoop2.7.jar,\
@@ -7,7 +21,9 @@ ${FINK_HOME}/libs/hbase-spark-protocol-shaded-hbase2.2_spark3_scala2.11_hadoop2.
 
 FINK_PACKAGES=org.apache.hbase:hbase-shaded-mapreduce:2.2.7
 
-CONFIG=${FINK_GRB_HOME}/fink_grb/conf/fink_grb.conf
+# Config 
+FINK_GRB_HOME="/home/roman.le-montagner/Doctorat/GRB/Fink_GRB_test"
+CONFIG=${FINK_GRB_HOME}/local.conf
 
 NIGHT=`date +"%Y%m%d" -d "now"`
 YEAR=${NIGHT:0:4}
@@ -22,5 +38,5 @@ spark-submit \
     --conf spark.executorEnv.HOME='/home/roman.le-montagner'\
     --driver-memory 4G --executor-memory 8G --conf spark.cores.max=16 --conf spark.executor.cores=8 \
     --jars $FINK_JARS --packages $FINK_PACKAGES \
-    --py-files /home/roman.le-montagner/Doctorat/GRB/Fink_GRB_test/Fink_GRB/dist/fink_grb-0.1.0-py3.7.egg \
-    ${FINK_GRB_HOME}/fink_grb/offline/spark_offline.py ${CONFIG} ${NIGHT}
+    --py-files /home/roman.le-montagner/Doctorat/GRB/Fink_GRB_test/Fink_GRB/dist/fink_grb-0.3.1-py3.7.egg \
+    ${FINK_GRB_HOME}/Fink_GRB/fink_grb/offline/spark_offline.py ${CONFIG} ${NIGHT}
