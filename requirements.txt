@@ -1,39 +1,4 @@
-# fink_broker==2.2 -> to install via github
-
-# astropy==5.1
-# docopt==0.6.2
-# fink-science==2.0.0
-# gcn-kafka==0.1.2
-# importlib-resources==5.9.0
-# numpy==1.22.4
-# pandas==1.4.3
-# pyarrow==8.0.0
-# pyspark==3.3.0
-# requests==2.28.1
-# scipy==1.8.1
-# voevent-parse==1.0.3
-
-scikit-learn==1.0.2
-torch
-
-#xmatch
-astroquery
-
-# Microlensing
-# You would simply use pip install git+https://github.com/JulienPeloton/LIA.git@4513654b15a0760312eff2661b0fcf4989171ce3 --upgrade
--e git+https://github.com/JulienPeloton/LIA.git@4513654b15a0760312eff2661b0fcf4989171ce3#egg=LIA
-
-# Supernnova
-supernnova
-h5py
-natsort
-colorama
-seaborn
-scikit-image
-
-# KN
--e git+https://github.com/b-biswas/kndetect@kndetect#egg=kndetect
-
-# SNAD
-light-curve-python>=0.3.5
-light-curve>=0.4.0
+coverage
+flake8
+black
+psutil

@@ -44,6 +44,47 @@ def get_trigger_id(voevent):
     return -1  # pragma: no cover
 
 
+def err_to_arcminute(instrument, error_box):
+    """
+    Convert the error box units of an instrument in arcsecond.
+    No changes if the units is already in arcsecond.
+
+    Parameters
+    ----------
+    instrument: string
+        kind of instrument or event (examples: BAT, XRT, BRONZE, ...)
+    error_box: float
+        error box of the event
+
+    Returns
+    -------
+    error_box: float
+        the original error box in arcminute
+
+    Examples
+    --------
+    >>> err_to_arcminute("BAT", 30)
+    30
+    >>> err_to_arcminute("XRT", 30)
+    0.5
+    >>> err_to_arcminute("GBM", 12)
+    720
+    """
+
+    if instrument == "BAT" or instrument == "FOM":
+        return error_box
+    elif instrument == "XRT" or instrument == "UVOT":
+        return error_box / 60
+    elif instrument == "BRONZE" or instrument == "GOLD":
+        return error_box
+    elif instrument == "GBM" or instrument == "LAT" or instrument == "Cascade":
+        return error_box * 60
+    elif instrument == "Weak" or instrument == "Wakeup" or instrument == "Refined":
+        return error_box
+    else:
+        raise ValueError("Unknown instrument or event: {}".format(instrument))
+
+
 def voevent_to_df(voevent):
     """
     Convert a voevent object into a dataframe.
@@ -63,8 +104,7 @@ def voevent_to_df(voevent):
             - triggerId : the trigger_id of the voevent. (Example: 683499781)
             - ra : right ascension
             - dec : declination
-            - err : error box of the grb event (in degree or arcminute depending of the instruments)
-            - units : units of the error box
+            - err : error box of the grb event (in arcminute)
             - timeUTC : trigger time of the voevent in UTC
             - rawEvent : the original voevent in xml format.
 
@@ -90,16 +130,9 @@ def voevent_to_df(voevent):
 
     time_jd = Time(time_utc, format="datetime").jd
 
-    if platform == "Fermi":
-        error_unit = "deg"
-    elif platform == "SWIFT":  # pragma: no cover
-        error_unit = "arcmin"
-    elif platform == "INTEGRAL":  # pragma: no cover
-        error_unit = "arcmin"
-    elif platform == "ICECUBE":  # pragma: no cover
-        error_unit = "deg"
-    else:  # pragma: no cover
-        raise ValueError("bad instruments: {}".format(platform))
+    voevent_error = err_to_arcminute(instrument, coords.err)
+    if voevent_error == 0:
+        voevent_error = 1 / 60
 
     df = pd.DataFrame.from_dict(
         {
@@ -109,8 +142,7 @@ def voevent_to_df(voevent):
             "triggerId": [trigger_id],
             "ra": [coords.ra],
             "dec": [coords.dec],
-            "err": [coords.err],
-            "units": [error_unit],
+            "err_arcmin": [voevent_error],
             "ackTime": [ack_time],
             "triggerTimejd": [time_jd],
             "triggerTimeUTC": [time_utc],
