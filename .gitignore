@@ -135,3 +135,4 @@ gcn_storage_test
 gcn_test
 inspect_testdata.py
 tmp_alert
+build_egg.sh
