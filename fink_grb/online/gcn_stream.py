@@ -111,7 +111,7 @@ def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False, gcn_fs=None):
 
 def start_gcn_stream(arguments):
     """
-    Start to listening the gcn stream. It is an infinite loop that wait messages and the write on disk
+    Start to listening the gcn stream. It is an infinite loop that wait messages and write on disk
     the gnc.
 
     Parameters

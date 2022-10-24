@@ -136,3 +136,5 @@ gcn_test
 inspect_testdata.py
 tmp_alert
 build_egg.sh
+launch_offline_grb_locally.sh
+science2grb_locally.sh

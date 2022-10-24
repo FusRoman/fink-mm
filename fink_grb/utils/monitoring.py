@@ -83,18 +83,18 @@ def gcn_stream_monitoring(arguments):  # pragma: no cover
     if gcn_fs is None:
         try:
             gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
-            gcn_rawdatapath = gcn_datapath_prefix + "/raw"
-            pdf_gcn = pd.read_parquet(gcn_rawdatapath)
+            gcn_datapath_prefix = gcn_datapath_prefix + "/raw"
+            pdf_gcn = pd.read_parquet(gcn_datapath_prefix)
         except Exception as e:
             logger.error("Config entry not found \n\t {}".format(e))
             exit(1)
     else:
-        root_gcn_data = config["PATH"]["hdfs_gcn_storage"]
-        dataset = pq.ParquetDataset(root_gcn_data, filesystem=gcn_fs)
+        gcn_datapath_prefix = config["PATH"]["hdfs_gcn_storage"]
+        dataset = pq.ParquetDataset(gcn_datapath_prefix, filesystem=gcn_fs)
         pdf_gcn = dataset.read().to_pandas()
 
     if len(pdf_gcn) == 0:
-        logger.info("no gcn store at the location {}".format(gcn_rawdatapath))
+        logger.info("no gcn store at the location {}".format(gcn_datapath_prefix))
         exit(0)
 
     print()
