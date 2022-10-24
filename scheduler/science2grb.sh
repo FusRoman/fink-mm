@@ -6,6 +6,18 @@
 
 
 source ~/.bash_profile
+export SPARK_HOME="/opt/spark-3/"
+export PYSPARK_PYTHON="/opt/anaconda/bin/python"
+export HADOOP_HOME="/opt/hadoop-2"
+export HADOOP_COMMON_LIB_NATIVE_DIR="/opt/hadoop-2/lib/native"
+export HADOOP_HDFS_HOME="/opt/hadoop-2"
+export HADOOP_COMMON_HOME="/opt/hadoop-2"
+export HADOOP_INSTALL="/opt/hadoop-2"
+export HADOOP_CONF_DIR="/opt/hadoop-2/etc/hadoop"
+export HADOOP_OPTS=-Djava.library.path="/opt/hadoop-2/lib/native"
+export HADOOP_MAPRED_HOME="/opt/hadoop-2"
+
+PATH=$PATH:/opt/hadoop-2/bin
 
 NIGHT=`date +"%Y%m%d" -d "now"`
 # NIGHT=`date +"%Y%m%d" -d "now + 1 days"`
@@ -24,8 +36,6 @@ ZTFXGRB_OUTPUT="/home/roman.le-montagner/ztfxgcn_storage" # online_grb_data_pref
 
 
 HDFS_HOME="/opt/hadoop-2/bin/"
-export SPARK_HOME="/opt/spark-3/"
-export PYSPARK_PYTHON="/opt/anaconda/bin/python"
 
 while true; do
 
