@@ -8,10 +8,15 @@ from fink_utils.broker.sparkUtils import init_sparksession
 from pyspark.sql import functions as F
 from pyspark.sql.functions import col
 from fink_grb.init import get_config
+import os
 import sys
-import datetime
+import subprocess
 
 from fink_utils.spark.partitioning import convert_to_datetime
+
+import fink_grb
+from fink_grb.utils.fun_utils import return_verbose_level
+from fink_grb.init import get_config, init_logging
 
 
 def ztf_grb_filter(spark_ztf):
@@ -189,25 +194,185 @@ def spark_offline(hbase_catalog, gcn_read_path, grbxztf_write_path, night, time_
     )
 
 
+def build_spark_submit(spark_submit, application, external_python_libs, spark_jars, packages):
+
+    if external_python_libs != "":
+        spark_submit += """--py-files {} \ \n""".format(external_python_libs)
+
+    if spark_jars != "":
+        spark_submit += """--jars {} \ \n""".format(spark_jars)
+
+    if packages != "":
+        spark_submit += """--packages {} \ \n""".format(packages)
+
+    return spark_submit + application
+
+
+
+
+def launch_offline_mode(arguments):
+
+    config = get_config(arguments)
+    logger = init_logging()
+
+    verbose = return_verbose_level(config, logger)
+
+    try:
+        master_manager = config["STREAM"]["manager"]
+        principal_group = config["STREAM"]["principal"]
+        secret = config["STREAM"]["secret"]
+        role = config["STREAM"]["role"]
+        executor_env = config["STREAM"]["exec_env"]
+        driver_mem = config["STREAM"]["driver_memory"]
+        exec_mem = config["STREAM"]["executor_memory"]
+        max_core = config["STREAM"]["max_core"]
+        exec_core = config["STREAM"]["executor_core"]
+
+        ztf_datapath_prefix = config["PATH"]["online_ztf_data_prefix"]
+        gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
+        grb_datapath_prefix = config["PATH"]["online_grb_data_prefix"]
+        hbase_catalog = config["PATH"]["hbase_catalog"]
+
+        time_window = int(config["OFFLINE"]["time_window"])
+    except Exception as e:  # pragma: no cover
+        logger.error("Config entry not found \n\t {}".format(e))
+        exit(1)
+
+    try:
+        night = arguments["--night"]
+    except Exception as e:  # pragma: no cover
+        logger.error("Command line arguments not found: {}\n{}".format("--night", e))
+        exit(1)
+
+    try:
+        external_python_libs = config["STREAM"]["external_python_libs"]
+    except Exception as e:
+        if verbose:
+            logger.info(
+                "No external python dependencies specify in the following config file: {}\n\t{}".format(
+                    arguments["--config"], e
+                )
+            )
+        external_python_libs = ""
+
+    try:
+        spark_jars = config["STREAM"]["jars"]
+    except Exception as e:
+        if verbose:
+            logger.info(
+                "No spark jars dependencies specify in the following config file: {}\n\t{}".format(
+                    arguments["--config"], e
+                )
+            )
+        spark_jars = ""
+
+    try:
+        packages = config["STREAM"]["packages"]
+    except Exception as e:
+        if verbose:
+            logger.info(
+                "No packages dependencies specify in the following config file: {}\n\t{}".format(
+                    arguments["--config"], e
+                )
+            )
+        packages = ""
+
+    application = os.path.join(
+        os.path.dirname(fink_grb.__file__),
+        "offline",
+        "spark_offline.py prod",
+    )
+
+    application += " " + hbase_catalog
+    application += " " + gcn_datapath_prefix
+    application += " " + grb_datapath_prefix
+    application += " " + night
+    application += " " + str(time_window)
+
+    spark_submit = "spark-submit \
+            --master {} \
+            --conf spark.mesos.principal={} \
+            --conf spark.mesos.secret={} \
+            --conf spark.mesos.role={} \
+            --conf spark.executorEnv.HOME={} \
+            --driver-memory {}G \
+            --executor-memory {}G \
+            --conf spark.cores.max={} \
+            --conf spark.executor.cores={} \
+            ".format(
+            master_manager,
+            principal_group,
+            secret,
+            role,
+            executor_env,
+            driver_mem,
+            exec_mem,
+            max_core,
+            exec_core
+        )
+
+    spark_submit = build_spark_submit(spark_submit, application, external_python_libs, spark_jars, packages)
+
+    process = subprocess.Popen(
+        spark_submit,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        shell=True,
+    )
+
+    stdout, stderr = process.communicate()
+    if process.returncode != 0:  # pragma: no cover
+        logger.error(
+            "Fink_GRB joining stream spark application has ended with a non-zero returncode.\
+                \n\t cause:\n\t\t{}\n\t\t{}".format(
+                stdout, stderr
+            )
+        )
+        exit(1)
+
+    logger.info("Fink_GRB joining stream spark application ended normally")
+    return
+
+
+
+
+
+
+
 if __name__ == "__main__":
 
-    if len(sys.argv) > 2:
-        config_path = sys.argv[1]
-        night = sys.argv[2]
-    else:
-        config_path = None
-        d = datetime.datetime.today()
-        night = "{}{}{}".format(d.strftime("%Y"), d.strftime("%m"), d.strftime("%d"))
 
-    config = get_config({"--config": config_path})
+    if sys.argv[1] == "prod":  # pragma: no cover
 
-    # ztf_datapath_prefix = config["PATH"]["online_ztf_data_prefix"]
+        hbase_catalog = sys.argv[2]
+        gcn_datapath_prefix = sys.argv[3]
+        grb_datapath_prefix = sys.argv[4]
+        night = sys.argv[5]
+        time_window = sys.argv[6]
 
-    hbase_catalog = config["PATH"]["hbase_catalog"]
-    gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
-    grb_datapath_prefix = config["PATH"]["online_grb_data_prefix"]
-    time_window = int(config["OFFLINE"]["time_window"])
+        spark_offline(
+            hbase_catalog, gcn_datapath_prefix, grb_datapath_prefix, night, time_window
+        )
 
-    spark_offline(
-        hbase_catalog, gcn_datapath_prefix, grb_datapath_prefix, night, time_window
-    )
+
+    # if len(sys.argv) > 2:
+    #     config_path = sys.argv[1]
+    #     night = sys.argv[2]
+    # else:
+    #     config_path = None
+    #     d = datetime.datetime.today()
+    #     night = "{}{}{}".format(d.strftime("%Y"), d.strftime("%m"), d.strftime("%d"))
+
+    # config = get_config({"--config": config_path})
+
+    # # ztf_datapath_prefix = config["PATH"]["online_ztf_data_prefix"]
+
+    # hbase_catalog = config["PATH"]["hbase_catalog"]
+    # gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
+    # grb_datapath_prefix = config["PATH"]["online_grb_data_prefix"]
+    # time_window = int(config["OFFLINE"]["time_window"])
+
+    # spark_offline(
+    #     hbase_catalog, gcn_datapath_prefix, grb_datapath_prefix, night, time_window
+    # )

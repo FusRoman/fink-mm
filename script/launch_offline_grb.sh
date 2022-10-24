@@ -25,5 +25,6 @@ spark-submit \
     --conf spark.mesos.role= \
     --conf spark.executorEnv.HOME='/path/to/user/'\
     --driver-memory 4G --executor-memory 8G --conf spark.cores.max=16 --conf spark.executor.cores=8 \
-    --jars $FINK_JARS --packages $FINK_PACKAGES \
+    --jars $FINK_JARS \
+    --packages $FINK_PACKAGES \
     ${FINK_GRB_HOME}/Fink_GRB/fink_grb/offline/spark_offline.py ${CONFIG} ${NIGHT}
