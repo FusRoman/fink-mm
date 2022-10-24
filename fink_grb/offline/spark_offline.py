@@ -313,6 +313,11 @@ def launch_offline_mode(arguments):
         spark_submit, application, external_python_libs, spark_jars, packages
     )
 
+    print()
+    print(spark_submit)
+    print()
+
+
     process = subprocess.Popen(
         spark_submit,
         stdout=subprocess.PIPE,

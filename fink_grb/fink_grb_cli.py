@@ -51,8 +51,6 @@ def main():
 
         elif arguments["offline"]:
 
-            print("ok")
-
             from fink_grb.offline.spark_offline import launch_offline_mode
 
             launch_offline_mode(arguments)
