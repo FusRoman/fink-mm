@@ -198,13 +198,13 @@ def build_spark_submit(
 ):
 
     if external_python_libs != "":
-        spark_submit += """--py-files {} \ \n""".format(external_python_libs)
+        spark_submit += " --py-files {} ".format(external_python_libs)
 
     if spark_jars != "":
-        spark_submit += """--jars {} \ \n""".format(spark_jars)
+        spark_submit += " --jars {} ".format(spark_jars)
 
     if packages != "":
-        spark_submit += """--packages {} \ \n""".format(packages)
+        spark_submit += " --packages {} ".format(packages)
 
     return spark_submit + application
 
@@ -313,11 +313,6 @@ def launch_offline_mode(arguments):
         spark_submit, application, external_python_libs, spark_jars, packages
     )
 
-    print()
-    print(spark_submit)
-    print()
-
-
     process = subprocess.Popen(
         spark_submit,
         stdout=subprocess.PIPE,
@@ -348,7 +343,7 @@ if __name__ == "__main__":
         gcn_datapath_prefix = sys.argv[3]
         grb_datapath_prefix = sys.argv[4]
         night = sys.argv[5]
-        time_window = sys.argv[6]
+        time_window = int(sys.argv[6])
 
         spark_offline(
             hbase_catalog, gcn_datapath_prefix, grb_datapath_prefix, night, time_window
