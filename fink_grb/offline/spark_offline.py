@@ -7,7 +7,6 @@ from fink_utils.broker.sparkUtils import init_sparksession
 
 from pyspark.sql import functions as F
 from pyspark.sql.functions import col
-from fink_grb.init import get_config
 import os
 import sys
 import subprocess
@@ -194,7 +193,9 @@ def spark_offline(hbase_catalog, gcn_read_path, grbxztf_write_path, night, time_
     )
 
 
-def build_spark_submit(spark_submit, application, external_python_libs, spark_jars, packages):
+def build_spark_submit(
+    spark_submit, application, external_python_libs, spark_jars, packages
+):
 
     if external_python_libs != "":
         spark_submit += """--py-files {} \ \n""".format(external_python_libs)
@@ -206,8 +207,6 @@ def build_spark_submit(spark_submit, application, external_python_libs, spark_ja
         spark_submit += """--packages {} \ \n""".format(packages)
 
     return spark_submit + application
-
-
 
 
 def launch_offline_mode(arguments):
@@ -228,7 +227,6 @@ def launch_offline_mode(arguments):
         max_core = config["STREAM"]["max_core"]
         exec_core = config["STREAM"]["executor_core"]
 
-        ztf_datapath_prefix = config["PATH"]["online_ztf_data_prefix"]
         gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
         grb_datapath_prefix = config["PATH"]["online_grb_data_prefix"]
         hbase_catalog = config["PATH"]["hbase_catalog"]
@@ -300,18 +298,20 @@ def launch_offline_mode(arguments):
             --conf spark.cores.max={} \
             --conf spark.executor.cores={} \
             ".format(
-            master_manager,
-            principal_group,
-            secret,
-            role,
-            executor_env,
-            driver_mem,
-            exec_mem,
-            max_core,
-            exec_core
-        )
+        master_manager,
+        principal_group,
+        secret,
+        role,
+        executor_env,
+        driver_mem,
+        exec_mem,
+        max_core,
+        exec_core,
+    )
 
-    spark_submit = build_spark_submit(spark_submit, application, external_python_libs, spark_jars, packages)
+    spark_submit = build_spark_submit(
+        spark_submit, application, external_python_libs, spark_jars, packages
+    )
 
     process = subprocess.Popen(
         spark_submit,
@@ -335,13 +335,7 @@ def launch_offline_mode(arguments):
     return
 
 
-
-
-
-
-
 if __name__ == "__main__":
-
 
     if sys.argv[1] == "prod":  # pragma: no cover
 
@@ -354,7 +348,6 @@ if __name__ == "__main__":
         spark_offline(
             hbase_catalog, gcn_datapath_prefix, grb_datapath_prefix, night, time_window
         )
-
 
     # if len(sys.argv) > 2:
     #     config_path = sys.argv[1]

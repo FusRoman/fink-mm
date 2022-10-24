@@ -48,9 +48,9 @@ def main():
             from fink_grb.online.ztf_join_gcn import launch_joining_stream
 
             launch_joining_stream(arguments)
-        
+
         elif arguments["offline"]:
-            
+
             print("ok")
 
             from fink_grb.offline.spark_offline import launch_offline_mode
