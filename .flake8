@@ -11,4 +11,4 @@ exclude =
     dist
 per-file-ignores =
     ../Fink_GRB/fink_grb/online/ztf_join_gcn.py:W503,E402
-    ../Fink_GRB/fink_grb/offline/spark_offline.py:W503
+    ../Fink_GRB/fink_grb/offline/spark_offline.py:W503,W605
