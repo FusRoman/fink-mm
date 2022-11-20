@@ -57,6 +57,11 @@ coverage run \
     --source=${ROOTPATH} \
     --rcfile=${ROOTPATH}/.coveragerc fink_grb/online/ztf_join_gcn.py "test"
 
+echo "fink_grb/offline/spark_offline.py test"
+coverage run \
+    --source=${ROOTPATH} \
+    --rcfile=${ROOTPATH}/.coveragerc fink_grb/offline/spark_offline.py "test"
+
 coverage combine
 
 unset COVERAGE_PROCESS_START
