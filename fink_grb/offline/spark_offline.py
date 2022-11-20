@@ -19,7 +19,42 @@ from fink_grb.init import get_config, init_logging
 
 
 def ztf_grb_filter(spark_ztf):
+    """
+    filter the ztf alerts by taking cross-match values from ztf.
 
+    Parameters
+    ----------
+    spark_ztf : spark dataframe
+        a spark dataframe containing alerts, this following columns are mandatory and have to be at the candidate level.
+            - ssdistnr, distpsnr1, neargaia 
+
+    Returns
+    -------
+    spark_filter : spark dataframe
+        filtered alerts
+
+    Examples
+    --------
+    >>> sparkDF = spark.read.format('parquet').load(alert_data)
+
+    >>> sparkDF = sparkDF.select(
+    ... "objectId",
+    ... "candid",
+    ... "candidate.ra",
+    ... "candidate.dec",
+    ... "candidate.jd",
+    ... "candidate.jdstarthist",
+    ... "candidate.jdendhist",
+    ... "candidate.ssdistnr",
+    ... "candidate.distpsnr1",
+    ... "candidate.neargaia",
+    ... )
+
+    >>> spark_filter = ztf_grb_filter(sparkDF)
+
+    >>> spark_filter.count()
+    47
+    """
     spark_filter = (
         spark_ztf.filter(
             (spark_ztf.ssdistnr > 5)
@@ -397,8 +432,10 @@ if __name__ == "__main__":
 
         globs = globals()
 
-        # join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
-        # globs["join_data"] = join_data
+        join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
+        alert_data = "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/ztf_science_test.parquet"
+        globs["join_data"] = join_data
+        globs["alert_data"] = alert_data
 
         # Run the test suite
         spark_unit_tests_science(globs)
