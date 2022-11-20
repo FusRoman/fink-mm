@@ -25,6 +25,7 @@ from fink_utils.broker.sparkUtils import init_sparksession, connect_to_raw_datab
 
 import fink_grb
 from fink_grb.utils.grb_prob import p_ser_grb_vect
+from fink_grb.utils.fun_utils import build_spark_submit
 from fink_grb.init import get_config, init_logging
 
 
@@ -487,54 +488,30 @@ def launch_joining_stream(arguments):
     application += " " + str(exit_after)
     application += " " + tinterval
 
-    if external_python_libs == "":
-        spark_submit = "spark-submit \
-            --master {} \
-            --conf spark.mesos.principal={} \
-            --conf spark.mesos.secret={} \
-            --conf spark.mesos.role={} \
-            --conf spark.executorEnv.HOME={} \
-            --driver-memory {}G \
-            --executor-memory {}G \
-            --conf spark.cores.max={} \
-            --conf spark.executor.cores={} \
-            {}".format(
-            master_manager,
-            principal_group,
-            secret,
-            role,
-            executor_env,
-            driver_mem,
-            exec_mem,
-            max_core,
-            exec_core,
-            application,
-        )
-    else:
-        spark_submit = "spark-submit \
-            --master {} \
-            --py-files {} \
-            --conf spark.mesos.principal={} \
-            --conf spark.mesos.secret={} \
-            --conf spark.mesos.role={} \
-            --conf spark.executorEnv.HOME={} \
-            --driver-memory {}G \
-            --executor-memory {}G \
-            --conf spark.cores.max={} \
-            --conf spark.executor.cores={} \
-            {}".format(
-            master_manager,
-            external_python_libs,
-            principal_group,
-            secret,
-            role,
-            executor_env,
-            driver_mem,
-            exec_mem,
-            max_core,
-            exec_core,
-            application,
-        )
+    spark_submit = "spark-submit \
+        --master {} \
+        --conf spark.mesos.principal={} \
+        --conf spark.mesos.secret={} \
+        --conf spark.mesos.role={} \
+        --conf spark.executorEnv.HOME={} \
+        --driver-memory {}G \
+        --executor-memory {}G \
+        --conf spark.cores.max={} \
+        --conf spark.executor.cores={}".format(
+        master_manager,
+        principal_group,
+        secret,
+        role,
+        executor_env,
+        driver_mem,
+        exec_mem,
+        max_core,
+        exec_core,
+    )
+
+    spark_submit = build_spark_submit(
+        spark_submit, application, external_python_libs, "", ""
+    )
 
     process = subprocess.Popen(
         spark_submit,

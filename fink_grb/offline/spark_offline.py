@@ -14,7 +14,7 @@ import subprocess
 from fink_utils.spark.partitioning import convert_to_datetime
 
 import fink_grb
-from fink_grb.utils.fun_utils import return_verbose_level
+from fink_grb.utils.fun_utils import return_verbose_level, build_spark_submit
 from fink_grb.init import get_config, init_logging
 
 
@@ -226,60 +226,6 @@ def spark_offline(hbase_catalog, gcn_read_path, grbxztf_write_path, night, time_
     df_grb.write.mode("append").partitionBy("year", "month", "day").parquet(
         grbxztf_write_path
     )
-
-
-def build_spark_submit(
-    spark_submit, application, external_python_libs, spark_jars, packages
-):
-    """
-    Build the spark submit command line to launch spark jobs.
-
-    Parameters
-    ----------
-    spark_submit : string
-        Initial spark_submit application containing the options the launch the jobs
-    application : string
-        The python script and their options that will be launched with the spark jobs
-    external_python_libs : string
-        list of external python module in .eggs format separated by ','.
-    spark_jars : string
-        list of external java libraries separated by ','.
-    packages : string
-        list of external java libraries hosted on maven, the java packages manager.
-
-    Return
-    ------
-    spark_submit + application : string
-        the initial spark_submit string with the additionnal options and libraries add to the spark_submit
-
-    Examples
-    --------
-    >>> spark_submit = "spark-submit --master local[2] --driver-memory 8G --executor-memory 4G --conf spark.cores.max=4 --conf spark.executor.cores=2"
-    >>> application = "myscript.py"
-    >>> external_python_libs = "mypythonlibs.eggs,mypythonlibs2.py"
-    >>> spark_jars = "myjavalib.jar,myjavalib2.jar"
-    >>> packages = "org.apache.mylib:sublib:1.0.0"
-
-    >>> build_spark_submit(spark_submit, application, external_python_libs, spark_jars, packages)
-    'spark-submit --master local[2] --driver-memory 8G --executor-memory 4G --conf spark.cores.max=4 --conf spark.executor.cores=2 --py-files mypythonlibs.eggs,mypythonlibs2.py  --jars myjavalib.jar,myjavalib2.jar  --packages org.apache.mylib:sublib:1.0.0  myscript.py'
-
-    >>> build_spark_submit(spark_submit, application, "", "", "")
-    'spark-submit --master local[2] --driver-memory 8G --executor-memory 4G --conf spark.cores.max=4 --conf spark.executor.cores=2 myscript.py'
-    """
-
-    if application == "":
-        raise ValueError("application parameters is empty !!")
-
-    if external_python_libs != "":
-        spark_submit += " --py-files {} ".format(external_python_libs)
-
-    if spark_jars != "":
-        spark_submit += " --jars {} ".format(spark_jars)
-
-    if packages != "":
-        spark_submit += " --packages {} ".format(packages)
-
-    return spark_submit + " " + application
 
 
 def launch_offline_mode(arguments):
