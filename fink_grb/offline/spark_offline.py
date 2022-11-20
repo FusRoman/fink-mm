@@ -26,7 +26,7 @@ def ztf_grb_filter(spark_ztf):
     ----------
     spark_ztf : spark dataframe
         a spark dataframe containing alerts, this following columns are mandatory and have to be at the candidate level.
-            - ssdistnr, distpsnr1, neargaia 
+            - ssdistnr, distpsnr1, neargaia
 
     Returns
     -------
@@ -246,7 +246,7 @@ def build_spark_submit(
         list of external java libraries separated by ','.
     packages : string
         list of external java libraries hosted on maven, the java packages manager.
-    
+
     Return
     ------
     spark_submit + application : string

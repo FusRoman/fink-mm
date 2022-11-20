@@ -166,7 +166,7 @@ def ztf_grb_filter(spark_ztf):
     ----------
     spark_ztf : spark dataframe
         a spark dataframe containing alerts, this following columns are mandatory and have to be at the candidate level.
-            - ssdistnr, distpsnr1, neargaia 
+            - ssdistnr, distpsnr1, neargaia
 
     Returns
     -------
