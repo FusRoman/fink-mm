@@ -1,4 +1,5 @@
 coverage
 flake8
 black
-psutil
+psutil==5.9.1
+fink-utils==0.8.0

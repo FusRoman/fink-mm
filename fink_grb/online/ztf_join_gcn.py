@@ -191,18 +191,16 @@ def ztf_grb_filter(spark_ztf):
             )  # distance to nearest known SSO above 30 arcsecond
         )
         .filter(
-            ((spark_ztf.candidate.distpsnr1 > 2)
+            (spark_ztf.candidate.distpsnr1 > 2)
             | (
-                spark_ztf.candidate.distpsnr1 == -999.0
-            ))
-            | (spark_ztf.candidate.sgscore < 0.5)  # distance of closest source from Pan-Starrs 1 catalog above 2 arcsecond
+                spark_ztf.candidate.ssdistnr == -999.0
+            )  # distance of closest source from Pan-Starrs 1 catalog above 30 arcsecond
         )
         .filter(
-            ((spark_ztf.candidate.neargaia > 5)
+            (spark_ztf.candidate.neargaia > 5)
             | (
-                spark_ztf.candidate.neargaia == -999.0
-            ))
-            | (spark_ztf.candidate.sgscore < 0.5)  # distance of closest source from Gaia DR1 catalog above 60 arcsecond
+                spark_ztf.candidate.ssdistnr == -999.0
+            )  # distance of closest source from Gaia DR1 catalog above 60 arcsecond
         )
     )
 
