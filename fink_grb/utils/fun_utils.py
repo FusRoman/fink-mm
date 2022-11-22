@@ -297,7 +297,7 @@ def compute_rate(
     >>> df_spark = concat_col(df_spark, "fid")
 
     >>> df_spark = df_spark.withColumn(
-    ... "rate",
+    ... "c_rate",
     ... compute_rate(
     ...     df_spark["candidate.magpsf"],
     ...     df_spark["candidate.jdstarthist"],
@@ -310,17 +310,17 @@ def compute_rate(
     ...     ),
     ... )
 
-    >>> df_spark = format_rate_results(df_spark, "rate")
+    >>> df_spark = format_rate_results(df_spark, "c_rate")
     >>> df_spark.select(
     ... "objectId",
-    ... "abs_rate",
-    ... "norm_rate",
+    ... "delta_mag",
+    ... "rate",
     ... "from_upper",
     ... "start_vartime",
     ... "diff_vartime"
     ... ).show()
     +------------+--------------------+--------------------+----------+---------------+------------------+
-    |    objectId|            abs_rate|           norm_rate|from_upper|  start_vartime|      diff_vartime|
+    |    objectId|           delta_mag|                rate|from_upper|  start_vartime|      diff_vartime|
     +------------+--------------------+--------------------+----------+---------------+------------------+
     |ZTF22aayqeuc|  1.7709178924560547|  0.5873353005026273|       1.0|2459795.8062153|               0.0|
     |ZTF22aayqeez|  0.8230018615722656|  0.2728675002256756|       1.0|2459795.8062153|               0.0|
@@ -356,7 +356,7 @@ def compute_rate(
     >>> df_spark = concat_col(df_spark, "fid")
 
     >>> df_spark = df_spark.withColumn(
-    ... "rate",
+    ... "c_rate",
     ... compute_rate(
     ...     df_spark["candidate.magpsf"],
     ...     df_spark["candidate.jdstarthist"],
@@ -369,17 +369,17 @@ def compute_rate(
     ...     ),
     ... )
 
-    >>> df_spark = format_rate_results(df_spark, "rate")
+    >>> df_spark = format_rate_results(df_spark, "c_rate")
     >>> df_spark.select(
     ... "objectId",
-    ... "abs_rate",
-    ... "norm_rate",
+    ... "delta_mag",
+    ... "rate",
     ... "from_upper",
     ... "start_vartime",
     ... "diff_vartime"
     ... ).show()
     +------------+--------------------+--------------------+----------+---------------+------------------+
-    |    objectId|            abs_rate|           norm_rate|from_upper|  start_vartime|      diff_vartime|
+    |    objectId|           delta_mag|                rate|from_upper|  start_vartime|      diff_vartime|
     +------------+--------------------+--------------------+----------+---------------+------------------+
     |ZTF22aatwlts| -0.5056400299072266|-0.04216281783616...|       1.0|2459777.6860069|               0.0|
     |ZTF18acwzatv|  1.3946971893310547|  0.3507262916342683|       1.0|2459747.7789815|1527.9326621000655|
@@ -446,7 +446,7 @@ def format_rate_results(spark_df, rate_column):
     >>> df_spark = concat_col(df_spark, "fid")
 
     >>> df_spark = df_spark.withColumn(
-    ... "rate",
+    ... "c_rate",
     ... compute_rate(
     ...     df_spark["candidate.magpsf"],
     ...     df_spark["candidate.jdstarthist"],
@@ -459,17 +459,17 @@ def format_rate_results(spark_df, rate_column):
     ...     ),
     ... )
 
-    >>> df_spark = format_rate_results(df_spark, "rate")
+    >>> df_spark = format_rate_results(df_spark, "c_rate")
     >>> df_spark.select(
     ... "objectId",
-    ... "abs_rate",
-    ... "norm_rate",
+    ... "delta_mag",
+    ... "rate",
     ... "from_upper",
     ... "start_vartime",
     ... "diff_vartime"
     ... ).show()
     +------------+--------------------+--------------------+----------+---------------+------------------+
-    |    objectId|            abs_rate|           norm_rate|from_upper|  start_vartime|      diff_vartime|
+    |    objectId|           delta_mag|                rate|from_upper|  start_vartime|      diff_vartime|
     +------------+--------------------+--------------------+----------+---------------+------------------+
     |ZTF22aayqeuc|  1.7709178924560547|  0.5873353005026273|       1.0|2459795.8062153|               0.0|
     |ZTF22aayqeez|  0.8230018615722656|  0.2728675002256756|       1.0|2459795.8062153|               0.0|
@@ -505,7 +505,7 @@ def format_rate_results(spark_df, rate_column):
     >>> df_spark = concat_col(df_spark, "fid")
 
     >>> df_spark = df_spark.withColumn(
-    ... "rate",
+    ... "c_rate",
     ... compute_rate(
     ...     df_spark["candidate.magpsf"],
     ...     df_spark["candidate.jdstarthist"],
@@ -518,17 +518,17 @@ def format_rate_results(spark_df, rate_column):
     ...     ),
     ... )
 
-    >>> df_spark = format_rate_results(df_spark, "rate")
+    >>> df_spark = format_rate_results(df_spark, "c_rate")
     >>> df_spark.select(
     ... "objectId",
-    ... "abs_rate",
-    ... "norm_rate",
+    ... "delta_mag",
+    ... "rate",
     ... "from_upper",
     ... "start_vartime",
     ... "diff_vartime"
     ... ).show()
     +------------+--------------------+--------------------+----------+---------------+------------------+
-    |    objectId|            abs_rate|           norm_rate|from_upper|  start_vartime|      diff_vartime|
+    |    objectId|           delta_mag|                rate|from_upper|  start_vartime|      diff_vartime|
     +------------+--------------------+--------------------+----------+---------------+------------------+
     |ZTF22aatwlts| -0.5056400299072266|-0.04216281783616...|       1.0|2459777.6860069|               0.0|
     |ZTF18acwzatv|  1.3946971893310547|  0.3507262916342683|       1.0|2459747.7789815|1527.9326621000655|
@@ -555,8 +555,8 @@ def format_rate_results(spark_df, rate_column):
     <BLANKLINE>
     """
     return (
-        spark_df.withColumn("abs_rate", F.col(rate_column).getItem(0))
-        .withColumn("norm_rate", F.col(rate_column).getItem(1))
+        spark_df.withColumn("delta_mag", F.col(rate_column).getItem(0))
+        .withColumn("rate", F.col(rate_column).getItem(1))
         .withColumn("from_upper", F.col(rate_column).getItem(4))
         .withColumn("start_vartime", F.col(rate_column).getItem(2))
         .withColumn("diff_vartime", F.col(rate_column).getItem(3))
@@ -572,7 +572,7 @@ def join_post_process(df_grb):
     df_grb = concat_col(df_grb, "fid")
 
     df_grb = df_grb.withColumn(
-        "rate",
+        "c_rate",
         compute_rate(
             df_grb["candidate.magpsf"],
             df_grb["candidate.jdstarthist"],
@@ -585,7 +585,7 @@ def join_post_process(df_grb):
         ),
     )
 
-    df_grb = format_rate_results(df_grb, "rate")
+    df_grb = format_rate_results(df_grb, "c_rate")
 
     df_grb = df_grb.withColumn(
         "fink_class",
@@ -641,8 +641,8 @@ def join_post_process(df_grb):
             "triggerTimeUTC",
             "grb_proba",
             "fink_class",
-            "abs_rate",
-            "norm_rate",
+            "delta_mag",
+            "rate",
             "from_upper",
             "start_vartime",
             "diff_vartime",
