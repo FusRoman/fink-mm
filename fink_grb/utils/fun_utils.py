@@ -647,7 +647,7 @@ def join_post_process(df_grb):
             "start_vartime",
             "diff_vartime",
         ]
-    )
+    ).filter("grb_proba != -1.0")
 
     return df_grb
 
