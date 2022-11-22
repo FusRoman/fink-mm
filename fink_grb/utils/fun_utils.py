@@ -1,10 +1,16 @@
 import numpy as np
+import pandas as pd
 from pyarrow import fs
 
 import pyspark.sql.functions as F
 
-from pyspark.sql.functions import pandas_udf
+from pyspark.sql.functions import pandas_udf, col
 from pyspark.sql.types import DoubleType, ArrayType
+
+from fink_filters.classification import extract_fink_classification
+from fink_utils.spark.utils import concat_col
+
+from fink_grb.utils.grb_prob import grb_assoc
 
 
 def return_verbose_level(config, logger):
@@ -554,7 +560,96 @@ def format_rate_results(spark_df, rate_column):
         .withColumn("from_upper", F.col(rate_column).getItem(4))
         .withColumn("start_vartime", F.col(rate_column).getItem(2))
         .withColumn("diff_vartime", F.col(rate_column).getItem(3))
+        .drop(rate_column)
     )
+
+
+def join_post_process(df_grb):
+
+    df_grb = concat_col(df_grb, "magpsf")
+    df_grb = concat_col(df_grb, "diffmaglim")
+    df_grb = concat_col(df_grb, "jd")
+    df_grb = concat_col(df_grb, "fid")
+
+    df_grb = df_grb.withColumn(
+        "rate",
+        compute_rate(
+            df_grb["candidate.magpsf"],
+            df_grb["candidate.jdstarthist"],
+            df_grb["candidate.jd"],
+            df_grb["candidate.fid"],
+            df_grb["cmagpsf"],
+            df_grb["cdiffmaglim"],
+            df_grb["cjd"],
+            df_grb["cfid"],
+        ),
+    )
+
+    df_grb = format_rate_results(df_grb, "rate")
+
+    df_grb = df_grb.withColumn(
+        "fink_class",
+        extract_fink_classification(
+            df_grb["cdsxmatch"],
+            df_grb["roid"],
+            df_grb["mulens"],
+            df_grb["snn_snia_vs_nonia"],
+            df_grb["snn_sn_vs_all"],
+            df_grb["rf_snia_vs_nonia"],
+            df_grb["candidate.ndethist"],
+            df_grb["candidate.drb"],
+            df_grb["candidate.classtar"],
+            df_grb["candidate.jd"],
+            df_grb["candidate.jdstarthist"],
+            df_grb["rf_kn_vs_nonkn"],
+            df_grb["tracklet"],
+        ),
+    )
+
+    # refine the association and compute the serendipitous probability
+    df_grb = df_grb.withColumn(
+        "grb_proba",
+        grb_assoc(
+            df_grb.candidate.ra,
+            df_grb.candidate.dec,
+            df_grb.start_vartime,
+            df_grb.platform,
+            df_grb.triggerTimeUTC,
+            df_grb.ra,
+            df_grb.dec,
+            df_grb.err_arcmin,
+        ),
+    )
+
+    # select a subset of columns before the writing
+    df_grb = df_grb.select(
+        [
+            "objectId",
+            "candid",
+            col("candidate.ra").alias("ztf_ra"),
+            col("candidate.dec").alias("ztf_dec"),
+            "candidate.fid",
+            "candidate.jdstarthist",
+            "candidate.rb",
+            "candidate.jd",
+            "instrument_or_event",
+            "platform",
+            "triggerId",
+            col("ra").alias("grb_ra"),
+            col("dec").alias("grb_dec"),
+            col("err_arcmin").alias("grb_loc_error"),
+            "triggerTimeUTC",
+            "grb_proba",
+            "fink_class",
+            "abs_rate",
+            "norm_rate",
+            "from_upper",
+            "start_vartime",
+            "diff_vartime",
+        ]
+    )
+
+    return df_grb
 
 
 if __name__ == "__main__":  # pragma: no cover

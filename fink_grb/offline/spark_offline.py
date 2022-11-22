@@ -1,12 +1,10 @@
 import json
-from fink_grb.online.ztf_join_gcn import grb_assoc
 from astropy.time import Time, TimeDelta
 
 from fink_utils.science.utils import ang2pix
 from fink_utils.broker.sparkUtils import init_sparksession
 
 from pyspark.sql import functions as F
-from pyspark.sql.functions import col
 import os
 import sys
 import subprocess
@@ -14,7 +12,11 @@ import subprocess
 from fink_utils.spark.partitioning import convert_to_datetime
 
 import fink_grb
-from fink_grb.utils.fun_utils import return_verbose_level, build_spark_submit
+from fink_grb.utils.fun_utils import (
+    return_verbose_level,
+    build_spark_submit,
+    join_post_process,
+)
 from fink_grb.init import get_config, init_logging
 
 
@@ -82,7 +84,6 @@ def ztf_grb_filter(spark_ztf):
 def spark_offline(hbase_catalog, gcn_read_path, grbxztf_write_path, night, time_window):
     """
     Cross-match Fink and the GNC in order to find the optical alerts falling in the error box of a GCN.
-
 
     Parameters
     ----------
@@ -177,37 +178,7 @@ def spark_offline(hbase_catalog, gcn_read_path, grbxztf_write_path, night, time_
     ]
     join_ztf_grb = ztf_alert.join(grb_alert, join_condition, "inner")
 
-    df_grb = join_ztf_grb.withColumn(
-        "grb_proba",
-        grb_assoc(
-            join_ztf_grb.ztf_ra,
-            join_ztf_grb.ztf_dec,
-            join_ztf_grb.jdstarthist,
-            join_ztf_grb.platform,
-            join_ztf_grb.triggerTimeUTC,
-            join_ztf_grb.grb_ra,
-            join_ztf_grb.grb_dec,
-            join_ztf_grb.err_arcmin,
-        ),
-    )
-
-    df_grb = df_grb.select(
-        [
-            "objectId",
-            "candid",
-            "ztf_ra",
-            "ztf_dec",
-            "jd",
-            "instrument_or_event",
-            "platform",
-            "triggerId",
-            "grb_ra",
-            "grb_dec",
-            col("err_arcmin").alias("grb_loc_error"),
-            "triggerTimeUTC",
-            "grb_proba",
-        ]
-    ).filter(df_grb.grb_proba != -1.0)
+    df_grb = join_post_process(join_ztf_grb)
 
     timecol = "jd"
     converter = lambda x: convert_to_datetime(x)  # noqa: E731
@@ -397,24 +368,3 @@ if __name__ == "__main__":
         spark_offline(
             hbase_catalog, gcn_datapath_prefix, grb_datapath_prefix, night, time_window
         )
-
-    # if len(sys.argv) > 2:
-    #     config_path = sys.argv[1]
-    #     night = sys.argv[2]
-    # else:
-    #     config_path = None
-    #     d = datetime.datetime.today()
-    #     night = "{}{}{}".format(d.strftime("%Y"), d.strftime("%m"), d.strftime("%d"))
-
-    # config = get_config({"--config": config_path})
-
-    # # ztf_datapath_prefix = config["PATH"]["online_ztf_data_prefix"]
-
-    # hbase_catalog = config["PATH"]["hbase_catalog"]
-    # gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
-    # grb_datapath_prefix = config["PATH"]["online_grb_data_prefix"]
-    # time_window = int(config["OFFLINE"]["time_window"])
-
-    # spark_offline(
-    #     hbase_catalog, gcn_datapath_prefix, grb_datapath_prefix, night, time_window
-    # )

@@ -1,162 +1,23 @@
 import warnings
-
 from fink_grb.utils.fun_utils import return_verbose_level
 
 warnings.filterwarnings("ignore")
 
-import pandas as pd
-import numpy as np
+import pandas as pd  # noqa: F401
 import time
 import os
 import subprocess
 import sys
 
-import astropy.units as u
-from astropy.coordinates import SkyCoord
-from astropy.time import Time
-
 from pyspark.sql import functions as F
-from pyspark.sql.functions import pandas_udf, col
-from pyspark.sql.types import DoubleType
 
 from fink_utils.science.utils import ang2pix
 from fink_utils.spark.partitioning import convert_to_datetime
 from fink_utils.broker.sparkUtils import init_sparksession, connect_to_raw_database
 
 import fink_grb
-from fink_grb.utils.grb_prob import p_ser_grb_vect
-from fink_grb.utils.fun_utils import build_spark_submit
+from fink_grb.utils.fun_utils import build_spark_submit, join_post_process
 from fink_grb.init import get_config, init_logging
-
-
-@pandas_udf(DoubleType())
-def grb_assoc(
-    ztf_ra: pd.Series,
-    ztf_dec: pd.Series,
-    jdstarthist: pd.Series,
-    platform: pd.Series,
-    trigger_time: pd.Series,
-    grb_ra: pd.Series,
-    grb_dec: pd.Series,
-    grb_error: pd.Series,
-) -> pd.Series:
-    """
-    Find the ztf alerts falling in the error box of the notices and emits after the trigger time.
-    Then, Compute an association serendipitous probability for each of them and return it.
-
-    Parameters
-    ----------
-    ztf_ra : double spark column
-        right ascension coordinates of the ztf alerts
-    ztf_dec : double spark column
-        declination coordinates of the ztf alerts
-    jdstarthist : double spark column
-        Earliest Julian date of epoch corresponding to ndethist [days]
-        ndethist : Number of spatially-coincident detections falling within 1.5 arcsec
-            going back to beginning of survey;
-            only detections that fell on the same field and readout-channel ID
-            where the input candidate was observed are counted.
-            All raw detections down to a photometric S/N of ~ 3 are included.
-    platform : string spark column
-        voevent emitting platform
-    trigger_time : double spark column
-        grb trigger time (UTC)
-    grb_ra : double spark column
-        grb right ascension
-    grb_dec : double spark column
-        grb declination
-    grb_error : double spark column
-        grb error radius (in arcminute)
-
-    Returns
-    grb_proba : pandas Series
-        the serendipitous probability for each ztf alerts.
-
-    Examples
-    --------
-
-    >>> sparkDF = spark.read.format('parquet').load(join_data)
-
-    >>> df_grb = sparkDF.withColumn(
-    ... "grb_proba",
-    ... grb_assoc(
-    ...    sparkDF.candidate.ra,
-    ...     sparkDF.candidate.dec,
-    ...     sparkDF.candidate.jdstarthist,
-    ...     sparkDF.platform,
-    ...     sparkDF.timeUTC,
-    ...     sparkDF.ra,
-    ...     sparkDF.dec,
-    ...     sparkDF.err
-    ...  ),
-    ... )
-
-    >>> df_grb = df_grb.select([
-    ... "objectId",
-    ... "candid",
-    ... col("candidate.ra").alias("ztf_ra"),
-    ... col("candidate.dec").alias("ztf_dec"),
-    ... "candidate.jd",
-    ... "platform",
-    ... "instrument",
-    ... "trigger_id",
-    ... col("ra").alias("grb_ra"),
-    ... col("dec").alias("grb_dec"),
-    ... col("err_arcmin").alias("grb_loc_error"),
-    ... "timeUTC",
-    ... "grb_proba"
-    ... ])
-
-    >>> grb_prob = df_grb.toPandas()
-    >>> grb_test = pd.read_parquet("fink_grb/test/test_data/grb_prob_test.parquet")
-    >>> assert_frame_equal(grb_prob, grb_test)
-    """
-    grb_proba = np.ones_like(ztf_ra.values, dtype=float) * -1.0
-    platform = platform.values
-
-    # array of events detection rates in events/years
-    # depending of the instruments
-    condition = [
-        np.equal(platform, "Fermi"),
-        np.equal(platform, "SWIFT"),
-        np.equal(platform, "INTEGRAL"),
-        np.equal(platform, "ICECUBE"),
-    ]
-    choice_grb_rate = [250, 100, 60, 8]
-    grb_det_rate = np.select(condition, choice_grb_rate)
-
-    # array of error box
-    grb_error = grb_error.values
-
-    trigger_time = Time(
-        pd.to_datetime(trigger_time.values, utc=True), format="datetime"
-    ).jd
-
-    # alerts emits after the grb
-    delay = jdstarthist - trigger_time
-    time_condition = delay > 0
-
-    ztf_coords = SkyCoord(ztf_ra, ztf_dec, unit=u.degree)
-    grb_coord = SkyCoord(grb_ra, grb_dec, unit=u.degree)
-
-    # alerts falling within the grb_error_box
-    spatial_condition = (
-        ztf_coords.separation(grb_coord).arcminute < 1.5 * grb_error
-    )  # 63.5 * grb_error
-
-    # convert the delay in year
-    delay_year = delay[time_condition & spatial_condition] / 365.25
-
-    # compute serendipitous probability
-    p_ser = p_ser_grb_vect(
-        grb_error[time_condition & spatial_condition] / 60,
-        delay_year.values,
-        grb_det_rate[time_condition & spatial_condition],
-    )
-
-    grb_proba[time_condition & spatial_condition] = p_ser[0]
-
-    return pd.Series(grb_proba)
 
 
 def ztf_grb_filter(spark_ztf):
@@ -320,39 +181,7 @@ def ztf_join_gcn_stream(
     ]
     df_grb = df_ztf_stream.join(df_grb_stream, join_condition, "inner")
 
-    # refine the association and compute the serendipitous probability
-    df_grb = df_grb.withColumn(
-        "grb_proba",
-        grb_assoc(
-            df_grb.candidate.ra,
-            df_grb.candidate.dec,
-            df_grb.candidate.jdstarthist,
-            df_grb.platform,
-            df_grb.triggerTimeUTC,
-            df_grb.ra,
-            df_grb.dec,
-            df_grb.err_arcmin,
-        ),
-    )
-
-    # select a subset of columns before the writing
-    df_grb = df_grb.select(
-        [
-            "objectId",
-            "candid",
-            col("candidate.ra").alias("ztf_ra"),
-            col("candidate.dec").alias("ztf_dec"),
-            "candidate.jd",
-            "instrument_or_event",
-            "platform",
-            "triggerId",
-            col("ra").alias("grb_ra"),
-            col("dec").alias("grb_dec"),
-            col("err_arcmin").alias("grb_loc_error"),
-            "triggerTimeUTC",
-            "grb_proba",
-        ]
-    )
+    df_grb = join_post_process(df_grb)
 
     # re-create partitioning columns if needed.
     timecol = "jd"
@@ -420,6 +249,7 @@ def launch_joining_stream(arguments):
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
     >>> datajoin = pd.read_parquet(grb_datatest + "/grb/year=2019")
+
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
     >>> shutil.rmtree(grb_datatest + "/grb/_spark_metadata")
