@@ -4,3 +4,4 @@ black
 psutil==5.9.1
 fink-utils==0.8.0
 fink-filters==3.6
+fink-broker==2.2
