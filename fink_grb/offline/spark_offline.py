@@ -5,6 +5,7 @@ from fink_utils.science.utils import ang2pix
 from fink_utils.broker.sparkUtils import init_sparksession
 
 from pyspark.sql import functions as F
+from pyspark.sql.functions import explode
 import os
 import sys
 import subprocess
@@ -18,6 +19,7 @@ from fink_grb.utils.fun_utils import (
     join_post_process,
 )
 from fink_grb.init import get_config, init_logging
+from fink_grb.online.ztf_join_gcn import box2pixs
 
 
 def ztf_grb_filter(spark_ztf):
@@ -103,6 +105,23 @@ def spark_offline(hbase_catalog, gcn_read_path, grbxztf_write_path, night, time_
     Returns
     -------
     None
+
+    Examples
+    --------
+    # >>> hbase_catalog = "fink_grb/test/test_data/with_hbase/ztf.jd.json"
+    # >>> gcn_datatest = "fink_grb/test/test_data/gcn_test"
+    # >>> grb_dataoutput = "fink_grb/test/test_output"
+
+    # >>> spark_offline(
+    # ... hbase_catalog,
+    # ... gcn_datatest,
+    # ... grb_dataoutput,
+    # ... "20190903",
+    # ... 7
+    # ... )
+
+    # >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
+    # >>> datajoin = pd.read_parquet(grb_dataoutput + "/grb/year=2019")
     """
     with open(hbase_catalog) as f:
         catalog = json.load(f)
@@ -160,8 +179,12 @@ def spark_offline(hbase_catalog, gcn_read_path, grbxztf_write_path, night, time_
     )
 
     grb_alert = grb_alert.withColumn(
-        "hpix", ang2pix(grb_alert.ra, grb_alert.dec, F.lit(NSIDE))
+        "hpix_circle",
+        box2pixs(
+            grb_alert.ra, grb_alert.dec, grb_alert.err_degree, F.lit(NSIDE)
+        ),
     )
+    grb_alert = grb_alert.withColumn("hpix", explode("hpix_circle"))
 
     ztf_alert = ztf_alert.withColumnRenamed("ra", "ztf_ra").withColumnRenamed(
         "dec", "ztf_dec"
@@ -343,9 +366,10 @@ def launch_offline_mode(arguments):
 if __name__ == "__main__":
 
     if sys.argv[1] == "test":
-        from fink_utils.test.tester import spark_unit_tests_science
+        from fink_utils.test.tester import spark_unit_tests_broker
         from pandas.testing import assert_frame_equal  # noqa: F401
         import shutil  # noqa: F401
+        import pandas as pd  # noqa: F401
 
         globs = globals()
 
@@ -354,8 +378,12 @@ if __name__ == "__main__":
         globs["join_data"] = join_data
         globs["alert_data"] = alert_data
 
+        os.environ["FINK_PACKAGES"] = "org.apache.hbase:hbase-shaded-mapreduce:2.2.7"
+        path_jars = "fink_grb/test/test_data/with_hbase"
+        os.environ["FINK_JARS"] = "{}/fink-broker_2.11-1.2.jar,{}/hbase-spark-hbase2.2_spark3_scala2.11_hadoop2.7.jar,{}/hbase-spark-protocol-shaded-hbase2.2_spark3_scala2.11_hadoop2.7.jar".format(path_jars, path_jars, path_jars)
+
         # Run the test suite
-        spark_unit_tests_science(globs)
+        spark_unit_tests_broker(globs)
 
     if sys.argv[1] == "prod":  # pragma: no cover
 
