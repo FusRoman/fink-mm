@@ -122,8 +122,8 @@ def box2pixs(ra, dec, radius, NSIDE):
     theta, phi = dec2theta(dec.values), ra2phi(ra.values)
     vec = hp.ang2vec(theta, phi)
     ipix_disc = [
-        hp.query_disc(nside=NSIDE, vec=v, radius=np.radians(r))
-        for v, r in zip(vec, radius)
+        hp.query_disc(nside=n, vec=v, radius=np.radians(r))
+        for n, v, r in zip(NSIDE.values, vec, radius.values)
     ]
     return pd.Series(ipix_disc)
 
@@ -176,8 +176,6 @@ def ztf_join_gcn_stream(
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/grb/year=2019")
-
-    >>> datajoin.to_parquet("fink_grb/test/test_data/grb_join_output.parquet")
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
