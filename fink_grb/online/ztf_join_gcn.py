@@ -106,18 +106,10 @@ def box2pixs(ra, dec, radius, NSIDE):
     ...     spark_grb.ra, spark_grb.dec, spark_grb.err_degree, F.lit(NSIDE)
     ... ))
 
-    >>> spark_grb.select(["triggerId", "hpix_circle"]).show()
-    +---------+--------------------+
-    |triggerId|         hpix_circle|
-    +---------+--------------------+
-    |683482851|[52, 53, 68, 69, ...|
-    |683482851|               [117]|
-    |683499781|[10, 20, 21, 22, ...|
-    |683499781|               [117]|
-    |683476673|                  []|
-    |683476673|                  []|
-    +---------+--------------------+
-    <BLANKLINE>
+    >>> spark_grb.withColumn("hpix", explode("hpix_circle"))\
+            .orderBy("hpix")\
+                .select(["triggerId", "hpix"]).head(5)
+    [Row(triggerId=683499781, hpix=10), Row(triggerId=683499781, hpix=20), Row(triggerId=683499781, hpix=21), Row(triggerId=683499781, hpix=22), Row(triggerId=683499781, hpix=35)]
     """
     theta, phi = dec2theta(dec.values), ra2phi(ra.values)
     vec = hp.ang2vec(theta, phi)
