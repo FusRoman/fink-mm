@@ -178,11 +178,10 @@ def spark_offline(hbase_catalog, gcn_read_path, grbxztf_write_path, night, time_
         ang2pix(ztf_alert.ra, ztf_alert.dec, F.lit(NSIDE)),
     )
 
+    grb_alert = grb_alert.withColumn("err_degree", grb_alert["err_arcmin"] / 60)
     grb_alert = grb_alert.withColumn(
         "hpix_circle",
-        box2pixs(
-            grb_alert.ra, grb_alert.dec, grb_alert.err_degree, F.lit(NSIDE)
-        ),
+        box2pixs(grb_alert.ra, grb_alert.dec, grb_alert.err_degree, F.lit(NSIDE)),
     )
     grb_alert = grb_alert.withColumn("hpix", explode("hpix_circle"))
 
@@ -380,7 +379,11 @@ if __name__ == "__main__":
 
         os.environ["FINK_PACKAGES"] = "org.apache.hbase:hbase-shaded-mapreduce:2.2.7"
         path_jars = "fink_grb/test/test_data/with_hbase"
-        os.environ["FINK_JARS"] = "{}/fink-broker_2.11-1.2.jar,{}/hbase-spark-hbase2.2_spark3_scala2.11_hadoop2.7.jar,{}/hbase-spark-protocol-shaded-hbase2.2_spark3_scala2.11_hadoop2.7.jar".format(path_jars, path_jars, path_jars)
+        os.environ[
+            "FINK_JARS"
+        ] = "{}/fink-broker_2.11-1.2.jar,{}/hbase-spark-hbase2.2_spark3_scala2.11_hadoop2.7.jar,{}/hbase-spark-protocol-shaded-hbase2.2_spark3_scala2.11_hadoop2.7.jar".format(
+            path_jars, path_jars, path_jars
+        )
 
         # Run the test suite
         spark_unit_tests_broker(globs)

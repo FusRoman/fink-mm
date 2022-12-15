@@ -22,7 +22,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      
+
     - name: Set up env [1/2]
       run: |
         echo "FINK_GRB=$GITHUB_WORKSPACE" >> $GITHUB_ENV
@@ -42,7 +42,7 @@ jobs:
         export FINK_HOME=$HOME/fink-broker
         export PATH=$PATH:$FINK_HOME/bin
         export PYTHONPATH=$PYTHONPATH:$FINK_HOME
-    
+
     - name: Install requirements
       run: |
         pip install -r requirements.txt

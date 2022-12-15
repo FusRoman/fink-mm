@@ -564,28 +564,30 @@ def format_rate_results(spark_df, rate_column):
     )
 
 
-def join_post_process(df_grb):
+def join_post_process(df_grb, with_rate=True):
 
-    df_grb = concat_col(df_grb, "magpsf")
-    df_grb = concat_col(df_grb, "diffmaglim")
-    df_grb = concat_col(df_grb, "jd")
-    df_grb = concat_col(df_grb, "fid")
+    if with_rate:
 
-    df_grb = df_grb.withColumn(
-        "c_rate",
-        compute_rate(
-            df_grb["candidate.magpsf"],
-            df_grb["candidate.jdstarthist"],
-            df_grb["candidate.jd"],
-            df_grb["candidate.fid"],
-            df_grb["cmagpsf"],
-            df_grb["cdiffmaglim"],
-            df_grb["cjd"],
-            df_grb["cfid"],
-        ),
-    )
+        df_grb = concat_col(df_grb, "magpsf")
+        df_grb = concat_col(df_grb, "diffmaglim")
+        df_grb = concat_col(df_grb, "jd")
+        df_grb = concat_col(df_grb, "fid")
 
-    df_grb = format_rate_results(df_grb, "c_rate")
+        df_grb = df_grb.withColumn(
+            "c_rate",
+            compute_rate(
+                df_grb["candidate.magpsf"],
+                df_grb["candidate.jdstarthist"],
+                df_grb["candidate.jd"],
+                df_grb["candidate.fid"],
+                df_grb["cmagpsf"],
+                df_grb["cdiffmaglim"],
+                df_grb["cjd"],
+                df_grb["cfid"],
+            ),
+        )
+
+        df_grb = format_rate_results(df_grb, "c_rate")
 
     df_grb = df_grb.withColumn(
         "fink_class",
@@ -621,33 +623,38 @@ def join_post_process(df_grb):
         ),
     )
 
-    # select a subset of columns before the writing
-    df_grb = df_grb.select(
-        [
-            "objectId",
-            "candid",
-            col("candidate.ra").alias("ztf_ra"),
-            col("candidate.dec").alias("ztf_dec"),
-            "candidate.fid",
-            "candidate.jdstarthist",
-            "candidate.rb",
-            "candidate.jd",
-            "instrument_or_event",
-            "platform",
-            "triggerId",
-            col("ra").alias("grb_ra"),
-            col("dec").alias("grb_dec"),
-            col("err_arcmin").alias("grb_loc_error"),
-            "triggerTimeUTC",
-            "grb_proba",
-            "fink_class",
+    column_to_return = [
+        "objectId",
+        "candid",
+        col("candidate.ra").alias("ztf_ra"),
+        col("candidate.dec").alias("ztf_dec"),
+        "candidate.fid",
+        "candidate.jdstarthist",
+        "candidate.rb",
+        "candidate.jd",
+        "instrument_or_event",
+        "platform",
+        "triggerId",
+        col("ra").alias("grb_ra"),
+        col("dec").alias("grb_dec"),
+        col("err_arcmin").alias("grb_loc_error"),
+        "triggerTimeUTC",
+        "grb_proba",
+        "fink_class",
+    ]
+
+    if with_rate:
+
+        column_to_return += [
             "delta_mag",
             "rate",
             "from_upper",
             "start_vartime",
             "diff_vartime",
         ]
-    ).filter("grb_proba != -1.0")
+
+    # select a subset of columns before the writing
+    df_grb = df_grb.select(column_to_return).filter("grb_proba != -1.0")
 
     return df_grb
 
