@@ -83,7 +83,15 @@ def ztf_grb_filter(spark_ztf):
     return spark_filter
 
 
-def spark_offline(hbase_catalog, gcn_read_path, grbxztf_write_path, night, start_window, time_window):
+def spark_offline(
+    hbase_catalog, 
+    gcn_read_path, 
+    grbxztf_write_path, 
+    night, 
+    start_window, 
+    time_window,
+    with_columns_filter=True
+    ):
     """
     Cross-match Fink and the GNC in order to find the optical alerts falling in the error box of a GCN.
 
@@ -136,7 +144,7 @@ def spark_offline(hbase_catalog, gcn_read_path, grbxztf_write_path, night, start
         spark.read.option("catalog", catalog)
         .format("org.apache.hadoop.hbase.spark")
         .option("hbase.spark.use.hbasecontext", False)
-        .option("hbase.spark.pushdown.columnfilter", True)
+        .option("hbase.spark.pushdown.columnfilter", with_columns_filter)
         .load()
     )
 
@@ -454,7 +462,8 @@ if __name__ == "__main__":
             grb_dataoutput, 
             "20190903",
             Time("2019-09-03").jd,
-            7
+            7,
+            with_columns_filter=False
         )
 
     if sys.argv[1] == "prod":  # pragma: no cover
