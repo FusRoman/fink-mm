@@ -487,6 +487,19 @@ if __name__ == "__main__":
 
         sparkDF = spark.read.format('parquet').load(alert_data)
 
+        sparkDF = sparkDF.select(
+        "objectId",
+        "candid",
+        "candidate.ra",
+        "candidate.dec",
+        "candidate.jd",
+        "candidate.jdstarthist",
+        "candidate.jdendhist",
+        "candidate.ssdistnr",
+        "candidate.distpsnr1",
+        "candidate.neargaia",
+        )
+
         spark_filter = ztf_grb_filter(sparkDF)
         
         spark_filter.count()
