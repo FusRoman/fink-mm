@@ -564,7 +564,7 @@ def format_rate_results(spark_df, rate_column):
     )
 
 
-def join_post_process(df_grb, with_rate=True):
+def join_post_process(df_grb, with_rate=True, from_hbase=False):
 
     if with_rate:
 
@@ -576,10 +576,10 @@ def join_post_process(df_grb, with_rate=True):
         df_grb = df_grb.withColumn(
             "c_rate",
             compute_rate(
-                df_grb["candidate.magpsf"],
-                df_grb["candidate.jdstarthist"],
-                df_grb["candidate.jd"],
-                df_grb["candidate.fid"],
+                df_grb["{}magpsf".format("" if from_hbase else "candidate.")],
+                df_grb["{}jdstarthist".format("" if from_hbase else "candidate.")],
+                df_grb["{}jd".format("" if from_hbase else "candidate.")],
+                df_grb["{}fid".format("" if from_hbase else "candidate.")],
                 df_grb["cmagpsf"],
                 df_grb["cdiffmaglim"],
                 df_grb["cjd"],
@@ -598,11 +598,11 @@ def join_post_process(df_grb, with_rate=True):
             df_grb["snn_snia_vs_nonia"],
             df_grb["snn_sn_vs_all"],
             df_grb["rf_snia_vs_nonia"],
-            df_grb["candidate.ndethist"],
-            df_grb["candidate.drb"],
-            df_grb["candidate.classtar"],
-            df_grb["candidate.jd"],
-            df_grb["candidate.jdstarthist"],
+            df_grb["{}ndethist".format("" if from_hbase else "candidate.")],
+            df_grb["{}drb".format("" if from_hbase else "candidate.")],
+            df_grb["{}classtar".format("" if from_hbase else "candidate.")],
+            df_grb["{}jd".format("" if from_hbase else "candidate.")],
+            df_grb["{}jdstarthist".format("" if from_hbase else "candidate.")],
             df_grb["rf_kn_vs_nonkn"],
             df_grb["tracklet"],
         ),
@@ -628,10 +628,10 @@ def join_post_process(df_grb, with_rate=True):
         "candid",
         col("candidate.ra").alias("ztf_ra"),
         col("candidate.dec").alias("ztf_dec"),
-        "candidate.fid",
-        "candidate.jdstarthist",
-        "candidate.rb",
-        "candidate.jd",
+        "{}fid".format("" if from_hbase else "candidate."),
+        "{}jdstarthist".format("" if from_hbase else "candidate."),
+        "{}rb".format("" if from_hbase else "candidate."),
+        "{}jd".format("" if from_hbase else "candidate."),
         "instrument_or_event",
         "platform",
         "triggerId",
