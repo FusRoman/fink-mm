@@ -490,7 +490,7 @@ if __name__ == "__main__":
             gcn_datatest, 
             grb_dataoutput, 
             "20190903",
-            Time("2019-09-03").jd,
+            Time("2019-09-04").jd,
             7,
             with_columns_filter=False
         )
