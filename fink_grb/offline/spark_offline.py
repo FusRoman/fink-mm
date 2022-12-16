@@ -205,6 +205,13 @@ def spark_offline(
 
     ztf_alert = ztf_grb_filter(ztf_alert)
 
+    print()
+    print()
+    print(ztf_alert.count())
+    print(ztf_alert.show())
+    print()
+    print()
+
     ztf_alert.cache().count()
 
     print()
