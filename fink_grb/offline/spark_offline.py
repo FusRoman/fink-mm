@@ -148,6 +148,12 @@ def spark_offline(
         .load()
     )
 
+    print()
+    print()
+    print(ztf_alert.show())
+    print()
+    print()
+
     ztf_alert = ztf_alert.select(
         "jd_objectId",
         "objectId",
@@ -187,6 +193,12 @@ def spark_offline(
     ztf_alert = ztf_grb_filter(ztf_alert)
 
     ztf_alert.cache().count()
+
+    print()
+    print()
+    print(ztf_alert.show())
+    print()
+    print()
 
     grb_alert = spark.read.format("parquet").load(gcn_read_path)
 
