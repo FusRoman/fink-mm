@@ -502,7 +502,11 @@ if __name__ == "__main__":
 
         spark_filter = ztf_grb_filter(sparkDF)
         
-        spark_filter.count()
+        print("#####################")
+        print()
+        print(spark_filter.count())
+        print()
+        print("#####################")
 
 
         # with open(hbase_catalog) as f:
