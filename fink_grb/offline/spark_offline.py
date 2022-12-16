@@ -479,6 +479,11 @@ if __name__ == "__main__":
             with_columns_filter=False
         )
 
+        datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
+        datajoin = pd.read_parquet(grb_dataoutput + "/grb/year=2019")
+
+        print(datajoin)
+
     if sys.argv[1] == "prod":  # pragma: no cover
 
         hbase_catalog = sys.argv[2]
