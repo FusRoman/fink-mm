@@ -198,6 +198,12 @@ def spark_offline(
         ztf_alert["jd_objectId"] >= "{}".format(low_bound)
     ).filter(ztf_alert["jd_objectId"] < "{}".format(start_window))
 
+    print()
+    print()
+    print(ztf_alert.show())
+    print()
+    print()
+
     ztf_alert = ztf_grb_filter(ztf_alert)
 
     ztf_alert.cache().count()
@@ -237,18 +243,6 @@ def spark_offline(
     grb_alert = grb_alert.withColumnRenamed("ra", "grb_ra").withColumnRenamed(
         "dec", "grb_dec"
     )
-
-    print()
-    print()
-    print(ztf_alert.show())
-    print()
-    print()
-
-    print()
-    print()
-    print(grb_alert.show())
-    print()
-    print()
 
     join_condition = [
         ztf_alert.hpix == grb_alert.hpix,
