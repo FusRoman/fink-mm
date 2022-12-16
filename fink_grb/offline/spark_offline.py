@@ -377,16 +377,74 @@ if __name__ == "__main__":
         globs["join_data"] = join_data
         globs["alert_data"] = alert_data
 
-        os.environ["FINK_PACKAGES"] = "org.apache.hbase:hbase-shaded-mapreduce:2.2.7"
-        path_jars = "fink_grb/test/test_data/with_hbase"
-        os.environ[
-            "FINK_JARS"
-        ] = "{}/fink-broker_2.11-1.2.jar,{}/hbase-spark-hbase2.2_spark3_scala2.11_hadoop2.7.jar,{}/hbase-spark-protocol-shaded-hbase2.2_spark3_scala2.11_hadoop2.7.jar".format(
-            path_jars, path_jars, path_jars
-        )
+        # os.environ["FINK_PACKAGES"] = "org.apache.hbase:hbase-shaded-mapreduce:2.2.7"
+        # path_jars = "fink_grb/test/test_data/with_hbase"
+        # os.environ[
+        #     "FINK_JARS"
+        # ] = "{}/fink-broker_2.11-1.2.jar,{}/hbase-spark-hbase2.2_spark3_scala2.11_hadoop2.7.jar,{}/hbase-spark-protocol-shaded-hbase2.2_spark3_scala2.11_hadoop2.7.jar".format(
+        #     path_jars, path_jars, path_jars
+        # )
 
         # Run the test suite
-        spark_unit_tests_broker(globs)
+        # spark_unit_tests_broker(globs)
+
+        # print()
+        # print()
+        # print(os.environ["FINK_JARS"])
+        # print(os.environ["FINK_PACKAGES"])
+        # print()
+        # print(os.environ["HBASE_CLASSPATH"])
+        # print()
+        # print()
+
+        from pyspark.sql import SparkSession
+        from pyspark import SparkConf
+
+        conf = SparkConf()
+        confdic = {
+            "spark.jars.packages": os.environ["FINK_PACKAGES"],
+            "spark.jars": os.environ["FINK_JARS"],
+            "spark.python.daemon.module": "coverage_daemon",
+        }
+        conf.setMaster("local[2]")
+        conf.setAppName("fink_test")
+        for k, v in confdic.items():
+            conf.set(key=k, value=v)
+        spark = (
+            SparkSession.builder.appName("fink_test").config(conf=conf).getOrCreate()
+        )
+
+        # Reduce the number of suffled partitions
+        spark.conf.set("spark.sql.shuffle.partitions", 2)
+
+        # # spark = init_sparksession(
+        # #     "science2grb_offline"
+        # # )
+
+        hbase_catalog = "fink_grb/test/test_data/with_hbase/ztf.jd.json"
+        gcn_datatest = "fink_grb/test/test_data/gcn_test"
+        grb_dataoutput = "fink_grb/test/test_output"
+
+        # with open(hbase_catalog) as f:
+        #     catalog = json.load(f)
+
+        # ztf_alert = (
+        # spark.read.option("catalog", catalog)
+        #     .format("org.apache.hadoop.hbase.spark")
+        #     .option("hbase.spark.use.hbasecontext", False)
+        #     .option("hbase.spark.pushdown.columnfilter", True)
+        #     .load()
+        # )
+
+        # # ztf = spark.read.format("parquet").load("/home/libs/Fink/Fink_GRB/fink_grb/test/test_data/ztf_test/online")
+
+        # print()
+        # print()
+        # print(ztf_alert.printSchema())
+        # print("alert count: ", ztf_alert.count())
+        # print()
+
+        spark_offline(hbase_catalog, gcn_datatest, grb_dataoutput, "20190903", 7)
 
     if sys.argv[1] == "prod":  # pragma: no cover
 
