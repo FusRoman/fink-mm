@@ -612,14 +612,14 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
     df_grb = df_grb.withColumn(
         "grb_proba",
         grb_assoc(
-            df_grb.candidate.ra,
-            df_grb.candidate.dec,
-            df_grb.start_vartime,
-            df_grb.platform,
-            df_grb.triggerTimeUTC,
-            df_grb.ra,
-            df_grb.dec,
-            df_grb.err_arcmin,
+            df_grb["ztf_ra"],
+            df_grb["ztf_dec"],
+            df_grb["start_vartime"],
+            df_grb["platform"],
+            df_grb["triggerTimeUTC"],
+            df_grb["grb_ra"],
+            df_grb["grb_dec"],
+            df_grb["err_arcmin"],
         ),
     )
 
