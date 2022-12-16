@@ -448,7 +448,14 @@ if __name__ == "__main__":
         # print("alert count: ", ztf_alert.count())
         # print()
 
-        spark_offline(hbase_catalog, gcn_datatest, grb_dataoutput, "20190903", 7)
+        spark_offline(
+            hbase_catalog,
+            gcn_datatest, 
+            grb_dataoutput, 
+            "20190903",
+            Time("2019-09-03").jd,
+            7
+        )
 
     if sys.argv[1] == "prod":  # pragma: no cover
 
