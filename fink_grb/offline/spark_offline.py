@@ -83,7 +83,7 @@ def ztf_grb_filter(spark_ztf):
     return spark_filter
 
 
-def spark_offline(hbase_catalog, gcn_read_path, grbxztf_write_path, night, time_window):
+def spark_offline(hbase_catalog, gcn_read_path, grbxztf_write_path, night, start_window, time_window):
     """
     Cross-match Fink and the GNC in order to find the optical alerts falling in the error box of a GCN.
 
@@ -98,8 +98,10 @@ def spark_offline(hbase_catalog, gcn_read_path, grbxztf_write_path, night, time_
         path to store the cross match ZTF/GCN results
     night : string
         launching night of the script
+    start_window : float
+        start date of the time window (in jd / julian date)
     time_window : int
-        Number of day between now and now - time_window to join ztf alerts and gcn.
+        Number of day between start_window and (start_window - time_window) to join ztf alerts and gcn.
         time_window are in days.
 
     Returns
@@ -152,12 +154,14 @@ def spark_offline(hbase_catalog, gcn_read_path, grbxztf_write_path, night, time_
         "neargaia",
     )
 
-    now = Time.now().jd
-    low_bound = now - TimeDelta(time_window * 24 * 3600, format="sec").jd
+    low_bound = start_window - TimeDelta(time_window * 24 * 3600, format="sec").jd
+
+    if low_bound < 0 or low_bound > start_window:
+        raise ValueError("The time window is higher than the start_window : \nstart_window = {}\ntime_window = {}\nlow_bound={}".format(start_window, time_window, low_bound))
 
     ztf_alert = ztf_alert.filter(
         ztf_alert["jd_objectId"] >= "{}".format(low_bound)
-    ).filter(ztf_alert["jd_objectId"] < "{}".format(now))
+    ).filter(ztf_alert["jd_objectId"] < "{}".format(start_window))
 
     ztf_alert = ztf_grb_filter(ztf_alert)
 
@@ -166,7 +170,7 @@ def spark_offline(hbase_catalog, gcn_read_path, grbxztf_write_path, night, time_
     grb_alert = spark.read.format("parquet").load(gcn_read_path)
 
     grb_alert = grb_alert.filter(grb_alert.triggerTimejd >= low_bound).filter(
-        grb_alert.triggerTimejd <= now
+        grb_alert.triggerTimejd <= start_window
     )
 
     grb_alert.cache().count()
