@@ -188,10 +188,6 @@ def spark_offline(
     print()
     print(low_bound, "   ", start_window)
     print()
-    print(ztf_alert.count())
-    print(ztf_alert.select("jd_objectId", "objectId", "jd").show())
-    print()
-    print()
 
     if low_bound < 0 or low_bound > start_window:
         raise ValueError("The time window is higher than the start_window : \nstart_window = {}\ntime_window = {}\nlow_bound={}".format(start_window, time_window, low_bound))
