@@ -614,7 +614,7 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
         grb_assoc(
             df_grb["ztf_ra"],
             df_grb["ztf_dec"],
-            df_grb["start_vartime"],
+            df_grb["{}".format("start_vartime" if with_rate else "jdstarthist")],
             df_grb["platform"],
             df_grb["triggerTimeUTC"],
             df_grb["grb_ra"],
