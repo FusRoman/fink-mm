@@ -225,6 +225,10 @@ def spark_offline(
     ]
     join_ztf_grb = ztf_alert.join(grb_alert, join_condition, "inner")
 
+    print(join_ztf_grb.count())
+    print()
+    print(join_ztf_grb.show())
+
     df_grb = join_post_process(join_ztf_grb, with_rate=False, from_hbase=True)
 
     timecol = "jd"
