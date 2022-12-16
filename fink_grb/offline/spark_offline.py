@@ -218,6 +218,18 @@ def spark_offline(
         "dec", "grb_dec"
     )
 
+    print()
+    print()
+    print(ztf_alert.show())
+    print()
+    print()
+
+    print()
+    print()
+    print(grb_alert.show())
+    print()
+    print()
+
     join_condition = [
         ztf_alert.hpix == grb_alert.hpix,
         ztf_alert.jdstarthist > grb_alert.triggerTimejd,
