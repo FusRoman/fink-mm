@@ -200,7 +200,7 @@ def spark_offline(hbase_catalog, gcn_read_path, grbxztf_write_path, night, time_
     ]
     join_ztf_grb = ztf_alert.join(grb_alert, join_condition, "inner")
 
-    df_grb = join_post_process(join_ztf_grb, with_rate=False)
+    df_grb = join_post_process(join_ztf_grb, with_rate=False, from_hbase=True)
 
     timecol = "jd"
     converter = lambda x: convert_to_datetime(x)  # noqa: E731
