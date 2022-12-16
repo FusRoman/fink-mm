@@ -160,6 +160,17 @@ def spark_offline(
         "ssdistnr",
         "distpsnr1",
         "neargaia",
+        "cdsxmatch",
+        "roid",
+        "mulens",
+        "snn_snia_vs_nonia",
+        "snn_sn_vs_all",
+        "rf_snia_vs_nonia",
+        "ndethist",
+        "drb",
+        "classtar",
+        "rf_kn_vs_nonkn",
+        "tracklet",
     )
 
     low_bound = start_window - TimeDelta(time_window * 24 * 3600, format="sec").jd
