@@ -69,13 +69,13 @@ def ztf_grb_filter(spark_ztf):
         .filter(
             (spark_ztf.distpsnr1 > 2)
             | (
-                spark_ztf.ssdistnr == -999.0
+                spark_ztf.distpsnr1 == -999.0
             )  # distance of closest source from Pan-Starrs 1 catalog above 30 arcsecond
         )
         .filter(
             (spark_ztf.neargaia > 5)
             | (
-                spark_ztf.ssdistnr == -999.0
+                spark_ztf.neargaia == -999.0
             )  # distance of closest source from Gaia DR1 catalog above 60 arcsecond
         )
     )
