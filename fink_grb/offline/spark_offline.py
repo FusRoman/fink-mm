@@ -484,6 +484,14 @@ if __name__ == "__main__":
         gcn_datatest = "fink_grb/test/test_data/gcn_test"
         grb_dataoutput = "fink_grb/test/test_output"
 
+
+        sparkDF = spark.read.format('parquet').load(alert_data)
+
+        spark_filter = ztf_grb_filter(sparkDF)
+        
+        spark_filter.count()
+
+
         # with open(hbase_catalog) as f:
         #     catalog = json.load(f)
 
@@ -505,8 +513,8 @@ if __name__ == "__main__":
 
         spark_offline(
             hbase_catalog,
-            gcn_datatest, 
-            grb_dataoutput, 
+            gcn_datatest,
+            grb_dataoutput,
             "20190903",
             Time("2019-09-04").jd,
             7,
