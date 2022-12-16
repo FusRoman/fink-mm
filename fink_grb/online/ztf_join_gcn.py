@@ -229,6 +229,16 @@ def ztf_join_gcn_stream(
     if logs:  # pragma: no cover
         logger.info("Healpix columns computing successfull")
 
+
+    df_ztf_stream = df_ztf_stream.withColumnRenamed("ra", "ztf_ra").withColumnRenamed(
+        "dec", "ztf_dec"
+    )
+
+    df_grb_stream = df_grb_stream.withColumnRenamed("ra", "grb_ra").withColumnRenamed(
+        "dec", "grb_dec"
+    )
+
+
     # join the two streams according to the healpix columns.
     # A pixel id will be assign to each alerts / gcn according to their position in the sky.
     # Each alerts / gcn with the same pixel id are in the same area of the sky.
