@@ -150,6 +150,7 @@ def spark_offline(
 
     print()
     print()
+    print(ztf_alert.count())
     print(ztf_alert.show())
     print()
     print()
@@ -187,6 +188,7 @@ def spark_offline(
     print()
     print(low_bound, "   ", start_window)
     print()
+    print(ztf_alert.count())
     print(ztf_alert.select("jd_objectId", "objectId", "jd").show())
     print()
     print()
@@ -200,6 +202,7 @@ def spark_offline(
 
     print()
     print()
+    print(ztf_alert.count())
     print(ztf_alert.show())
     print()
     print()
@@ -210,6 +213,7 @@ def spark_offline(
 
     print()
     print()
+    print(ztf_alert.count())
     print(ztf_alert.show())
     print()
     print()
