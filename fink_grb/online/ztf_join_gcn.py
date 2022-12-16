@@ -12,7 +12,7 @@ import sys
 import healpy as hp
 
 from pyspark.sql import functions as F
-from pyspark.sql.functions import pandas_udf, explode
+from pyspark.sql.functions import pandas_udf, explode, col
 from pyspark.sql.types import IntegerType, ArrayType
 
 from fink_utils.science.utils import ang2pix, ra2phi, dec2theta
@@ -230,8 +230,8 @@ def ztf_join_gcn_stream(
         logger.info("Healpix columns computing successfull")
 
 
-    df_ztf_stream = df_ztf_stream.withColumnRenamed("ra", "ztf_ra").withColumnRenamed(
-        "dec", "ztf_dec"
+    df_ztf_stream = df_ztf_stream.withColumn("ztf_ra", col("candidate.ra")).withColumn(
+        "ztf_dec", col("candidate.dec")
     )
 
     df_grb_stream = df_grb_stream.withColumnRenamed("ra", "grb_ra").withColumnRenamed(
