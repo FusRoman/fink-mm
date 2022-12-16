@@ -46,7 +46,7 @@ def ztf_grb_filter(spark_ztf):
     >>> spark_filter = ztf_grb_filter(sparkDF)
 
     >>> spark_filter.count()
-    47
+    31
     """
     spark_filter = (
         spark_ztf.filter(
