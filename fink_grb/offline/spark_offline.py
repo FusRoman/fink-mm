@@ -156,6 +156,7 @@ def spark_offline(
         "dec",
         "jd",
         "fid",
+        "rb",
         "jdstarthist",
         "jdendhist",
         "ssdistnr",
