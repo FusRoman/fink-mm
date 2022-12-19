@@ -533,8 +533,8 @@ if __name__ == "__main__":
 
         print()
         print()
-        print(ztf_alert.printSchema())
-        print(ztf_alert.show())
+        ztf_alert.printSchema()
+        ztf_alert.show()
         print()
         print()
 
