@@ -488,28 +488,28 @@ if __name__ == "__main__":
         grb_dataoutput = "fink_grb/test/test_output"
 
 
-        # sparkDF = spark.read.format('parquet').load(alert_data)
+        sparkDF = spark.read.format('parquet').load(alert_data)
 
-        # sparkDF = sparkDF.select(
-        # "objectId",
-        # "candid",
-        # "candidate.ra",
-        # "candidate.dec",
-        # "candidate.jd",
-        # "candidate.jdstarthist",
-        # "candidate.jdendhist",
-        # "candidate.ssdistnr",
-        # "candidate.distpsnr1",
-        # "candidate.neargaia",
-        # )
+        sparkDF = sparkDF.select(
+        "objectId",
+        "candid",
+        "candidate.ra",
+        "candidate.dec",
+        "candidate.jd",
+        "candidate.jdstarthist",
+        "candidate.jdendhist",
+        "candidate.ssdistnr",
+        "candidate.distpsnr1",
+        "candidate.neargaia",
+        )
 
-        # spark_filter = ztf_grb_filter(sparkDF)
+        spark_filter = ztf_grb_filter(sparkDF)
         
-        # print("#####################")
-        # print()
-        # print(spark_filter.count())
-        # print()
-        # print("#####################")
+        print("#####################")
+        print()
+        print(spark_filter.count())
+        print()
+        print("#####################")
 
 
         with open(hbase_catalog) as f:
@@ -528,6 +528,7 @@ if __name__ == "__main__":
         print("#####################")
         print()
         print(spark_filter.count())
+        print(spark_filter.show())
         print()
         print("#####################")
 
