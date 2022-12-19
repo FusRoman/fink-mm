@@ -523,6 +523,13 @@ if __name__ == "__main__":
             .load()
         )
 
+        print("#####################")
+        print()
+        print(spark_filter.count())
+        print(spark_filter.show())
+        print()
+        print("#####################")
+
         spark_filter = ztf_grb_filter(ztf_alert)
 
         print("#####################")
