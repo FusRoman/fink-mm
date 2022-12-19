@@ -533,7 +533,7 @@ if __name__ == "__main__":
         print("#####################")
         print()
         #print(ztf_alert.select("objectId", "ssdistnr", "distpsnr1", "neargaia").show())
-        print(ztf_alert.filter(sparkDF.ssdistnr == -999.0).select("objectId", "ssdistnr", "distpsnr1", "neargaia").show())
+        print(ztf_alert.filter(ztf_alert.ssdistnr == -999.0).select("objectId", "ssdistnr", "distpsnr1", "neargaia").show())
         print()
         print("#####################")
 
