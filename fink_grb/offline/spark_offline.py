@@ -519,7 +519,7 @@ if __name__ == "__main__":
         spark.read.option("catalog", catalog)
             .format("org.apache.hadoop.hbase.spark")
             .option("hbase.spark.use.hbasecontext", False)
-            .option("hbase.spark.pushdown.columnfilter", True)
+            .option("hbase.spark.pushdown.columnfilter", False)
             .load()
         )
 
@@ -531,7 +531,7 @@ if __name__ == "__main__":
         print()
         print("#####################")
 
-        
+
 
         # # ztf = spark.read.format("parquet").load("/home/libs/Fink/Fink_GRB/fink_grb/test/test_data/ztf_test/online")
 
