@@ -525,17 +525,17 @@ if __name__ == "__main__":
 
         print("#####################")
         print()
-        print(spark_filter.count())
-        print(spark_filter.show())
+        print(ztf_alert.count())
+        print(ztf_alert.show())
         print()
         print("#####################")
 
-        spark_filter = ztf_grb_filter(ztf_alert)
+        spark_filter_hbase = ztf_grb_filter(ztf_alert)
 
         print("#####################")
         print()
-        print(spark_filter.count())
-        print(spark_filter.show())
+        print(spark_filter_hbase.count())
+        print(spark_filter_hbase.show())
         print()
         print("#####################")
 
