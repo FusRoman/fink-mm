@@ -531,6 +531,12 @@ if __name__ == "__main__":
             .load()
         )
 
+        print()
+        print()
+        print(ztf_alert.printSchema())
+        print()
+        print()
+
         print("#####################")
         print()
         print(ztf_alert.count())
