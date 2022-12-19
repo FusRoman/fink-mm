@@ -503,6 +503,12 @@ if __name__ == "__main__":
         "candidate.neargaia",
         )
 
+        print("#####################")
+        print()
+        print(sparkDF.select("objectId", "ssdistnr", "distpsnr1", "neargaia").show())
+        print()
+        print("#####################")
+
         spark_filter = ztf_grb_filter(sparkDF)
         
         print("#####################")
@@ -525,8 +531,7 @@ if __name__ == "__main__":
 
         print("#####################")
         print()
-        print(ztf_alert.count())
-        print(ztf_alert.show())
+        print(ztf_alert.select("objectId", "ssdistnr", "distpsnr1", "neargaia").show())
         print()
         print("#####################")
 
