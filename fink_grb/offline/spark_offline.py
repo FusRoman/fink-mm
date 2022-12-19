@@ -488,40 +488,50 @@ if __name__ == "__main__":
         grb_dataoutput = "fink_grb/test/test_output"
 
 
-        sparkDF = spark.read.format('parquet').load(alert_data)
+        # sparkDF = spark.read.format('parquet').load(alert_data)
 
-        sparkDF = sparkDF.select(
-        "objectId",
-        "candid",
-        "candidate.ra",
-        "candidate.dec",
-        "candidate.jd",
-        "candidate.jdstarthist",
-        "candidate.jdendhist",
-        "candidate.ssdistnr",
-        "candidate.distpsnr1",
-        "candidate.neargaia",
+        # sparkDF = sparkDF.select(
+        # "objectId",
+        # "candid",
+        # "candidate.ra",
+        # "candidate.dec",
+        # "candidate.jd",
+        # "candidate.jdstarthist",
+        # "candidate.jdendhist",
+        # "candidate.ssdistnr",
+        # "candidate.distpsnr1",
+        # "candidate.neargaia",
+        # )
+
+        # spark_filter = ztf_grb_filter(sparkDF)
+        
+        # print("#####################")
+        # print()
+        # print(spark_filter.count())
+        # print()
+        # print("#####################")
+
+
+        with open(hbase_catalog) as f:
+            catalog = json.load(f)
+
+        ztf_alert = (
+        spark.read.option("catalog", catalog)
+            .format("org.apache.hadoop.hbase.spark")
+            .option("hbase.spark.use.hbasecontext", False)
+            .option("hbase.spark.pushdown.columnfilter", True)
+            .load()
         )
 
-        spark_filter = ztf_grb_filter(sparkDF)
-        
+        spark_filter = ztf_grb_filter(ztf_alert)
+
         print("#####################")
         print()
         print(spark_filter.count())
         print()
         print("#####################")
 
-
-        # with open(hbase_catalog) as f:
-        #     catalog = json.load(f)
-
-        # ztf_alert = (
-        # spark.read.option("catalog", catalog)
-        #     .format("org.apache.hadoop.hbase.spark")
-        #     .option("hbase.spark.use.hbasecontext", False)
-        #     .option("hbase.spark.pushdown.columnfilter", True)
-        #     .load()
-        # )
+        
 
         # # ztf = spark.read.format("parquet").load("/home/libs/Fink/Fink_GRB/fink_grb/test/test_data/ztf_test/online")
 
@@ -531,20 +541,22 @@ if __name__ == "__main__":
         # print("alert count: ", ztf_alert.count())
         # print()
 
-        spark_offline(
-            hbase_catalog,
-            gcn_datatest,
-            grb_dataoutput,
-            "20190903",
-            Time("2019-09-04").jd,
-            7,
-            with_columns_filter=False
-        )
 
-        datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
-        datajoin = pd.read_parquet(grb_dataoutput + "/grb/year=2019")
 
-        print(datajoin)
+        # spark_offline(
+        #     hbase_catalog,
+        #     gcn_datatest,
+        #     grb_dataoutput,
+        #     "20190903",
+        #     Time("2019-09-04").jd,
+        #     7,
+        #     with_columns_filter=False
+        # )
+
+        # datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
+        # datajoin = pd.read_parquet(grb_dataoutput + "/grb/year=2019")
+
+        # print(datajoin)
 
     if sys.argv[1] == "prod":  # pragma: no cover
 
