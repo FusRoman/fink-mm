@@ -506,8 +506,9 @@ if __name__ == "__main__":
         print("#####################")
         print()
         print(sparkDF.count())
+        sparkDF.select("objectId", "ssdistnr", "distpsnr1", "neargaia").show(52)
         #print(sparkDF.select("objectId", "ssdistnr", "distpsnr1", "neargaia").show())
-        print(sparkDF.filter(sparkDF.ssdistnr == -999.0).select("objectId", "ssdistnr", "distpsnr1", "neargaia").show())
+        # sparkDF.filter(sparkDF.ssdistnr == -999.0).select("objectId", "ssdistnr", "distpsnr1", "neargaia").show(52)
         print()
         print("#####################")
 
@@ -534,7 +535,7 @@ if __name__ == "__main__":
         print()
         print()
         ztf_alert.printSchema()
-        ztf_alert.select("objectId", "ssdistnr", "distpsnr1", "neargaia").show()
+        ztf_alert.select("objectId", "ssdistnr", "distpsnr1", "neargaia").show(52)
         print()
         print()
 
