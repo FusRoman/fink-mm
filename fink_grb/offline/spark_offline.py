@@ -534,7 +534,7 @@ if __name__ == "__main__":
         print()
         print()
         ztf_alert.printSchema()
-        ztf_alert.show()
+        ztf_alert.select("objectId", "ssdistnr", "distpsnr1", "neargaia").show()
         print()
         print()
 
@@ -542,7 +542,7 @@ if __name__ == "__main__":
         print()
         print(ztf_alert.count())
         #print(ztf_alert.select("objectId", "ssdistnr", "distpsnr1", "neargaia").show())
-        print(ztf_alert.filter(ztf_alert.ssdistnr == -999.0).select("objectId", "ssdistnr", "distpsnr1", "neargaia").show())
+        ztf_alert.filter(ztf_alert.ssdistnr == -999.0).select("objectId", "ssdistnr", "distpsnr1", "neargaia").show()
         print()
         print("#####################")
 
