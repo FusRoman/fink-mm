@@ -503,6 +503,8 @@ if __name__ == "__main__":
         "candidate.neargaia",
         )
 
+        sparkDF.printSchema()
+
         print("#####################")
         print()
         print(sparkDF.count())
