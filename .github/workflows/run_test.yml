@@ -26,6 +26,7 @@ jobs:
     - name: Set up env [1/3]
       run: |
         echo "FINK_GRB=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+        echo "FINK_GRB: $FINK_GRB"
         echo "JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))" >> $GITHUB_ENV
         echo "${BINPATH}" >> $GITHUB_PATH
         echo "toto" >> $GITHUB_PATH
