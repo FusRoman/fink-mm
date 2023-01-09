@@ -133,7 +133,7 @@ def spark_offline(
     ... )
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").reset_index(drop=True).sort_values("objectId").sort_index(axis=1)
-    >>> datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime"])
+    >>> datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime"], axis=1)
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/year=2019").reset_index(drop=True).sort_values("objectId").sort_index(axis=1)
 
     >>> print(datatest)
