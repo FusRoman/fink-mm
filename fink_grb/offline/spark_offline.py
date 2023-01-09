@@ -1,5 +1,5 @@
 import json
-from astropy.time import Time, TimeDelta
+from astropy.time import TimeDelta
 
 from fink_utils.science.utils import ang2pix
 from fink_utils.broker.sparkUtils import init_sparksession
@@ -84,14 +84,14 @@ def ztf_grb_filter(spark_ztf):
 
 
 def spark_offline(
-    hbase_catalog, 
-    gcn_read_path, 
-    grbxztf_write_path, 
-    night, 
-    start_window, 
+    hbase_catalog,
+    gcn_read_path,
+    grbxztf_write_path,
+    night,
+    start_window,
     time_window,
-    with_columns_filter=True
-    ):
+    with_columns_filter=True,
+):
     """
     Cross-match Fink and the GNC in order to find the optical alerts falling in the error box of a GCN.
 
@@ -121,6 +121,7 @@ def spark_offline(
     >>> hbase_catalog = "fink_grb/test/test_data/with_hbase/ztf.jd.json"
     >>> gcn_datatest = "fink_grb/test/test_data/gcn_test"
     >>> grb_dataoutput = "fink_grb/test/test_output"
+    >>> from astropy.time import Time
 
     >>> spark_offline(
     ... hbase_catalog,
@@ -187,7 +188,11 @@ def spark_offline(
     low_bound = start_window - TimeDelta(time_window * 24 * 3600, format="sec").jd
 
     if low_bound < 0 or low_bound > start_window:
-        raise ValueError("The time window is higher than the start_window : \nstart_window = {}\ntime_window = {}\nlow_bound={}".format(start_window, time_window, low_bound))
+        raise ValueError(
+            "The time window is higher than the start_window : \nstart_window = {}\ntime_window = {}\nlow_bound={}".format(
+                start_window, time_window, low_bound
+            )
+        )
 
     ztf_alert = ztf_alert.filter(
         ztf_alert["jd_objectId"] >= "{}".format(low_bound)
@@ -411,151 +416,8 @@ if __name__ == "__main__":
         globs["join_data"] = join_data
         globs["alert_data"] = alert_data
 
-        # os.environ["FINK_PACKAGES"] = "org.apache.hbase:hbase-shaded-mapreduce:2.2.7"
-        # path_jars = "fink_grb/test/test_data/with_hbase"
-        # os.environ[
-        #     "FINK_JARS"
-        # ] = "{}/fink-broker_2.11-1.2.jar,{}/hbase-spark-hbase2.2_spark3_scala2.11_hadoop2.7.jar,{}/hbase-spark-protocol-shaded-hbase2.2_spark3_scala2.11_hadoop2.7.jar".format(
-        #     path_jars, path_jars, path_jars
-        # )
-
         # Run the test suite
         spark_unit_tests_broker(globs)
-
-        # print()
-        # print()
-        # print(os.environ["FINK_JARS"])
-        # print(os.environ["FINK_PACKAGES"])
-        # print()
-        # print(os.environ["HBASE_CLASSPATH"])
-        # print()
-        # print()
-
-        from pyspark.sql import SparkSession
-        from pyspark import SparkConf
-
-        conf = SparkConf()
-        confdic = {
-            "spark.jars.packages": os.environ["FINK_PACKAGES"],
-            "spark.jars": os.environ["FINK_JARS"],
-            # "spark.python.daemon.module": "coverage_daemon",
-        }
-        conf.setMaster("local[2]")
-        conf.setAppName("fink_test")
-        for k, v in confdic.items():
-            conf.set(key=k, value=v)
-        spark = (
-            SparkSession.builder.appName("fink_test").config(conf=conf).getOrCreate()
-        )
-
-        # Reduce the number of suffled partitions
-        spark.conf.set("spark.sql.shuffle.partitions", 2)
-
-        # # spark = init_sparksession(
-        # #     "science2grb_offline"
-        # # )
-
-        hbase_catalog = "fink_grb/test/test_data/with_hbase/ztf.jd.json"
-        gcn_datatest = "fink_grb/test/test_data/gcn_test"
-        grb_dataoutput = "fink_grb/test/test_output"
-
-
-        sparkDF = spark.read.format('parquet').load(alert_data)
-
-        sparkDF = sparkDF.select(
-        "objectId",
-        "candid",
-        "candidate.ra",
-        "candidate.dec",
-        "candidate.jd",
-        "candidate.jdstarthist",
-        "candidate.jdendhist",
-        "candidate.ssdistnr",
-        "candidate.distpsnr1",
-        "candidate.neargaia",
-        )
-
-        sparkDF.printSchema()
-
-        print("#####################")
-        print()
-        print(sparkDF.count())
-        sparkDF.select("objectId", "ssdistnr", "distpsnr1", "neargaia").show(52)
-        #print(sparkDF.select("objectId", "ssdistnr", "distpsnr1", "neargaia").show())
-        # sparkDF.filter(sparkDF.ssdistnr == -999.0).select("objectId", "ssdistnr", "distpsnr1", "neargaia").show(52)
-        print()
-        print("#####################")
-
-        spark_filter = ztf_grb_filter(sparkDF)
-        
-        print("#####################")
-        print()
-        print(spark_filter.count())
-        print()
-        print("#####################")
-
-
-        with open(hbase_catalog) as f:
-            catalog = json.load(f)
-
-        ztf_alert = (
-        spark.read.option("catalog", catalog)
-            .format("org.apache.hadoop.hbase.spark")
-            .option("hbase.spark.use.hbasecontext", False)
-            .option("hbase.spark.pushdown.columnfilter", False)
-            .load()
-        )
-
-        print()
-        print()
-        ztf_alert.printSchema()
-        ztf_alert.select("objectId", "ssdistnr", "distpsnr1", "neargaia").show(52)
-        print()
-        print()
-
-        print("#####################")
-        print()
-        print(ztf_alert.count())
-        #print(ztf_alert.select("objectId", "ssdistnr", "distpsnr1", "neargaia").show())
-        ztf_alert.filter(ztf_alert.ssdistnr == -999.0).select("objectId", "ssdistnr", "distpsnr1", "neargaia").show()
-        print()
-        print("#####################")
-
-        spark_filter_hbase = ztf_grb_filter(ztf_alert)
-
-        print("#####################")
-        print()
-        print(spark_filter_hbase.count())
-        print(spark_filter_hbase.show())
-        print()
-        print("#####################")
-
-
-
-        # # ztf = spark.read.format("parquet").load("/home/libs/Fink/Fink_GRB/fink_grb/test/test_data/ztf_test/online")
-
-        # print()
-        # print()
-        # print(ztf_alert.printSchema())
-        # print("alert count: ", ztf_alert.count())
-        # print()
-
-
-
-        # spark_offline(
-        #     hbase_catalog,
-        #     gcn_datatest,
-        #     grb_dataoutput,
-        #     "20190903",
-        #     Time("2019-09-04").jd,
-        #     7,
-        #     with_columns_filter=False
-        # )
-
-        # datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
-        # datajoin = pd.read_parquet(grb_dataoutput + "/grb/year=2019")
-
-        # print(datajoin)
 
     if sys.argv[1] == "prod":  # pragma: no cover
 

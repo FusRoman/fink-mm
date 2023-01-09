@@ -68,7 +68,7 @@ FINK_ALERT_SCHEMA=${FINK_HOME}/schemas/template_schema_ZTF_3p3.avro
 # Be careful though to have enough disk space!
 FS_KIND=local
 ONLINE_DATA_PREFIX=${FINK_HOME}/online
-AGG_DATA_PREFIX=fink_grb/test/test_data/ztf_test/online
+AGG_DATA_PREFIX=${FINK_GRB}/fink_grb/test/test_data/ztf_test/online
 
 # The name of the HBase table
 SCIENCE_DB_NAME="test_data"
