@@ -118,20 +118,22 @@ def spark_offline(
 
     Examples
     --------
-    # >>> hbase_catalog = "fink_grb/test/test_data/with_hbase/ztf.jd.json"
-    # >>> gcn_datatest = "fink_grb/test/test_data/gcn_test"
-    # >>> grb_dataoutput = "fink_grb/test/test_output"
+    >>> hbase_catalog = "fink_grb/test/test_data/with_hbase/ztf.jd.json"
+    >>> gcn_datatest = "fink_grb/test/test_data/gcn_test"
+    >>> grb_dataoutput = "fink_grb/test/test_output"
 
-    # >>> spark_offline(
-    # ... hbase_catalog,
-    # ... gcn_datatest,
-    # ... grb_dataoutput,
-    # ... "20190903",
-    # ... 7
-    # ... )
+    >>> spark_offline(
+        hbase_catalog,
+        gcn_datatest,
+        grb_dataoutput,
+        "20190903",
+        7
+    )
 
-    # >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
-    # >>> datajoin = pd.read_parquet(grb_dataoutput + "/grb/year=2019")
+    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
+    >>> datajoin = pd.read_parquet(grb_dataoutput + "/grb/year=2019")
+
+    >>> print(datajoin)
     """
     with open(hbase_catalog) as f:
         catalog = json.load(f)
