@@ -41,8 +41,8 @@ jobs:
         pip install .
         cd ../
         echo "FINK_HOME=${HOME}/fink-broker" >> $GITHUB_ENV
-        echo "$FINK_HOME/bin" >> $GITHUB_PATH
         echo "PYTHONPATH=${PYTHONPATH}:${FINK_HOME}" >> $GITHUB_ENV
+        echo "${FINK_HOME}/bin" >> $GITHUB_PATH
 
     - name: Install requirements
       run: |
