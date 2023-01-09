@@ -136,6 +136,11 @@ def spark_offline(
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/year=2019")
 
     >>> print(datajoin)
+
+    >>> shutil.rmtree(grb_dataoutput + "/_spark_metadata")
+    >>> shutil.rmtree(grb_dataoutput + "/year=2019")
+    >>> shutil.rmtree(grb_dataoutput + "/_SUCCESS")
+    >>> shutil.rmtree(grb_dataoutput + "/grb_checkpoint")
     """
     with open(hbase_catalog) as f:
         catalog = json.load(f)
