@@ -134,7 +134,9 @@ def spark_offline(
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
     >>> datatest = datatest[datatest.columns[:17] + datatest.columns[-3:]]
+    >>> print(datatest.columns)
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/year=2019")
+    >>>print(datajoin.columns)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
