@@ -450,7 +450,7 @@ if __name__ == "__main__":
         # )
 
         # Run the test suite
-        # spark_unit_tests_broker(globs)
+        spark_unit_tests_broker(globs)
 
         # print()
         # print()
