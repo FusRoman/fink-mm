@@ -39,9 +39,9 @@ jobs:
         cd fink-broker
         pip install .
         cd ../
-        export FINK_HOME=$HOME/fink-broker
-        export PATH=$PATH:$FINK_HOME/bin
-        export PYTHONPATH=$PYTHONPATH:$FINK_HOME
+        echo "FINK_HOME=$HOME/fink-broker" >> $GITHUB_ENV
+        echo "PATH=$PATH:$FINK_HOME/bin" >> $GITHUB_ENV
+        echo "PYTHONPATH=$PYTHONPATH:$FINK_HOME" >> $GITHUB_ENV
 
     - name: Install requirements
       run: |
@@ -49,8 +49,8 @@ jobs:
 
     - name: Set Hbase env
       run: |
-        export FINK_PACKAGES=org.apache.spark:spark-streaming-kafka-0-10-assembly_2.12:3.1.3,org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.3,org.apache.spark:spark-avro_2.12:3.1.3,org.apache.hbase:hbase-shaded-mapreduce:2.2.7
-        export FINK_JARS=${FINK_HOME}/libs/fink-broker_2.11-1.2.jar,${FINK_HOME}/libs/hbase-spark-hbase2.2_spark3_scala2.11_hadoop2.7.jar,${FINK_HOME}/libs/hbase-spark-protocol-shaded-hbase2.2_spark3_scala2.11_hadoop2.7.jar
+        echo "FINK_PACKAGES=org.apache.spark:spark-streaming-kafka-0-10-assembly_2.12:3.1.3,org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.3,org.apache.spark:spark-avro_2.12:3.1.3,org.apache.hbase:hbase-shaded-mapreduce:2.2.7" >> $GITHUB_ENV
+        echo "FINK_JARS=${FINK_HOME}/libs/fink-broker_2.11-1.2.jar,${FINK_HOME}/libs/hbase-spark-hbase2.2_spark3_scala2.11_hadoop2.7.jar,${FINK_HOME}/libs/hbase-spark-protocol-shaded-hbase2.2_spark3_scala2.11_hadoop2.7.jar" >> $GITHUB_ENV
 
     - name: Check env
       run: |
@@ -60,6 +60,8 @@ jobs:
         echo "PYTHONPATH: $PYTHONPATH"
         echo "JAVA_HOME: $JAVA_HOME"
         echo "FINK_HOME: $FINK_HOME"
+        echo "FINK_PACKAGES: $FINK_PACKAGES"
+        echo "FINK_JARS: $FINK_JARS"
         echo `python -V`
 
     - name: Push Hbase data
