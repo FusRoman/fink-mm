@@ -136,6 +136,7 @@ def spark_offline(
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/year=2019")
 
     >>> print(datajoin)
+    >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
     >>> shutil.rmtree(grb_dataoutput + "/year=2019")
     >>> os.remove(grb_dataoutput + "/_SUCCESS")
@@ -154,13 +155,6 @@ def spark_offline(
         .option("hbase.spark.pushdown.columnfilter", with_columns_filter)
         .load()
     )
-
-    print()
-    print()
-    print(ztf_alert.count())
-    print(ztf_alert.show())
-    print()
-    print()
 
     ztf_alert = ztf_alert.select(
         "jd_objectId",
@@ -191,11 +185,6 @@ def spark_offline(
 
     low_bound = start_window - TimeDelta(time_window * 24 * 3600, format="sec").jd
 
-    print()
-    print()
-    print(low_bound, "   ", start_window)
-    print()
-
     if low_bound < 0 or low_bound > start_window:
         raise ValueError("The time window is higher than the start_window : \nstart_window = {}\ntime_window = {}\nlow_bound={}".format(start_window, time_window, low_bound))
 
@@ -203,30 +192,9 @@ def spark_offline(
         ztf_alert["jd_objectId"] >= "{}".format(low_bound)
     ).filter(ztf_alert["jd_objectId"] < "{}".format(start_window))
 
-    print()
-    print()
-    print(ztf_alert.count())
-    print(ztf_alert.show())
-    print()
-    print()
-
     ztf_alert = ztf_grb_filter(ztf_alert)
 
-    print()
-    print()
-    print(ztf_alert.count())
-    print(ztf_alert.show())
-    print()
-    print()
-
     ztf_alert.cache().count()
-
-    print()
-    print()
-    print(ztf_alert.count())
-    print(ztf_alert.show())
-    print()
-    print()
 
     grb_alert = spark.read.format("parquet").load(gcn_read_path)
 
@@ -264,10 +232,6 @@ def spark_offline(
         ztf_alert.jdendhist - grb_alert.triggerTimejd <= 10,
     ]
     join_ztf_grb = ztf_alert.join(grb_alert, join_condition, "inner")
-
-    print(join_ztf_grb.count())
-    print()
-    print(join_ztf_grb.show())
 
     df_grb = join_post_process(join_ztf_grb, with_rate=False, from_hbase=True)
 
