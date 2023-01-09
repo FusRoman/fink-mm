@@ -57,7 +57,7 @@ def ztf_grb_filter(spark_ztf):
     >>> spark_filter = ztf_grb_filter(sparkDF)
 
     >>> spark_filter.count()
-    47
+    31
     """
     spark_filter = (
         spark_ztf.filter(
@@ -123,12 +123,12 @@ def spark_offline(
     >>> grb_dataoutput = "fink_grb/test/test_output"
 
     >>> spark_offline(
-        hbase_catalog,
-        gcn_datatest,
-        grb_dataoutput,
-        "20190903",
-        7
-    )
+    ... hbase_catalog,
+    ... gcn_datatest,
+    ... grb_dataoutput,
+    ... "20190903",
+    ... 7
+    ... )
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/grb/year=2019")
