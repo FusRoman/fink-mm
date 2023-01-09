@@ -54,6 +54,7 @@ jobs:
 
     - name: Check env
       run: |
+        echo "PATH: $PATH"
         echo "FINK_GRB: $FINK_GRB"
         echo "SPARK_HOME: $SPARK_HOME"
         echo "SPARKLIB: $SPARKLIB"
