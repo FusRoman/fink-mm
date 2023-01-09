@@ -127,6 +127,7 @@ def spark_offline(
     ... gcn_datatest,
     ... grb_dataoutput,
     ... "20190903",
+    ... Time("2019-09-04").jd,
     ... 7
     ... )
 
