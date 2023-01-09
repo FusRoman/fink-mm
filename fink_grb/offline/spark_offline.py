@@ -132,12 +132,16 @@ def spark_offline(
     ... False
     ... )
 
-    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").reset_index(drop=True)
+    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").reset_index(drop=True).sort_values("objectId")
     >>> column_to_keep = list(datatest.columns[:17]) + list(datatest.columns[-3:])
     >>> datatest = datatest[column_to_keep]
-    >>> datajoin = pd.read_parquet(grb_dataoutput + "/year=2019").reset_index(drop=True)
+    >>> datajoin = pd.read_parquet(grb_dataoutput + "/year=2019").reset_index(drop=True).sort_values("objectId")
 
-    >>> assert_frame_equal(datatest.sort_values("objectId"), datajoin.sort_values("objectId"), check_dtype=False, check_column_type=False, check_categorical=False)
+    >>> print(datatest)
+    >>> print()
+    >>> print(datajoin)
+
+    >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
     >>> shutil.rmtree(grb_dataoutput + "/year=2019")
     >>> os.remove(grb_dataoutput + "/_SUCCESS")
