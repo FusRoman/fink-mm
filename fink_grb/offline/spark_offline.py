@@ -136,9 +136,9 @@ def spark_offline(
     >>> datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime"], axis=1)
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/year=2019").sort_values("objectId").reset_index(drop=True)
 
-    >>> print(datatest)
+    >>> print(datatest[["objectId", "triggerId"]])
     >>> print()
-    >>> print(datajoin)
+    >>> print(datajoin[["objectId", "triggerId"]])
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
