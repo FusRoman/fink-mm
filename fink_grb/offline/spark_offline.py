@@ -133,8 +133,8 @@ def spark_offline(
     ... )
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
-    >>> print(list(datatest.columns[:17]) + list(datatest.columns[-3:]))
-    >>> datatest = datatest[[datatest.columns[:17] + datatest.columns[-3:]]]
+    >>> column_to_keep = list(datatest.columns[:17]) + list(datatest.columns[-3:])
+    >>> datatest = datatest[column_to_keep]
     >>> print(datatest.columns)
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/year=2019")
     >>> print(datajoin.columns)
