@@ -132,10 +132,10 @@ def spark_offline(
     ... False
     ... )
 
-    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").reset_index(drop=True).sort_values("objectId")
+    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").reset_index(drop=True).sort_values("objectId").sort_index(axis=1)
     >>> column_to_keep = list(datatest.columns[:17]) + list(datatest.columns[-3:])
     >>> datatest = datatest[column_to_keep]
-    >>> datajoin = pd.read_parquet(grb_dataoutput + "/year=2019").reset_index(drop=True).sort_values("objectId")
+    >>> datajoin = pd.read_parquet(grb_dataoutput + "/year=2019").reset_index(drop=True).sort_values("objectId").sort_index(axis=1)
 
     >>> print(datatest)
     >>> print()
