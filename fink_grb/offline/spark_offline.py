@@ -351,7 +351,7 @@ def launch_offline_mode(arguments, is_test=False):
         spark_jars = config["STREAM"]["jars"]
         if is_test:
             fink_home = os.environ["FINK_HOME"]
-            spark_jars = "{}/fink-broker/libs/fink-broker_2.11-1.2.jar,{}/fink-broker/libs/hbase-spark-hbase2.2_spark3_scala2.11_hadoop2.7.jar,{}/fink-broker/libs/hbase-spark-protocol-shaded-hbase2.2_spark3_scala2.11_hadoop2.7.jar".format(fink_home, fink_home, fink_home)
+            spark_jars = "{}/libs/fink-broker_2.11-1.2.jar,{}/libs/hbase-spark-hbase2.2_spark3_scala2.11_hadoop2.7.jar,{}/libs/hbase-spark-protocol-shaded-hbase2.2_spark3_scala2.11_hadoop2.7.jar".format(fink_home, fink_home, fink_home)
 
 
     except Exception as e:
