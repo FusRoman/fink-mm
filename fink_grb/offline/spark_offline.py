@@ -388,6 +388,9 @@ def launch_offline_mode(arguments, is_test=False):
     application += " " + night
     application += " " + str(start_window_in_jd)
     application += " " + str(time_window)
+    print("##############")
+    print(is_test)
+    print("##############")
     if is_test:
         application += " " + str(False)
     else:
