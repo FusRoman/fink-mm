@@ -319,7 +319,7 @@ def launch_offline_mode(arguments, is_test=False):
                 fink_home = os.environ["FINK_HOME"]
                 hbase_catalog = fink_home + "/catalogs_hbase/ztf.jd.json"
             except Exception as e:
-                logger.error("FINK_HOME environment variable not found")
+                logger.error("FINK_HOME environment variable not found \n\t {}".format(e))
 
         time_window = int(config["OFFLINE"]["time_window"])
     except Exception as e:  # pragma: no cover
