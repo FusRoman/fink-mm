@@ -159,6 +159,8 @@ def spark_offline(
         .filter(~col("jd_objectId").startswith('schema_'))
     )
 
+    ztf_alert.show()
+
     ztf_alert = ztf_alert.select(
         "jd_objectId",
         "objectId",
