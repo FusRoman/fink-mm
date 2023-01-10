@@ -187,8 +187,6 @@ def spark_offline(
         "tracklet",
     )
 
-    ztf_alert.select(["objectId", "ssdistnr", "distpsnr1", "neargaia"]).show()
-
     low_bound = start_window - TimeDelta(time_window * 24 * 3600, format="sec").jd
 
     if low_bound < 0 or low_bound > start_window:
@@ -243,8 +241,6 @@ def spark_offline(
     ]
     join_ztf_grb = ztf_alert.join(grb_alert, join_condition, "inner")
 
-    join_ztf_grb.show()
-
     df_grb = join_post_process(join_ztf_grb, with_rate=False, from_hbase=True)
 
     timecol = "jd"
@@ -260,8 +256,6 @@ def spark_offline(
 
     if "day" not in df_grb.columns:
         df_grb = df_grb.withColumn("day", F.date_format("timestamp", "dd"))
-
-    df_grb.show()
 
     df_grb.write.mode("append").partitionBy("year", "month", "day").parquet(
         grbxztf_write_path
