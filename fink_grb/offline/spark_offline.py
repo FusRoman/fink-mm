@@ -279,11 +279,12 @@ def launch_offline_mode(arguments, is_test=False):
     --------
     >>> gcn_datatest = "fink_grb/test/test_data/gcn_test"
     >>> grb_dataoutput = "fink_grb/test/test_output"
-    >>> launch_joining_stream({
+    >>> launch_offline_mode({
     ... "--config" : None,
     ... "--night" : "20190903",
     ... "--exit_after" : 90
-    ... })
+    ... },
+    ... is_test=True)
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
     >>> datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime", "grb_proba"], axis=1)
