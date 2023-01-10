@@ -159,8 +159,6 @@ def spark_offline(
         .filter(~col("jd_objectId").startswith('schema_'))
     )
 
-    ztf_alert.show()
-
     ztf_alert = ztf_alert.select(
         "jd_objectId",
         "objectId",
@@ -187,6 +185,8 @@ def spark_offline(
         "rf_kn_vs_nonkn",
         "tracklet",
     )
+
+    ztf_alert.select(["objectId", "ssdistnr", "distpsnr1", "neargaia"]).show()
 
     low_bound = start_window - TimeDelta(time_window * 24 * 3600, format="sec").jd
 
