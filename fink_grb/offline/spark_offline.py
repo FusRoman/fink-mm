@@ -154,28 +154,6 @@ def spark_offline(
         "science2grb_offline_{}{}{}".format(night[0:4], night[4:6], night[6:8])
     )
 
-    try:
-        spark.conf.get("spark.jars.packages")
-        spark.conf.get("spark.jars")
-    except Exception as e:
-        from pyspark.sql import SparkSession
-        from pyspark import SparkConf
-
-        conf = SparkConf()
-        confdic = {
-            "spark.jars.packages": os.environ["FINK_PACKAGES"],
-            "spark.jars": os.environ["FINK_JARS"],
-            "spark.python.daemon.module": "coverage_daemon",
-        }
-        conf.setMaster("local[2]")
-        conf.setAppName("fink_test")
-        for k, v in confdic.items():
-            conf.set(key=k, value=v)
-        spark = SparkSession.builder.appName("fink_test").config(conf=conf).getOrCreate()
-
-    print(spark.conf.get("spark.jars.packages"))
-    print(spark.conf.get("spark.jars"))
-
     ztf_alert = (
         spark.read.option("catalog", catalog)
         .format("org.apache.hadoop.hbase.spark")
@@ -405,6 +383,10 @@ def launch_offline_mode(arguments, is_test=False):
     application += " " + night
     application += " " + str(start_window_in_jd)
     application += " " + str(time_window)
+    if is_test:
+        application += " " + str(True)
+    else:
+        application += " " + str(False)
 
     spark_submit = "spark-submit \
             --master {} \
@@ -480,7 +462,8 @@ if __name__ == "__main__":
         night = sys.argv[5]
         start_window = sys.argv[6]
         time_window = int(sys.argv[7])
+        column_filter = bool(sys.argv[8])
 
         spark_offline(
-            hbase_catalog, gcn_datapath_prefix, grb_datapath_prefix, night, start_window, time_window
+            hbase_catalog, gcn_datapath_prefix, grb_datapath_prefix, night, start_window, time_window, with_columns_filter=column_filter
         )
