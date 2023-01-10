@@ -321,7 +321,7 @@ def launch_joining_stream(arguments):
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet")
     >>> datajoin = pd.read_parquet(grb_datatest + "/grb/year=2019")
 
-    >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
+    >>> assert_frame_equal(datatest.sort_values(["objectId", "triggerId"]), datajoin.sort_values(["objectId", "triggerId"]), check_dtype=False, check_column_type=False, check_categorical=False)
 
     >>> shutil.rmtree(grb_datatest + "/grb/_spark_metadata")
     >>> shutil.rmtree(grb_datatest + "/grb/year=2019")
