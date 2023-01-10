@@ -190,6 +190,8 @@ def spark_offline(
         "tracklet",
     )
 
+    ztf_alert.select("objectId", "ssdistnr", "distpsnr1", "neargaia").show()
+
     low_bound = start_window - TimeDelta(time_window * 24 * 3600, format="sec").jd
 
     if low_bound < 0 or low_bound > start_window:
