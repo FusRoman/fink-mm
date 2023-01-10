@@ -287,7 +287,8 @@ def launch_offline_mode(arguments, is_test=False):
     ... "--night" : "20190903",
     ... "--exit_after" : 90
     ... },
-    ... is_test=True)
+    ... is_test=True
+    ... )
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
     >>> datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime", "grb_proba"], axis=1)
@@ -388,9 +389,7 @@ def launch_offline_mode(arguments, is_test=False):
     application += " " + night
     application += " " + str(start_window_in_jd)
     application += " " + str(time_window)
-    print("##############")
-    print(is_test)
-    print("##############")
+
     if is_test:
         application += " " + str(False)
     else:
@@ -473,6 +472,7 @@ if __name__ == "__main__":
         column_filter = bool(sys.argv[8])
 
         print("///////////////")
+        print(sys.argv[8])
         print(column_filter)
         print("///////////////")
 
