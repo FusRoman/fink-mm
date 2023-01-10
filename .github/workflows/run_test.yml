@@ -68,6 +68,7 @@ jobs:
 
     - name: Push Hbase data
       run: |
+        echo "PATH: $PATH"
         fink start index_archival -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink.conf.prod --night 20190903 --index_table jd_objectId
 
     - name: Run test suites
