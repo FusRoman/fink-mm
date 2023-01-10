@@ -166,10 +166,10 @@ def ztf_join_gcn_stream(
     ... 5
     ... )
 
-    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").reset_index(drop=True)
-    >>> datajoin = pd.read_parquet(grb_dataoutput + "/grb/year=2019").reset_index(drop=True)
+    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datajoin = pd.read_parquet(grb_dataoutput + "/grb/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
 
-    >>> assert_frame_equal(datatest.sort_values(["objectId", "triggerId", "grb_ra"]), datajoin.sort_values(["objectId", "triggerId", "grb_ra"]), check_dtype=False, check_column_type=False, check_categorical=False)
+    >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
     >>> shutil.rmtree(grb_dataoutput + "/grb/_spark_metadata")
     >>> shutil.rmtree(grb_dataoutput + "/grb/year=2019")
@@ -318,10 +318,10 @@ def launch_joining_stream(arguments):
     ... "--exit_after" : 90
     ... })
 
-    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").reset_index(drop=True)
-    >>> datajoin = pd.read_parquet(grb_datatest + "/grb/year=2019").reset_index(drop=True)
+    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datajoin = pd.read_parquet(grb_datatest + "/grb/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
 
-    >>> assert_frame_equal(datatest.sort_values(["objectId", "triggerId", "grb_ra"]), datajoin.sort_values(["objectId", "triggerId", "grb_ra"]), check_dtype=False, check_column_type=False, check_categorical=False)
+    >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
     >>> shutil.rmtree(grb_datatest + "/grb/_spark_metadata")
     >>> shutil.rmtree(grb_datatest + "/grb/year=2019")
