@@ -303,6 +303,8 @@ def launch_offline_mode(arguments, is_test=False):
     config = get_config(arguments)
     logger = init_logging()
 
+    exit(1)
+
     verbose = return_verbose_level(config, logger)
 
     try:
@@ -471,6 +473,7 @@ if __name__ == "__main__":
         time_window = int(sys.argv[7])
         column_filter = True if sys.argv[8] == "True" else False
 
+        print(hbase_catalog)
         print(column_filter)
 
         spark_offline(
