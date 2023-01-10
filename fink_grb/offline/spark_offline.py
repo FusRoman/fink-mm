@@ -190,7 +190,6 @@ def spark_offline(
         "tracklet",
     )
 
-    ztf_alert.select("objectId", "ssdistnr", "distpsnr1", "neargaia", "jd").show()
     low_bound = start_window - TimeDelta(time_window * 24 * 3600, format="sec").jd
 
     if low_bound < 0 or low_bound > start_window:
@@ -209,8 +208,6 @@ def spark_offline(
     ztf_alert.cache().count()
 
     grb_alert = spark.read.format("parquet").load(gcn_read_path)
-
-    grb_alert.select("triggerId", "triggerTimejd").show()
 
     grb_alert = grb_alert.filter(grb_alert.triggerTimejd >= low_bound).filter(
         grb_alert.triggerTimejd <= start_window
