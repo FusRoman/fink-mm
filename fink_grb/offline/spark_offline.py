@@ -154,8 +154,24 @@ def spark_offline(
         "science2grb_offline_{}{}{}".format(night[0:4], night[4:6], night[6:8])
     )
 
-    print(spark.conf.get("spark.jars.packages"))
-    print(spark.conf.get("spark.jars"))
+    try:
+        spark.conf.get("spark.jars.packages")
+        spark.conf.get("spark.jars")
+    except Exception as e:
+        from pyspark.sql import SparkSession
+        from pyspark import SparkConf
+
+        conf = SparkConf()
+        confdic = {
+            "spark.jars.packages": os.environ["FINK_PACKAGES"],
+            "spark.jars": os.environ["FINK_JARS"],
+            "spark.python.daemon.module": "coverage_daemon",
+        }
+        conf.setMaster("local[2]")
+        conf.setAppName("fink_test")
+        for k, v in confdic.items():
+            conf.set(key=k, value=v)
+        spark = SparkSession.builder.appName("fink_test").config(conf=conf).getOrCreate()
 
     ztf_alert = (
         spark.read.option("catalog", catalog)
