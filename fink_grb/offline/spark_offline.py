@@ -191,7 +191,6 @@ def spark_offline(
     )
 
     ztf_alert.select("objectId", "ssdistnr", "distpsnr1", "neargaia").show()
-
     low_bound = start_window - TimeDelta(time_window * 24 * 3600, format="sec").jd
 
     if low_bound < 0 or low_bound > start_window:
@@ -244,6 +243,8 @@ def spark_offline(
         ztf_alert.jdstarthist > grb_alert.triggerTimejd,
         ztf_alert.jdendhist - grb_alert.triggerTimejd <= 10,
     ]
+    ztf_alert.show()
+    grb_alert.show()
     join_ztf_grb = ztf_alert.join(grb_alert, join_condition, "inner")
 
     join_ztf_grb.show()
