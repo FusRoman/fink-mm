@@ -193,9 +193,6 @@ def spark_offline(
     ztf_alert.select("objectId", "ssdistnr", "distpsnr1", "neargaia", "jd").show()
     low_bound = start_window - TimeDelta(time_window * 24 * 3600, format="sec").jd
 
-    print(start_window)
-    print(low_bound)
-
     if low_bound < 0 or low_bound > start_window:
         raise ValueError(
             "The time window is higher than the start_window : \nstart_window = {}\ntime_window = {}\nlow_bound={}".format(
@@ -248,13 +245,7 @@ def spark_offline(
         ztf_alert.jdstarthist > grb_alert.triggerTimejd,
         ztf_alert.jdendhist - grb_alert.triggerTimejd <= 10,
     ]
-    ztf_alert.show()
-    grb_alert.show()
     join_ztf_grb = ztf_alert.join(grb_alert, join_condition, "inner")
-
-    join_ztf_grb.show()
-
-    exit(111)
 
     df_grb = join_post_process(join_ztf_grb, with_rate=False, from_hbase=True)
 
@@ -482,9 +473,6 @@ if __name__ == "__main__":
         start_window = float(sys.argv[6])
         time_window = int(sys.argv[7])
         column_filter = True if sys.argv[8] == "True" else False
-
-        print(hbase_catalog)
-        print(column_filter)
 
         spark_offline(
             hbase_catalog, gcn_datapath_prefix, grb_datapath_prefix, night, start_window, time_window, with_columns_filter=column_filter
