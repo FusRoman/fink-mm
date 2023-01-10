@@ -69,8 +69,9 @@ jobs:
 
     - name: Push Hbase data
       run: |
-        echo "PATH: $PATH"
-        cd $FINK_HOME
+        cd $USRLIBS
+        source scripts/start_services.sh --kafka-version ${KAFKA_VERSION} --hbase-version ${HBASE_VERSION}
+        cd $FINK_GRB
         fink start index_archival -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink.conf.prod --night 20190903 --index_table jd_objectId
 
     - name: Run test suites
