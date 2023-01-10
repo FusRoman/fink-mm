@@ -9,6 +9,9 @@ from pyspark.sql.functions import explode, col
 import os
 import sys
 import subprocess
+from dateutil import parser
+
+from astropy.time import Time
 
 from fink_utils.spark.partitioning import convert_to_datetime
 
@@ -372,10 +375,13 @@ def launch_offline_mode(arguments, is_test=False):
         "spark_offline.py prod",
     )
 
+    start_window_in_jd = Time(parser.parse(night), format="datetime").jd
+
     application += " " + hbase_catalog
     application += " " + gcn_datapath_prefix
     application += " " + grb_datapath_prefix
     application += " " + night
+    application += " " + str(start_window_in_jd)
     application += " " + str(time_window)
 
     spark_submit = "spark-submit \
@@ -450,7 +456,8 @@ if __name__ == "__main__":
         gcn_datapath_prefix = sys.argv[3]
         grb_datapath_prefix = sys.argv[4]
         night = sys.argv[5]
-        time_window = int(sys.argv[6])
+        start_window = sys.argv[6]
+        time_window = int(sys.argv[7])
 
         spark_offline(
             hbase_catalog, gcn_datapath_prefix, grb_datapath_prefix, night, time_window
