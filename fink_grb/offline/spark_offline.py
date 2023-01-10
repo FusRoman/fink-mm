@@ -190,8 +190,6 @@ def spark_offline(
         "tracklet",
     )
 
-    ztf_alert.select("objectId", "ssdistnr", "distpsnr1", "neargaia").show()
-
     low_bound = start_window - TimeDelta(time_window * 24 * 3600, format="sec").jd
 
     if low_bound < 0 or low_bound > start_window:
@@ -472,6 +470,14 @@ if __name__ == "__main__":
         start_window = float(sys.argv[6])
         time_window = int(sys.argv[7])
         column_filter = True if sys.argv[8] == "True" else False
+
+        print()
+        print()
+        print()
+        print(hbase_catalog)
+        print()
+        print()
+        print()
 
         spark_offline(
             hbase_catalog, gcn_datapath_prefix, grb_datapath_prefix, night, start_window, time_window, with_columns_filter=column_filter
