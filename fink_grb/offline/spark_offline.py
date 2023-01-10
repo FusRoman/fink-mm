@@ -262,7 +262,7 @@ def spark_offline(
     )
 
 
-def launch_offline_mode(arguments):
+def launch_offline_mode(arguments, is_test=False):
     """
     Launch the offline grb module, used by the command line interface.
 
@@ -277,7 +277,23 @@ def launch_offline_mode(arguments):
 
     Examples
     --------
+    >>> gcn_datatest = "fink_grb/test/test_data/gcn_test"
+    >>> grb_dataoutput = "fink_grb/test/test_output"
+    >>> launch_joining_stream({
+    ... "--config" : None,
+    ... "--night" : "20190903",
+    ... "--exit_after" : 90
+    ... })
 
+    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime", "grb_proba"], axis=1)
+    >>> datajoin = pd.read_parquet(grb_dataoutput + "/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datajoin = datajoin.drop("grb_proba", axis=1)
+
+    >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
+
+    >>> shutil.rmtree(grb_dataoutput + "/year=2019")
+    >>> os.remove(grb_dataoutput + "/_SUCCESS")
     """
     config = get_config(arguments)
     logger = init_logging()
@@ -298,6 +314,12 @@ def launch_offline_mode(arguments):
         gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
         grb_datapath_prefix = config["PATH"]["online_grb_data_prefix"]
         hbase_catalog = config["PATH"]["hbase_catalog"]
+        if is_test:
+            try:
+                fink_home = os.environ["FINK_HOME"]
+                hbase_catalog = fink_home + "/catalogs_hbase/ztf.jd.json"
+            except Exception as e:
+                logger.error("FINK_HOME environment variable not found")
 
         time_window = int(config["OFFLINE"]["time_window"])
     except Exception as e:  # pragma: no cover
