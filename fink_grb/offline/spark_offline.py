@@ -393,7 +393,7 @@ def launch_offline_mode(arguments, is_test=False):
         "spark_offline.py prod",
     )
 
-    start_window_in_jd = Time(parser.parse(night), format="datetime").jd
+    start_window_in_jd = Time(parser.parse(night), format="datetime").jd + 0.49
 
     application += " " + hbase_catalog
     application += " " + gcn_datapath_prefix
