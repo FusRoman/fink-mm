@@ -160,7 +160,7 @@ def spark_offline(
         .option("hbase.spark.use.hbasecontext", False)
         .option("hbase.spark.pushdown.columnfilter", with_columns_filter)
         .load()
-        .filter(~col("jd_objectId").startswith('schema_'))
+        .filter(~col("jd_objectId").startswith("schema_"))
     )
 
     ztf_alert = ztf_alert.select(
@@ -324,7 +324,9 @@ def launch_offline_mode(arguments, is_test=False):
                 fink_home = os.environ["FINK_HOME"]
                 hbase_catalog = fink_home + "/catalogs_hbase/ztf.jd.json"
             except Exception as e:
-                logger.error("FINK_HOME environment variable not found \n\t {}".format(e))
+                logger.error(
+                    "FINK_HOME environment variable not found \n\t {}".format(e)
+                )
 
         time_window = int(config["OFFLINE"]["time_window"])
     except Exception as e:  # pragma: no cover
@@ -352,8 +354,9 @@ def launch_offline_mode(arguments, is_test=False):
         spark_jars = config["STREAM"]["jars"]
         if is_test:
             fink_home = os.environ["FINK_HOME"]
-            spark_jars = "{}/libs/fink-broker_2.11-1.2.jar,{}/libs/hbase-spark-hbase2.2_spark3_scala2.11_hadoop2.7.jar,{}/libs/hbase-spark-protocol-shaded-hbase2.2_spark3_scala2.11_hadoop2.7.jar".format(fink_home, fink_home, fink_home)
-
+            spark_jars = "{}/libs/fink-broker_2.11-1.2.jar,{}/libs/hbase-spark-hbase2.2_spark3_scala2.11_hadoop2.7.jar,{}/libs/hbase-spark-protocol-shaded-hbase2.2_spark3_scala2.11_hadoop2.7.jar".format(
+                fink_home, fink_home, fink_home
+            )
 
     except Exception as e:
         if verbose:
@@ -472,5 +475,11 @@ if __name__ == "__main__":
         column_filter = True if sys.argv[8] == "True" else False
 
         spark_offline(
-            hbase_catalog, gcn_datapath_prefix, grb_datapath_prefix, night, start_window, time_window, with_columns_filter=column_filter
+            hbase_catalog,
+            gcn_datapath_prefix,
+            grb_datapath_prefix,
+            night,
+            start_window,
+            time_window,
+            with_columns_filter=column_filter,
         )
