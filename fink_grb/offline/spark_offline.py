@@ -154,6 +154,9 @@ def spark_offline(
         "science2grb_offline_{}{}{}".format(night[0:4], night[4:6], night[6:8])
     )
 
+    print(spark.conf.get("spark.jars.packages"))
+    print(spark.conf.get("spark.jars"))
+
     ztf_alert = (
         spark.read.option("catalog", catalog)
         .format("org.apache.hadoop.hbase.spark")
