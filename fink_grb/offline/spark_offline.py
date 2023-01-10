@@ -465,7 +465,7 @@ if __name__ == "__main__":
         gcn_datapath_prefix = sys.argv[3]
         grb_datapath_prefix = sys.argv[4]
         night = sys.argv[5]
-        start_window = sys.argv[6]
+        start_window = float(sys.argv[6])
         time_window = int(sys.argv[7])
         column_filter = bool(sys.argv[8])
 
