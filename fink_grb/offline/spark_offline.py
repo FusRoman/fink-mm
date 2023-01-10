@@ -460,5 +460,5 @@ if __name__ == "__main__":
         time_window = int(sys.argv[7])
 
         spark_offline(
-            hbase_catalog, gcn_datapath_prefix, grb_datapath_prefix, night, time_window
+            hbase_catalog, gcn_datapath_prefix, grb_datapath_prefix, night, start_window, time_window
         )
