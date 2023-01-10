@@ -384,9 +384,9 @@ def launch_offline_mode(arguments, is_test=False):
     application += " " + str(start_window_in_jd)
     application += " " + str(time_window)
     if is_test:
-        application += " " + str(True)
-    else:
         application += " " + str(False)
+    else:
+        application += " " + str(True)
 
     spark_submit = "spark-submit \
             --master {} \
