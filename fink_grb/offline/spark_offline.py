@@ -154,21 +154,6 @@ def spark_offline(
         "science2grb_offline_{}{}{}".format(night[0:4], night[4:6], night[6:8])
     )
 
-    from pyspark.sql import SparkSession
-    from pyspark import SparkConf
-
-    conf = SparkConf()
-    confdic = {
-        "spark.jars.packages": os.environ["FINK_PACKAGES"],
-        "spark.jars": os.environ["FINK_JARS"],
-        "spark.python.daemon.module": "coverage_daemon",
-    }
-    conf.setMaster("local[2]")
-    conf.setAppName("fink_test")
-    for k, v in confdic.items():
-        conf.set(key=k, value=v)
-    spark = SparkSession.builder.appName("fink_test").config(conf=conf).getOrCreate()
-
     ztf_alert = (
         spark.read.option("catalog", catalog)
         .format("org.apache.hadoop.hbase.spark")
@@ -364,6 +349,11 @@ def launch_offline_mode(arguments, is_test=False):
 
     try:
         spark_jars = config["STREAM"]["jars"]
+        if is_test:
+            fink_home = os.environ["FINK_HOME"]
+            spark_jars = "{}/fink-broker/libs/fink-broker_2.11-1.2.jar,{}/fink-broker/libs/hbase-spark-hbase2.2_spark3_scala2.11_hadoop2.7.jar,{}/fink-broker/libs/hbase-spark-protocol-shaded-hbase2.2_spark3_scala2.11_hadoop2.7.jar".format(fink_home, fink_home, fink_home)
+
+
     except Exception as e:
         if verbose:
             logger.info(
