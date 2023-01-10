@@ -173,6 +173,9 @@ def spark_offline(
             conf.set(key=k, value=v)
         spark = SparkSession.builder.appName("fink_test").config(conf=conf).getOrCreate()
 
+    print(spark.conf.get("spark.jars.packages"))
+    print(spark.conf.get("spark.jars"))
+
     ztf_alert = (
         spark.read.option("catalog", catalog)
         .format("org.apache.hadoop.hbase.spark")
