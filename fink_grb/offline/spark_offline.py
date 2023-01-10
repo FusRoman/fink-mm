@@ -469,6 +469,10 @@ if __name__ == "__main__":
         time_window = int(sys.argv[7])
         column_filter = bool(sys.argv[8])
 
+        print("///////////////")
+        print(column_filter)
+        print("///////////////")
+
         spark_offline(
             hbase_catalog, gcn_datapath_prefix, grb_datapath_prefix, night, start_window, time_window, with_columns_filter=column_filter
         )
