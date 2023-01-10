@@ -244,6 +244,10 @@ def spark_offline(
     ]
     join_ztf_grb = ztf_alert.join(grb_alert, join_condition, "inner")
 
+    join_ztf_grb.show()
+
+    exit(111)
+
     df_grb = join_post_process(join_ztf_grb, with_rate=False, from_hbase=True)
 
     timecol = "jd"
@@ -302,8 +306,6 @@ def launch_offline_mode(arguments, is_test=False):
     """
     config = get_config(arguments)
     logger = init_logging()
-
-    exit(1)
 
     verbose = return_verbose_level(config, logger)
 
