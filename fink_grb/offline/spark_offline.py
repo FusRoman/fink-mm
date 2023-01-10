@@ -5,7 +5,7 @@ from fink_utils.science.utils import ang2pix
 from fink_utils.broker.sparkUtils import init_sparksession
 
 from pyspark.sql import functions as F
-from pyspark.sql.functions import explode
+from pyspark.sql.functions import explode, col
 import os
 import sys
 import subprocess
@@ -156,6 +156,7 @@ def spark_offline(
         .option("hbase.spark.use.hbasecontext", False)
         .option("hbase.spark.pushdown.columnfilter", with_columns_filter)
         .load()
+        .filter(~col("jd_objectId").startswith('schema_'))
     )
 
     ztf_alert = ztf_alert.select(
