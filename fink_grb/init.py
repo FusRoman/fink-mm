@@ -74,13 +74,13 @@ def get_config(arguments):
     >>> type(c)
     <class 'configparser.ConfigParser'>
     >>> c.sections()
-    ['CLIENT', 'PATH', 'HDFS', 'STREAM', 'ADMIN', 'OFFLINE']
+    ['CLIENT', 'PATH', 'HDFS', 'STREAM', 'DISTRIBUTION', 'ADMIN', 'OFFLINE']
 
     >>> c = get_config({"--config" : None})
     >>> type(c)
     <class 'configparser.ConfigParser'>
     >>> c.sections()
-    ['CLIENT', 'PATH', 'HDFS', 'STREAM', 'ADMIN', 'OFFLINE']
+    ['CLIENT', 'PATH', 'HDFS', 'STREAM', 'DISTRIBUTION', 'ADMIN', 'OFFLINE']
     """
     # read the config file
     config = configparser.ConfigParser(os.environ)
