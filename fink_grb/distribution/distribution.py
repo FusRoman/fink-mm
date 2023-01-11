@@ -1,7 +1,8 @@
 import time
-import avro
+import avro.schema
 import os
 import subprocess
+import sys
 
 from fink_utils.broker.sparkUtils import init_sparksession, connect_to_raw_database
 from fink_utils.broker.distributionUtils import write_to_kafka
@@ -153,6 +154,7 @@ def launch_distribution(arguments):
 
         grb_datapath_prefix = config["PATH"]["online_grb_data_prefix"]
         tinterval = config["STREAM"]["tinterval"]
+        kafka_broker = config["DISTRIBUTION"]["kafka_broker"]
     except Exception as e:  # pragma: no cover
         logger.error("Config entry not found \n\t {}".format(e))
         exit(1)
@@ -173,14 +175,19 @@ def launch_distribution(arguments):
 
     application = os.path.join(
         os.path.dirname(fink_grb.__file__),
-        "online",
-        "ztf_join_gcn.py prod",
+        "distribution",
+        "distribution.py prod",
     )
 
     application += " " + grb_datapath_prefix
     application += " " + night
     application += " " + str(exit_after)
     application += " " + tinterval
+    application += " " + kafka_broker
+
+    print()
+    print(application)
+    print()
 
     spark_submit = "spark-submit \
         --master {} \
@@ -225,3 +232,43 @@ def launch_distribution(arguments):
 
     logger.info("Fink_GRB joining stream spark application ended normally")
     return
+
+
+if __name__ == "__main__":
+
+    if sys.argv[1] == "test":
+        from fink_utils.test.tester import spark_unit_tests_science
+        from pandas.testing import assert_frame_equal  # noqa: F401
+        import shutil  # noqa: F401
+
+        globs = globals()
+
+        grb_data = "fink_grb/test/test_data/gcn_test/raw/year=2019/month=09/day=03"
+        join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
+        alert_data = "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/ztf_science_test.parquet"
+        globs["join_data"] = join_data
+        globs["alert_data"] = alert_data
+        globs["grb_data"] = grb_data
+
+        # Run the test suite
+        spark_unit_tests_science(globs)
+
+    elif sys.argv[1] == "prod":  # pragma: no cover
+
+        print()
+        print(sys.argv)
+        print()
+
+        grbdata_path = sys.argv[2]
+        night = sys.argv[3]
+        exit_after = sys.argv[4]
+        tinterval = sys.argv[5]
+        kafka_broker = sys.argv[6]
+
+        grb_distribution(
+            grbdata_path,
+            night,
+            tinterval,
+            exit_after,
+            kafka_broker
+        )
