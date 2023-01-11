@@ -2,6 +2,7 @@
 Usage:
     fink_grb gcn_stream (start|monitor) [options]
     fink_grb join_stream (offline|online) --night=<date> [--exit_after=<second>] [options]
+    fink_grb distribute  --night=<date> [--exit_after=<second>] [options]
     fink_grb -h | --help
     fink_grb --version
 
@@ -13,10 +14,11 @@ Options:
   join_stream                      launch the script that join the ztf stream and the gcn stream
   offline                          launch the offline mode
   online                           launch the online mode
+  distribute                       launch the distribution
   -h --help                        Show help and quit.
   --version                        Show version.
   --config FILE                    Specify the config file.
-  --verbose                        Print information and progress bar during the process.
+  --verbose                        Print information during the process.
 """
 
 from docopt import docopt
@@ -54,6 +56,12 @@ def main():
             from fink_grb.offline.spark_offline import launch_offline_mode
 
             launch_offline_mode(arguments)
+
+    elif arguments["distribute"]:
+
+        from fink_grb.distribution.distribution import launch_distribution
+
+        launch_distribution(arguments)
 
     else:
         exit(0)
