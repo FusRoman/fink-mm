@@ -110,10 +110,10 @@ def build_spark_submit(
     >>> spark_jars = "myjavalib.jar,myjavalib2.jar"
     >>> packages = "org.apache.mylib:sublib:1.0.0"
 
-    >>> build_spark_submit(spark_submit, application, external_python_libs, spark_jars, packages)
+    >>> build_spark_submit(spark_submit, application, external_python_libs, spark_jars, packages, "")
     'spark-submit --master local[2] --driver-memory 8G --executor-memory 4G --conf spark.cores.max=4 --conf spark.executor.cores=2 --py-files mypythonlibs.eggs,mypythonlibs2.py  --jars myjavalib.jar,myjavalib2.jar  --packages org.apache.mylib:sublib:1.0.0  myscript.py'
 
-    >>> build_spark_submit(spark_submit, application, "", "", "")
+    >>> build_spark_submit(spark_submit, application, "", "", "", "")
     'spark-submit --master local[2] --driver-memory 8G --executor-memory 4G --conf spark.cores.max=4 --conf spark.executor.cores=2 myscript.py'
     """
 
