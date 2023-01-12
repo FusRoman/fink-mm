@@ -182,6 +182,31 @@ def launch_distribution(arguments):
         )
         exit(1)
 
+
+    try:
+        spark_jars = config["STREAM"]["jars"]
+
+    except Exception as e:
+        if verbose:
+            logger.info(
+                "No spark jars dependencies specify in the following config file: {}\n\t{}".format(
+                    arguments["--config"], e
+                )
+            )
+        spark_jars = ""
+
+    try:
+        packages = config["STREAM"]["packages"]
+    except Exception as e:
+        if verbose:
+            logger.info(
+                "No packages dependencies specify in the following config file: {}\n\t{}".format(
+                    arguments["--config"], e
+                )
+            )
+        packages = ""
+
+
     try:
         external_python_libs = config["STREAM"]["external_python_libs"]
     except Exception as e:
@@ -242,7 +267,7 @@ def launch_distribution(arguments):
     )
 
     spark_submit = build_spark_submit(
-        spark_submit, application, external_python_libs, "", "", external_files
+        spark_submit, application, external_python_libs, spark_jars, packages, external_files
     )
 
     process = subprocess.Popen(
