@@ -14,6 +14,7 @@ from fink_filters.filter_on_axis_grb.filter import (
 )
 
 import fink_grb
+
 # from fink_grb.utils.fun_utils import return_verbose_level
 from fink_grb.init import get_config, init_logging
 from fink_grb.utils.fun_utils import build_spark_submit
@@ -265,10 +266,4 @@ if __name__ == "__main__":
         tinterval = sys.argv[5]
         kafka_broker = sys.argv[6]
 
-        grb_distribution(
-            grbdata_path,
-            night,
-            tinterval,
-            exit_after,
-            kafka_broker
-        )
+        grb_distribution(grbdata_path, night, tinterval, exit_after, kafka_broker)

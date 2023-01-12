@@ -94,9 +94,9 @@ def spark_offline(
     night,
     start_window,
     time_window,
-    ast_dist, 
-    pansstar_dist, 
-    pansstar_star_score, 
+    ast_dist,
+    pansstar_dist,
+    pansstar_star_score,
     gaia_dist,
     with_columns_filter=True,
 ):
@@ -209,7 +209,9 @@ def spark_offline(
         ztf_alert["jd_objectId"] >= "{}".format(low_bound)
     ).filter(ztf_alert["jd_objectId"] < "{}".format(start_window))
 
-    ztf_alert = ztf_grb_filter(ztf_alert, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist)
+    ztf_alert = ztf_grb_filter(
+        ztf_alert, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist
+    )
 
     ztf_alert.cache().count()
 

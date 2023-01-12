@@ -128,9 +128,9 @@ def ztf_join_gcn_stream(
     night,
     exit_after,
     tinterval,
-    ast_dist, 
-    pansstar_dist, 
-    pansstar_star_score, 
+    ast_dist,
+    pansstar_dist,
+    pansstar_star_score,
     gaia_dist,
     logs=False,
 ):
@@ -198,7 +198,9 @@ def ztf_join_gcn_stream(
         latestfirst=False,
     )
 
-    df_ztf_stream = ztf_grb_filter(df_ztf_stream, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist)
+    df_ztf_stream = ztf_grb_filter(
+        df_ztf_stream, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist
+    )
 
     gcn_rawdatapath = gcn_datapath_prefix + "/raw"
 
@@ -493,5 +495,5 @@ if __name__ == "__main__":
             ast_dist,
             pansstar_dist,
             pansstar_star_score,
-            gaia_dist
+            gaia_dist,
         )
