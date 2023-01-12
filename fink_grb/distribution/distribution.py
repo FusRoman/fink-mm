@@ -15,7 +15,7 @@ from fink_filters.filter_on_axis_grb.filter import (
 
 import fink_grb
 
-# from fink_grb.utils.fun_utils import return_verbose_level
+from fink_grb.utils.fun_utils import return_verbose_level
 from fink_grb.init import get_config, init_logging
 from fink_grb.utils.fun_utils import build_spark_submit
 
@@ -142,7 +142,7 @@ def launch_distribution(arguments):
     config = get_config(arguments)
     logger = init_logging()
 
-    # verbose = return_verbose_level(config, logger)
+    verbose = return_verbose_level(config, logger)
 
     try:
         master_manager = config["STREAM"]["manager"]
@@ -175,6 +175,17 @@ def launch_distribution(arguments):
             "Command line arguments not found: {}\n{}".format("--exit_after", e)
         )
         exit(1)
+
+    try:
+        external_python_libs = config["STREAM"]["external_python_libs"]
+    except Exception as e:
+        if verbose:
+            logger.info(
+                "No external python dependencies specify in the following config file: {}\n\t{}".format(
+                    arguments["--config"], e
+                )
+            )
+        external_python_libs = ""
 
     application = os.path.join(
         os.path.dirname(fink_grb.__file__),
@@ -213,7 +224,7 @@ def launch_distribution(arguments):
         exec_core,
     )
 
-    spark_submit = build_spark_submit(spark_submit, application, "", "", "")
+    spark_submit = build_spark_submit(spark_submit, application, external_python_libs, "", "")
 
     process = subprocess.Popen(
         spark_submit,
@@ -227,8 +238,8 @@ def launch_distribution(arguments):
     if process.returncode != 0:  # pragma: no cover
         logger.error(
             "Fink_GRB distribution stream spark application has ended with a non-zero returncode.\
-                \n\t cause:\n\t\t{}\n\t\t{}fink_filters version: \n\t\t{}".format(
-                stdout, stderr, ff.__version__
+                \n\t cause:\n\t\t{}\n\t\t{}".format(
+                stdout, stderr
             )
         )
         exit(1)
