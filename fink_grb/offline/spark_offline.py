@@ -25,7 +25,7 @@ from fink_grb.init import get_config, init_logging
 from fink_grb.online.ztf_join_gcn import box2pixs
 
 
-def ztf_grb_filter(spark_ztf):
+def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist):
     """
     filter the ztf alerts by taking cross-match values from ztf.
 
@@ -39,6 +39,18 @@ def ztf_grb_filter(spark_ztf):
     -------
     spark_filter : spark dataframe
         filtered alerts
+    ast_dist: float
+        distance to nearest known solar system object; set to -999.0 if none [arcsec]
+        ssdistnr field
+    pansstar_dist: float
+        Distance of closest source from PS1 catalog; if exists within 30 arcsec [arcsec]
+        distpsnr1 field
+    pansstar_star_score: float
+        Star/Galaxy score of closest source from PS1 catalog 0 <= sgscore <= 1 where closer to 1 implies higher likelihood of being a star
+        sgscore1 field
+    gaia_dist: float
+        Distance to closest source from Gaia DR1 catalog irrespective of magnitude; if exists within 90 arcsec [arcsec]
+        neargaia field
 
     Examples
     --------
@@ -54,29 +66,31 @@ def ztf_grb_filter(spark_ztf):
     ... "candidate.jdendhist",
     ... "candidate.ssdistnr",
     ... "candidate.distpsnr1",
+    ... "candidate.sgscore1",
     ... "candidate.neargaia",
     ... )
 
-    >>> spark_filter = ztf_grb_filter(sparkDF)
+    >>> spark_filter = ztf_grb_filter(sparkDF, 5, 2, 0, 5)
 
     >>> spark_filter.count()
     31
     """
     spark_filter = (
         spark_ztf.filter(
-            (spark_ztf.ssdistnr > 5.0)
+            (spark_ztf.ssdistnr > ast_dist)
             | (
                 spark_ztf.ssdistnr == -999.0
             )  # distance to nearest known SSO above 30 arcsecond
         )
         .filter(
-            (spark_ztf.distpsnr1 > 2.0)
+            (spark_ztf.distpsnr1 > pansstar_dist)
             | (
                 spark_ztf.distpsnr1 == -999.0
             )  # distance of closest source from Pan-Starrs 1 catalog above 30 arcsecond
+            | (spark_ztf.sgscore1 < pansstar_star_score)
         )
         .filter(
-            (spark_ztf.neargaia > 5.0)
+            (spark_ztf.neargaia > gaia_dist)
             | (
                 spark_ztf.neargaia == -999.0
             )  # distance of closest source from Gaia DR1 catalog above 60 arcsecond
@@ -93,6 +107,10 @@ def spark_offline(
     night,
     start_window,
     time_window,
+    ast_dist,
+    pansstar_dist,
+    pansstar_star_score,
+    gaia_dist,
     with_columns_filter=True,
 ):
     """
@@ -114,6 +132,18 @@ def spark_offline(
     time_window : int
         Number of day between start_window and (start_window - time_window) to join ztf alerts and gcn.
         time_window are in days.
+    ast_dist: float
+        distance to nearest known solar system object; set to -999.0 if none [arcsec]
+        ssdistnr field
+    pansstar_dist: float
+        Distance of closest source from PS1 catalog; if exists within 30 arcsec [arcsec]
+        distpsnr1 field
+    pansstar_star_score: float
+        Star/Galaxy score of closest source from PS1 catalog 0 <= sgscore <= 1 where closer to 1 implies higher likelihood of being a star
+        sgscore1 field
+    gaia_dist: float
+        Distance to closest source from Gaia DR1 catalog irrespective of magnitude; if exists within 90 arcsec [arcsec]
+        neargaia field
 
     Returns
     -------
@@ -133,7 +163,7 @@ def spark_offline(
     ... grb_dataoutput,
     ... "20190903",
     ... Time("2019-09-04").jd,
-    ... 7,
+    ... 7, 5, 2, 0, 5,
     ... False
     ... )
 
@@ -176,6 +206,7 @@ def spark_offline(
         "jdendhist",
         "ssdistnr",
         "distpsnr1",
+        "sgscore1",
         "neargaia",
         "cdsxmatch",
         "roid",
@@ -203,7 +234,9 @@ def spark_offline(
         ztf_alert["jd_objectId"] >= "{}".format(low_bound)
     ).filter(ztf_alert["jd_objectId"] < "{}".format(start_window))
 
-    ztf_alert = ztf_grb_filter(ztf_alert)
+    ztf_alert = ztf_grb_filter(
+        ztf_alert, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist
+    )
 
     ztf_alert.cache().count()
 
@@ -319,6 +352,11 @@ def launch_offline_mode(arguments, is_test=False):
         gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
         grb_datapath_prefix = config["PATH"]["online_grb_data_prefix"]
         hbase_catalog = config["PATH"]["hbase_catalog"]
+
+        ast_dist = config["PRIOR_FILTER"]["ast_dist"]
+        pansstar_dist = config["PRIOR_FILTER"]["pansstar_dist"]
+        pansstar_star_score = config["PRIOR_FILTER"]["pansstar_star_score"]
+        gaia_dist = config["PRIOR_FILTER"]["gaia_dist"]
         if is_test:
             try:
                 fink_home = os.environ["FINK_HOME"]
@@ -392,6 +430,10 @@ def launch_offline_mode(arguments, is_test=False):
     application += " " + night
     application += " " + str(start_window_in_jd)
     application += " " + str(time_window)
+    application += " " + ast_dist
+    application += " " + pansstar_dist
+    application += " " + pansstar_star_score
+    application += " " + gaia_dist
 
     if is_test:
         application += " " + str(False)
@@ -472,7 +514,13 @@ if __name__ == "__main__":
         night = sys.argv[5]
         start_window = float(sys.argv[6])
         time_window = int(sys.argv[7])
-        column_filter = True if sys.argv[8] == "True" else False
+
+        ast_dist = float(sys.argv[8])
+        pansstar_dist = float(sys.argv[9])
+        pansstar_star_score = float(sys.argv[10])
+        gaia_dist = float(sys.argv[11])
+
+        column_filter = True if sys.argv[12] == "True" else False
 
         spark_offline(
             hbase_catalog,
@@ -481,5 +529,9 @@ if __name__ == "__main__":
             night,
             start_window,
             time_window,
+            ast_dist,
+            pansstar_dist,
+            pansstar_star_score,
+            gaia_dist,
             with_columns_filter=column_filter,
         )
