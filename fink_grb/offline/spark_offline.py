@@ -463,7 +463,7 @@ def launch_offline_mode(arguments, is_test=False):
     )
 
     spark_submit = build_spark_submit(
-        spark_submit, application, external_python_libs, spark_jars, packages
+        spark_submit, application, external_python_libs, spark_jars, packages, ""
     )
 
     process = subprocess.Popen(

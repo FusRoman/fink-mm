@@ -450,7 +450,7 @@ def launch_joining_stream(arguments):
     )
 
     spark_submit = build_spark_submit(
-        spark_submit, application, external_python_libs, "", ""
+        spark_submit, application, external_python_libs, "", "", ""
     )
 
     process = subprocess.Popen(
