@@ -64,6 +64,8 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
 
     checkpointpath_grb = grbdatapath + "/grb_checkpoint"
 
+    grbdatapath += "/grb"
+
     # connection to the grb database
     df_grb_stream = connect_to_raw_database(
         grbdatapath
