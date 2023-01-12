@@ -19,6 +19,8 @@ import fink_grb
 from fink_grb.init import get_config, init_logging
 from fink_grb.utils.fun_utils import build_spark_submit
 
+import fink_filters as ff
+
 
 def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_server):
     """
@@ -224,14 +226,14 @@ def launch_distribution(arguments):
     stdout, stderr = process.communicate()
     if process.returncode != 0:  # pragma: no cover
         logger.error(
-            "Fink_GRB joining stream spark application has ended with a non-zero returncode.\
-                \n\t cause:\n\t\t{}\n\t\t{}".format(
-                stdout, stderr
+            "Fink_GRB distribution stream spark application has ended with a non-zero returncode.\
+                \n\t cause:\n\t\t{}\n\t\t{}fink_filters version: \n\t\t{}".format(
+                stdout, stderr, ff.__version__
             )
         )
         exit(1)
 
-    logger.info("Fink_GRB joining stream spark application ended normally")
+    logger.info("Fink_GRB distribution stream spark application ended normally")
     return
 
 
@@ -256,7 +258,10 @@ if __name__ == "__main__":
 
     elif sys.argv[1] == "prod":  # pragma: no cover
 
+        
+
         print()
+        print(ff.__version__)
         print(sys.argv)
         print()
 
