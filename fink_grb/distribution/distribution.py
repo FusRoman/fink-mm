@@ -182,7 +182,6 @@ def launch_distribution(arguments):
         )
         exit(1)
 
-
     try:
         spark_jars = config["STREAM"]["jars"]
 
@@ -205,7 +204,6 @@ def launch_distribution(arguments):
                 )
             )
         packages = ""
-
 
     try:
         external_python_libs = config["STREAM"]["external_python_libs"]
@@ -267,7 +265,12 @@ def launch_distribution(arguments):
     )
 
     spark_submit = build_spark_submit(
-        spark_submit, application, external_python_libs, spark_jars, packages, external_files
+        spark_submit,
+        application,
+        external_python_libs,
+        spark_jars,
+        packages,
+        external_files,
     )
 
     process = subprocess.Popen(

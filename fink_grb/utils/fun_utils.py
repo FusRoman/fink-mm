@@ -77,7 +77,12 @@ def get_hdfs_connector(host: str, port: int, user: str):
 
 
 def build_spark_submit(
-    spark_submit, application, external_python_libs, spark_jars, packages, external_files
+    spark_submit,
+    application,
+    external_python_libs,
+    spark_jars,
+    packages,
+    external_files,
 ):
     """
     Build the spark submit command line to launch spark jobs.
