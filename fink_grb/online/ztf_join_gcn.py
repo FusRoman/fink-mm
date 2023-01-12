@@ -24,7 +24,7 @@ from fink_grb.utils.fun_utils import build_spark_submit, join_post_process
 from fink_grb.init import get_config, init_logging
 
 
-def ztf_grb_filter(spark_ztf):
+def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist):
     """
     filter the ztf alerts by taking cross-match values from ztf.
 
@@ -43,26 +43,27 @@ def ztf_grb_filter(spark_ztf):
     --------
     >>> sparkDF = spark.read.format('parquet').load(alert_data)
 
-    >>> spark_filter = ztf_grb_filter(sparkDF)
+    >>> spark_filter = ztf_grb_filter(sparkDF, 5, 2, 0, 5)
 
     >>> spark_filter.count()
     31
     """
     spark_filter = (
         spark_ztf.filter(
-            (spark_ztf.candidate.ssdistnr > 5)
+            (spark_ztf.candidate.ssdistnr > ast_dist)
             | (
                 spark_ztf.candidate.ssdistnr == -999.0
             )  # distance to nearest known SSO above 30 arcsecond
         )
         .filter(
-            (spark_ztf.candidate.distpsnr1 > 2)
+            (spark_ztf.candidate.distpsnr1 > pansstar_dist)
             | (
                 spark_ztf.candidate.distpsnr1 == -999.0
             )  # distance of closest source from Pan-Starrs 1 catalog above 30 arcsecond
+            | (spark_ztf.candidate.sgscore1 < pansstar_star_score)
         )
         .filter(
-            (spark_ztf.candidate.neargaia > 5)
+            (spark_ztf.candidate.neargaia > gaia_dist)
             | (
                 spark_ztf.candidate.neargaia == -999.0
             )  # distance of closest source from Gaia DR1 catalog above 60 arcsecond
@@ -127,6 +128,10 @@ def ztf_join_gcn_stream(
     night,
     exit_after,
     tinterval,
+    ast_dist, 
+    pansstar_dist, 
+    pansstar_star_score, 
+    gaia_dist,
     logs=False,
 ):
     """
@@ -193,7 +198,7 @@ def ztf_join_gcn_stream(
         latestfirst=False,
     )
 
-    df_ztf_stream = ztf_grb_filter(df_ztf_stream)
+    df_ztf_stream = ztf_grb_filter(df_ztf_stream, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist)
 
     gcn_rawdatapath = gcn_datapath_prefix + "/raw"
 
@@ -347,6 +352,11 @@ def launch_joining_stream(arguments):
         gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
         grb_datapath_prefix = config["PATH"]["online_grb_data_prefix"]
         tinterval = config["STREAM"]["tinterval"]
+
+        ast_dist = config["PRIOR_FILTER"]["ast_dist"]
+        pansstar_dist = config["PRIOR_FILTER"]["pansstar_dist"]
+        pansstar_star_score = config["PRIOR_FILTER"]["pansstar_star_score"]
+        gaia_dist = config["PRIOR_FILTER"]["gaia_dist"]
     except Exception as e:  # pragma: no cover
         logger.error("Config entry not found \n\t {}".format(e))
         exit(1)
@@ -388,6 +398,10 @@ def launch_joining_stream(arguments):
     application += " " + night
     application += " " + str(exit_after)
     application += " " + tinterval
+    application += " " + ast_dist
+    application += " " + pansstar_dist
+    application += " " + pansstar_star_score
+    application += " " + gaia_dist
 
     spark_submit = "spark-submit \
         --master {} \
@@ -464,6 +478,11 @@ if __name__ == "__main__":
         exit_after = sys.argv[6]
         tinterval = sys.argv[7]
 
+        ast_dist = float(sys.argv[8])
+        pansstar_dist = float(sys.argv[9])
+        pansstar_star_score = float(sys.argv[10])
+        gaia_dist = float(sys.argv[11])
+
         ztf_join_gcn_stream(
             ztf_datapath_prefix,
             gcn_datapath_prefix,
@@ -471,4 +490,8 @@ if __name__ == "__main__":
             night,
             exit_after,
             tinterval,
+            ast_dist,
+            pansstar_dist,
+            pansstar_star_score,
+            gaia_dist
         )
