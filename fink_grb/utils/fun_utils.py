@@ -130,7 +130,7 @@ def build_spark_submit(
         spark_submit += " --packages {} ".format(packages)
 
     if external_files != "":
-        spark_submit += " --files {} ".format(external_files) 
+        spark_submit += " --files {} ".format(external_files)
 
     return spark_submit + " " + application
 

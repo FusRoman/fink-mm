@@ -4,8 +4,6 @@ import os
 import subprocess
 import sys
 
-from importlib_resources import files
-
 from fink_utils.broker.sparkUtils import init_sparksession, connect_to_raw_database
 from fink_utils.broker.distributionUtils import write_to_kafka
 
@@ -59,8 +57,8 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
 
     logger = init_logging()
 
-    #schema_path = "fink_grb/conf/fink_grb_schema_version_1.0.avsc"
-    #schema = avro.schema.parse(open(schema_path, "rb").read())
+    # schema_path = "fink_grb/conf/fink_grb_schema_version_1.0.avsc"
+    # schema = avro.schema.parse(open(schema_path, "rb").read())
     with open(SparkFiles.get("fink_grb_schema_version_1.0.avsc"), "rb") as f:
         schema = avro.schema.parse(f.read())
 
