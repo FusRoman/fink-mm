@@ -52,7 +52,7 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
 
     """
     spark = init_sparksession(
-        "science2grb_offline_{}{}{}".format(night[0:4], night[4:6], night[6:8])
+        "science2grb_distribution_{}{}{}".format(night[0:4], night[4:6], night[6:8])
     )
 
     logger = init_logging()
