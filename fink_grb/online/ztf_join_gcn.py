@@ -32,7 +32,19 @@ def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia
     ----------
     spark_ztf : spark dataframe
         a spark dataframe containing alerts, this following columns are mandatory and have to be at the candidate level.
-            - ssdistnr, distpsnr1, neargaia
+            - ssdistnr, distpsnr1, sgscore1, neargaia
+    ast_dist: float
+        distance to nearest known solar system object; set to -999.0 if none [arcsec]
+        ssdistnr field
+    pansstar_dist: float
+        Distance of closest source from PS1 catalog; if exists within 30 arcsec [arcsec]
+        distpsnr1 field
+    pansstar_star_score: float
+        Star/Galaxy score of closest source from PS1 catalog 0 <= sgscore <= 1 where closer to 1 implies higher likelihood of being a star
+        sgscore1 field
+    gaia_dist: float
+        Distance to closest source from Gaia DR1 catalog irrespective of magnitude; if exists within 90 arcsec [arcsec]
+        neargaia field
 
     Returns
     -------
@@ -152,6 +164,18 @@ def ztf_join_gcn_stream(
         the maximum active time in second of the streaming process
     tinterval : int
         the processing interval time in second between the data batch
+    ast_dist: float
+        distance to nearest known solar system object; set to -999.0 if none [arcsec]
+        ssdistnr field
+    pansstar_dist: float
+        Distance of closest source from PS1 catalog; if exists within 30 arcsec [arcsec]
+        distpsnr1 field
+    pansstar_star_score: float
+        Star/Galaxy score of closest source from PS1 catalog 0 <= sgscore <= 1 where closer to 1 implies higher likelihood of being a star
+        sgscore1 field
+    gaia_dist: float
+        Distance to closest source from Gaia DR1 catalog irrespective of magnitude; if exists within 90 arcsec [arcsec]
+        neargaia field
 
     Returns
     -------

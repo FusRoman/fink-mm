@@ -39,6 +39,18 @@ def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia
     -------
     spark_filter : spark dataframe
         filtered alerts
+    ast_dist: float
+        distance to nearest known solar system object; set to -999.0 if none [arcsec]
+        ssdistnr field
+    pansstar_dist: float
+        Distance of closest source from PS1 catalog; if exists within 30 arcsec [arcsec]
+        distpsnr1 field
+    pansstar_star_score: float
+        Star/Galaxy score of closest source from PS1 catalog 0 <= sgscore <= 1 where closer to 1 implies higher likelihood of being a star
+        sgscore1 field
+    gaia_dist: float
+        Distance to closest source from Gaia DR1 catalog irrespective of magnitude; if exists within 90 arcsec [arcsec]
+        neargaia field
 
     Examples
     --------
@@ -119,6 +131,18 @@ def spark_offline(
     time_window : int
         Number of day between start_window and (start_window - time_window) to join ztf alerts and gcn.
         time_window are in days.
+    ast_dist: float
+        distance to nearest known solar system object; set to -999.0 if none [arcsec]
+        ssdistnr field
+    pansstar_dist: float
+        Distance of closest source from PS1 catalog; if exists within 30 arcsec [arcsec]
+        distpsnr1 field
+    pansstar_star_score: float
+        Star/Galaxy score of closest source from PS1 catalog 0 <= sgscore <= 1 where closer to 1 implies higher likelihood of being a star
+        sgscore1 field
+    gaia_dist: float
+        Distance to closest source from Gaia DR1 catalog irrespective of magnitude; if exists within 90 arcsec [arcsec]
+        neargaia field
 
     Returns
     -------
