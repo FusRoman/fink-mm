@@ -167,8 +167,7 @@ def ztf_join_gcn_stream(
     ... gcn_datatest,
     ... grb_dataoutput,
     ... "20190903",
-    ... 90,
-    ... 5
+    ... 90, 5, 5, 2, 0, 5
     ... )
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
