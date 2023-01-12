@@ -19,7 +19,7 @@ from fink_grb.utils.fun_utils import return_verbose_level
 from fink_grb.init import get_config, init_logging
 from fink_grb.utils.fun_utils import build_spark_submit
 
-import fink_filters as ff
+from pyspark.sql import functions as F
 
 from pyspark import SparkFiles
 
@@ -111,7 +111,7 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
 
         grb_stream_distribute = write_to_kafka(
             df_filter,
-            str(schema.to_json()),
+            F.lit(str(schema.to_json())),
             kafka_broker_server,
             "",
             "",
@@ -257,8 +257,8 @@ def launch_distribution(arguments):
     if process.returncode != 0:  # pragma: no cover
         logger.error(
             "Fink_GRB distribution stream spark application has ended with a non-zero returncode.\
-                \n\t cause:\n\t\t{}\n\t\t{}".format(
-                stdout, stderr
+                \n\t cause:\n\t\t{}\n\t\t{}\n\n\n{}\n\n".format(
+                stdout, stderr, spark_submit
             )
         )
         exit(1)
@@ -287,11 +287,6 @@ if __name__ == "__main__":
         spark_unit_tests_science(globs)
 
     elif sys.argv[1] == "prod":  # pragma: no cover
-
-        print()
-        print(ff.__version__)
-        print(sys.argv)
-        print()
 
         grbdata_path = sys.argv[2]
         night = sys.argv[3]
