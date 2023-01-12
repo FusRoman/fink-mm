@@ -66,10 +66,11 @@ def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia
     ... "candidate.jdendhist",
     ... "candidate.ssdistnr",
     ... "candidate.distpsnr1",
+    ... "candidate.sgscore1",
     ... "candidate.neargaia",
     ... )
 
-    >>> spark_filter = ztf_grb_filter(sparkDF)
+    >>> spark_filter = ztf_grb_filter(sparkDF, 5, 2, 0, 5)
 
     >>> spark_filter.count()
     31
@@ -162,7 +163,7 @@ def spark_offline(
     ... grb_dataoutput,
     ... "20190903",
     ... Time("2019-09-04").jd,
-    ... 7, 5, 2, 0, 5
+    ... 7, 5, 2, 0, 5,
     ... False
     ... )
 
