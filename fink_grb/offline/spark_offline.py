@@ -206,7 +206,7 @@ def spark_offline(
         "jdendhist",
         "ssdistnr",
         "distpsnr1",
-        "sgscore",
+        "sgscore1",
         "neargaia",
         "cdsxmatch",
         "roid",
