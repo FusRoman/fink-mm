@@ -4,6 +4,8 @@ import os
 import subprocess
 import sys
 
+from importlib_resources import files
+
 from fink_utils.broker.sparkUtils import init_sparksession, connect_to_raw_database
 from fink_utils.broker.distributionUtils import write_to_kafka
 
@@ -20,6 +22,8 @@ from fink_grb.init import get_config, init_logging
 from fink_grb.utils.fun_utils import build_spark_submit
 
 import fink_filters as ff
+
+from pyspark import SparkFiles
 
 
 def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_server):
@@ -55,8 +59,10 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
 
     logger = init_logging()
 
-    schema_path = "fink_grb/conf/fink_grb_schema_version_1.0.avsc"
-    schema = avro.schema.parse(open(schema_path, "rb").read())
+    #schema_path = "fink_grb/conf/fink_grb_schema_version_1.0.avsc"
+    #schema = avro.schema.parse(open(schema_path, "rb").read())
+    with open(SparkFiles.get("fink_grb_schema_version_1.0.avsc"), "rb") as f:
+        schema = avro.schema.parse(f.read())
 
     checkpointpath_grb = grbdatapath + "/grb_checkpoint"
 
@@ -187,6 +193,17 @@ def launch_distribution(arguments):
             )
         external_python_libs = ""
 
+    try:
+        external_files = config["STREAM"]["external_files"]
+    except Exception as e:
+        if verbose:
+            logger.info(
+                "No external python dependencies specify in the following config file: {}\n\t{}".format(
+                    arguments["--config"], e
+                )
+            )
+        external_files = ""
+
     application = os.path.join(
         os.path.dirname(fink_grb.__file__),
         "distribution",
@@ -225,7 +242,7 @@ def launch_distribution(arguments):
     )
 
     spark_submit = build_spark_submit(
-        spark_submit, application, external_python_libs, "", ""
+        spark_submit, application, external_python_libs, "", "", external_files
     )
 
     process = subprocess.Popen(

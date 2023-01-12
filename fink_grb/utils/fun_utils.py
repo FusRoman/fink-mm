@@ -77,7 +77,7 @@ def get_hdfs_connector(host: str, port: int, user: str):
 
 
 def build_spark_submit(
-    spark_submit, application, external_python_libs, spark_jars, packages
+    spark_submit, application, external_python_libs, spark_jars, packages, external_files
 ):
     """
     Build the spark submit command line to launch spark jobs.
@@ -94,6 +94,8 @@ def build_spark_submit(
         list of external java libraries separated by ','.
     packages : string
         list of external java libraries hosted on maven, the java packages manager.
+    external_files : string
+        list of external files comma separated to load in the spark job.
 
     Return
     ------
@@ -126,6 +128,9 @@ def build_spark_submit(
 
     if packages != "":
         spark_submit += " --packages {} ".format(packages)
+
+    if external_files != "":
+        spark_submit += " --files {} ".format(external_files) 
 
     return spark_submit + " " + application
 
