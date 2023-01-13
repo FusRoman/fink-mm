@@ -24,7 +24,7 @@ from pyspark.sql import functions as F
 from pyspark import SparkFiles
 
 
-def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_server):
+def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_server, username, password):
     """
 
     Distribute the data return by the online mode over kafka.
@@ -42,6 +42,10 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
         the maximum active time in second of the streaming process
     kafka_broker_server: string
         address of the kafka cluster
+    username: string
+        username for writing into the kafka cluster
+    password: string
+        password for writing into the kafka cluster
 
     Return
     ------
@@ -119,8 +123,8 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
             df_filter,
             F.lit(str(schema.to_json())),
             kafka_broker_server,
-            "",
-            "",
+            username,
+            password,
             topicname,
             checkpointpath_grb,
             tinterval,
@@ -170,6 +174,8 @@ def launch_distribution(arguments):
         grb_datapath_prefix = config["PATH"]["online_grb_data_prefix"]
         tinterval = config["STREAM"]["tinterval"]
         kafka_broker = config["DISTRIBUTION"]["kafka_broker"]
+        username_writer = config["DISTRIBUTION"]["username_writer"]
+        password_writer = config["DISTRIBUTION"]["password_writer"]
     except Exception as e:  # pragma: no cover
         logger.error("Config entry not found \n\t {}".format(e))
         exit(1)
@@ -244,6 +250,8 @@ def launch_distribution(arguments):
     application += " " + str(exit_after)
     application += " " + tinterval
     application += " " + kafka_broker
+    application += " " + username_writer
+    application += " " + password_writer
 
     print()
     print(application)
@@ -327,5 +335,7 @@ if __name__ == "__main__":
         exit_after = sys.argv[4]
         tinterval = sys.argv[5]
         kafka_broker = sys.argv[6]
+        username_writer = sys.argv[7]
+        password_writer = sys.argv[8]
 
-        grb_distribution(grbdata_path, night, tinterval, exit_after, kafka_broker)
+        grb_distribution(grbdata_path, night, tinterval, exit_after, kafka_broker, username_writer, password_writer)
