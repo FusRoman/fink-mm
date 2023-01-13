@@ -62,7 +62,7 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
     with open(SparkFiles.get("fink_grb_schema_version_1.0.avsc"), "rb") as f:
         schema = avro.schema.parse(f.read())
 
-    checkpointpath_grb = grbdatapath + "/grb_checkpoint"
+    checkpointpath_grb = grbdatapath + "/grb_distribute_checkpoint"
 
     grbdatapath += "/grb"
 
