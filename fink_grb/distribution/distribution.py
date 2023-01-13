@@ -119,6 +119,7 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
         (df_gold, "grb_gold_samples"),
     ]:
 
+        checkpointpath_grb += "/{}_checkpoint".format(topicname)
         grb_stream_distribute = write_to_kafka(
             df_filter,
             F.lit(str(schema.to_json())),
