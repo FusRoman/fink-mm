@@ -114,9 +114,9 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
     )
 
     for df_filter, topicname in [
-        (df_bronze, "grb_bronze_samples"),
-        (df_silver, "grb_silver_samples"),
-        (df_gold, "grb_gold_samples"),
+        (df_bronze, "fink_grb_bronze_samples"),
+        (df_silver, "fink_grb_silver_samples"),
+        (df_gold, "fink_grb_gold_samples"),
     ]:
 
         checkpointpath_topic = checkpointpath_grb + "/{}_checkpoint".format(topicname)
