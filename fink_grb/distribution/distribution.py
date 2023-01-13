@@ -93,7 +93,7 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
     df_silver = (
         df_grb_stream.withColumn(
             "f_bronze",
-            f_silver_events(df_grb_stream["fink_class"], df_grb_stream["rb"]),
+            f_silver_events(df_grb_stream["fink_class"], df_grb_stream["rb"], df_grb_stream["grb_proba"]),
         )
         .filter("f_bronze == True")
         .drop("f_bronze")
