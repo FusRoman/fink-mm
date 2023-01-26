@@ -38,6 +38,7 @@ jobs:
         cd ${HOME}
         git clone https://github.com/astrolabsoftware/fink-broker.git
         cd fink-broker
+        git checkout issue/674/hbase
         pip install .
         echo "FINK_HOME=${HOME}/fink-broker" >> $GITHUB_ENV
         cd $FINK_GRB
