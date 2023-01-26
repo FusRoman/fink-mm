@@ -63,7 +63,7 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
 
     # schema_path = "fink_grb/conf/fink_grb_schema_version_1.0.avsc"
     # schema = avro.schema.parse(open(schema_path, "rb").read())
-    with open(SparkFiles.get("fink_grb_schema_version_1.0.avsc"), "rb") as f:
+    with open(SparkFiles.get("fink_grb_schema_version_1.0.avsc"), "r") as f:
         schema = json.dumps(f.read())
 
     schema = json.loads(schema)
