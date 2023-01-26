@@ -1,8 +1,8 @@
 import time
-import avro.schema
 import os
 import subprocess
 import sys
+import json
 
 from fink_utils.broker.sparkUtils import init_sparksession, connect_to_raw_database
 from fink_utils.broker.distributionUtils import write_to_kafka
@@ -64,7 +64,9 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
     # schema_path = "fink_grb/conf/fink_grb_schema_version_1.0.avsc"
     # schema = avro.schema.parse(open(schema_path, "rb").read())
     with open(SparkFiles.get("fink_grb_schema_version_1.0.avsc"), "rb") as f:
-        schema = avro.schema.parse(f.read())
+        schema = json.dumps(f.read())
+    
+    schema = json.loads(schema)
 
     checkpointpath_grb = grbdatapath + "/grb_distribute_checkpoint"
 
@@ -122,7 +124,7 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
         checkpointpath_topic = checkpointpath_grb + "/{}_checkpoint".format(topicname)
         grb_stream_distribute = write_to_kafka(
             df_filter,
-            F.lit(str(schema.to_json())),
+            F.lit(schema),
             kafka_broker_server,
             username,
             password,
