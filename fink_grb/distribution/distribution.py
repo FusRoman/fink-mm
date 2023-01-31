@@ -81,7 +81,7 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
         latestfirst=True,
     )
 
-    df_grb_stream = df_grb_stream.drop("year").drop("month").drop("day")
+    df_grb_stream = df_grb_stream.drop("year").drop("month").drop("day").drop("timestamp")
 
     df_bronze = (
         df_grb_stream.withColumn(

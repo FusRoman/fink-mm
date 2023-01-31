@@ -155,30 +155,6 @@
         "double",
         "null"
       ]
-    },
-    {
-      "name": "timestamp",
-      "type": [
-        {
-          "type": "long",
-          "logicalType": "timestamp-micros"
-        },
-        "null"
-      ]
-    },
-    {
-      "name": "month",
-      "type": [
-        "long",
-        "null"
-      ]
-    },
-    {
-      "name": "day",
-      "type": [
-        "long",
-        "null"
-      ]
     }
   ]
 }
