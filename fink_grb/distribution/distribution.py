@@ -94,16 +94,16 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
 
     df_silver = (
         df_grb_stream.withColumn(
-            "f_bronze",
+            "f_silver",
             f_silver_events(df_grb_stream["fink_class"], df_grb_stream["rb"], df_grb_stream["grb_proba"]),
         )
-        .filter("f_bronze == True")
-        .drop("f_bronze")
+        .filter("f_silver == True")
+        .drop("f_silver")
     )
 
     df_gold = (
         df_grb_stream.withColumn(
-            "f_bronze",
+            "f_gold",
             f_gold_events(
                 df_grb_stream["fink_class"],
                 df_grb_stream["rb"],
@@ -111,8 +111,8 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
                 df_grb_stream["rate"],
             ),
         )
-        .filter("f_bronze == True")
-        .drop("f_bronze")
+        .filter("f_gold == True")
+        .drop("f_gold")
     )
 
     for df_filter, topicname in [
