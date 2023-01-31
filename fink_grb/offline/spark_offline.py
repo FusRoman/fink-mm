@@ -293,6 +293,8 @@ def spark_offline(
     if "day" not in df_grb.columns:
         df_grb = df_grb.withColumn("day", F.date_format("timestamp", "dd"))
 
+    grbxztf_write_path = grbxztf_write_path + "/offline"
+
     df_grb.write.mode("append").partitionBy("year", "month", "day").parquet(
         grbxztf_write_path
     )

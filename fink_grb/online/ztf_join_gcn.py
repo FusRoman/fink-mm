@@ -299,8 +299,8 @@ def ztf_join_gcn_stream(
     if "day" not in df_grb.columns:
         df_grb = df_grb.withColumn("day", F.date_format("timestamp", "dd"))
 
-    grbdatapath = grb_datapath_prefix + "/grb"
-    checkpointpath_grb_tmp = grb_datapath_prefix + "/grb_checkpoint"
+    grbdatapath = grb_datapath_prefix + "/online"
+    checkpointpath_grb_tmp = grb_datapath_prefix + "/online_checkpoint"
 
     query_grb = (
         df_grb.writeStream.outputMode("append")
