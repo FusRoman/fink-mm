@@ -24,7 +24,9 @@ from pyspark.sql import functions as F
 from pyspark import SparkFiles
 
 
-def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_server, username, password):
+def grb_distribution(
+    grbdatapath, night, tinterval, exit_after, kafka_broker_server, username, password
+):
     """
 
     Distribute the data return by the online mode over kafka.
@@ -81,7 +83,16 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
         latestfirst=True,
     )
 
-    df_grb_stream = df_grb_stream.drop("year").drop("month").drop("day").drop("timestamp")
+    cnames = df_grb_stream.columns
+    cnames[cnames.index("fid")] = "cast(fid as long) as fid"
+    cnames[cnames.index("rb")] = "cast(rb as double) as rb"
+    cnames[
+        cnames.index("triggerTimeUTC")
+    ] = "cast(triggerTimeUTC as string) as triggerTimeUTC"
+
+    df_grb_stream = (
+        df_grb_stream.drop("year").drop("month").drop("day").drop("timestamp")
+    )
 
     df_bronze = (
         df_grb_stream.withColumn(
@@ -95,7 +106,11 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
     df_silver = (
         df_grb_stream.withColumn(
             "f_silver",
-            f_silver_events(df_grb_stream["fink_class"], df_grb_stream["rb"], df_grb_stream["grb_proba"]),
+            f_silver_events(
+                df_grb_stream["fink_class"],
+                df_grb_stream["rb"],
+                df_grb_stream["grb_proba"],
+            ),
         )
         .filter("f_silver == True")
         .drop("f_silver")
@@ -121,6 +136,7 @@ def grb_distribution(grbdatapath, night, tinterval, exit_after, kafka_broker_ser
         (df_gold, "fink_grb_gold"),
     ]:
 
+        df_filter = df_filter.selectExpr(cnames)
         checkpointpath_topic = checkpointpath_grb + "/{}_checkpoint".format(topicname)
         grb_stream_distribute = write_to_kafka(
             df_filter,
@@ -341,4 +357,12 @@ if __name__ == "__main__":
         username_writer = sys.argv[7]
         password_writer = sys.argv[8]
 
-        grb_distribution(grbdata_path, night, tinterval, exit_after, kafka_broker, username_writer, password_writer)
+        grb_distribution(
+            grbdata_path,
+            night,
+            tinterval,
+            exit_after,
+            kafka_broker,
+            username_writer,
+            password_writer,
+        )
