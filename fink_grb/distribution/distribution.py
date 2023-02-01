@@ -83,16 +83,16 @@ def grb_distribution(
         latestfirst=True,
     )
 
+    df_grb_stream = (
+        df_grb_stream.drop("year").drop("month").drop("day").drop("timestamp")
+    )
+
     cnames = df_grb_stream.columns
     cnames[cnames.index("fid")] = "cast(fid as long) as fid"
     cnames[cnames.index("rb")] = "cast(rb as double) as rb"
     cnames[
         cnames.index("triggerTimeUTC")
     ] = "cast(triggerTimeUTC as string) as triggerTimeUTC"
-
-    df_grb_stream = (
-        df_grb_stream.drop("year").drop("month").drop("day").drop("timestamp")
-    )
 
     df_bronze = (
         df_grb_stream.withColumn(
