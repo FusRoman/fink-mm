@@ -272,10 +272,6 @@ def launch_distribution(arguments):
     application += " " + username_writer
     application += " " + password_writer
 
-    print()
-    print(application)
-    print()
-
     spark_submit = "spark-submit \
         --master {} \
         --conf spark.mesos.principal={} \
