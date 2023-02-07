@@ -55,7 +55,13 @@ def grb_distribution(
 
     Examples
     --------
-
+    >>> grb_distribution(
+    ... "fink_grb/test/test_data/ztfxgcn_test/",
+    ... "20230101",
+    ... 30, 120,
+    ... "localhost:9092",
+    ... "toto", "tata"
+    ... )
     """
     spark = init_sparksession(
         "science2grb_distribution_{}{}{}".format(night[0:4], night[4:6], night[6:8])
@@ -332,13 +338,6 @@ if __name__ == "__main__":
         import shutil  # noqa: F401
 
         globs = globals()
-
-        grb_data = "fink_grb/test/test_data/gcn_test/raw/year=2019/month=09/day=03"
-        join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
-        alert_data = "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/ztf_science_test.parquet"
-        globs["join_data"] = join_data
-        globs["alert_data"] = alert_data
-        globs["grb_data"] = grb_data
 
         # Run the test suite
         spark_unit_tests_science(globs)
