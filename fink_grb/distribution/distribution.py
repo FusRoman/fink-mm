@@ -67,8 +67,6 @@ def grb_distribution(
 
     logger = init_logging()
 
-    # schema_path = "fink_grb/conf/fink_grb_schema_version_1.0.avsc"
-    # schema = avro.schema.parse(open(schema_path, "rb").read())
     schema_path = files("fink_grb").joinpath(
         "conf/fink_grb_schema_version_{}.avsc".format(
             fink_grb.__distribution_schema_version__
