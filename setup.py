@@ -3,7 +3,6 @@
 from setuptools import setup, find_packages
 import fink_grb
 
-
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
@@ -18,7 +17,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=find_packages(),
-    package_data={"fink_grb": ["conf/fink_grb.conf"]},
+    package_data={"fink_grb": ["conf/fink_grb.conf", "conf/fink_grb_schema_version_{}.avsc".format(fink_grb.__distribution_schema_version__)]},
     install_requires=[
         "fink-utils>=0.8.0",
         "docopt>=0.6.2",

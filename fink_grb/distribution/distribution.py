@@ -6,6 +6,7 @@ import json
 
 from fink_utils.broker.sparkUtils import init_sparksession, connect_to_raw_database
 from fink_utils.broker.distributionUtils import write_to_kafka
+from importlib_resources import files
 
 from fink_filters.filter_on_axis_grb.filter import (
     f_bronze_events,
@@ -28,7 +29,6 @@ def grb_distribution(
     grbdatapath, night, tinterval, exit_after, kafka_broker_server, username, password
 ):
     """
-
     Distribute the data return by the online mode over kafka.
 
     Parameters
@@ -71,7 +71,8 @@ def grb_distribution(
 
     # schema_path = "fink_grb/conf/fink_grb_schema_version_1.0.avsc"
     # schema = avro.schema.parse(open(schema_path, "rb").read())
-    with open(SparkFiles.get("fink_grb_schema_version_1.0.avsc"), "r") as f:
+    schema_path = files("fink_grb").joinpath("conf/fink_grb_schema_version_{}.avsc".format(fink_grb.__distribution_schema_version__))
+    with open(schema_path, "r") as f:
         schema = json.dumps(f.read())
 
     schema = json.loads(schema)
