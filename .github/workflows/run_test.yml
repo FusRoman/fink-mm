@@ -66,15 +66,19 @@ jobs:
         echo "FINK_PACKAGES: $FINK_PACKAGES"
         echo "FINK_JARS: $FINK_JARS"
         echo `python -V`
-
-    - name: Push Hbase data
+    
+    - name: Start services
       run: |
         cd $USRLIBS
         source scripts/start_services.sh --kafka-version ${KAFKA_VERSION} --hbase-version ${HBASE_VERSION}
         cd $FINK_GRB
 
+    - name: Call raw2science
+      run: |
         fink start raw2science -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --topic "raw2science_test" --night 20190903 --exit_after 40
 
+    - name: Push Hbase data
+      run: |
         fink start index_archival -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night 20190903 --index_table jd_objectId
 
     - name: Check HBase table
