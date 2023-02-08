@@ -22,8 +22,6 @@ from fink_grb.utils.fun_utils import build_spark_submit
 
 from pyspark.sql import functions as F
 
-from pyspark import SparkFiles
-
 
 def grb_distribution(
     grbdatapath, night, tinterval, exit_after, kafka_broker_server, username, password
@@ -71,7 +69,11 @@ def grb_distribution(
 
     # schema_path = "fink_grb/conf/fink_grb_schema_version_1.0.avsc"
     # schema = avro.schema.parse(open(schema_path, "rb").read())
-    schema_path = files("fink_grb").joinpath("conf/fink_grb_schema_version_{}.avsc".format(fink_grb.__distribution_schema_version__))
+    schema_path = files("fink_grb").joinpath(
+        "conf/fink_grb_schema_version_{}.avsc".format(
+            fink_grb.__distribution_schema_version__
+        )
+    )
     with open(schema_path, "r") as f:
         schema = json.dumps(f.read())
 
