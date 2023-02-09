@@ -11,6 +11,7 @@ from fink_filters.classification import extract_fink_classification
 from fink_utils.spark.utils import concat_col
 
 from fink_grb.utils.grb_prob import grb_assoc
+from fink_broker.tracklet_identification import add_tracklet_information
 
 
 def return_verbose_level(config, logger):
@@ -598,6 +599,8 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
         )
 
         df_grb = format_rate_results(df_grb, "c_rate")
+
+    df_grb = add_tracklet_information(df_grb)
 
     df_grb = df_grb.withColumn(
         "fink_class",

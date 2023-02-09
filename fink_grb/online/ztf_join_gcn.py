@@ -486,7 +486,7 @@ if __name__ == "__main__":
 
         grb_data = "fink_grb/test/test_data/gcn_test/raw/year=2019/month=09/day=03"
         join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
-        alert_data = "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/ztf_science_test.parquet"
+        alert_data = "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/"
         globs["join_data"] = join_data
         globs["alert_data"] = alert_data
         globs["grb_data"] = grb_data
