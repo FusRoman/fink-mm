@@ -75,7 +75,7 @@ jobs:
 
     - name: Call raw2science
       run: |
-        fink start raw2science -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --topic "raw2science_test" --night 20190903 --exit_after 40
+        fink start raw2science -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night 20190903 --exit_after 40
 
     - name: Merge data
       run: |
