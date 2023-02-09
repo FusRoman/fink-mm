@@ -195,13 +195,13 @@ def ztf_join_gcn_stream(
     ... )
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    >>> datajoin = pd.read_parquet(grb_dataoutput + "/grb/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datajoin = pd.read_parquet(grb_dataoutput + "/online/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
-    >>> shutil.rmtree(grb_dataoutput + "/grb/_spark_metadata")
-    >>> shutil.rmtree(grb_dataoutput + "/grb/year=2019")
-    >>> shutil.rmtree(grb_dataoutput + "/grb_checkpoint")
+    >>> shutil.rmtree(grb_dataoutput + "/online/_spark_metadata")
+    >>> shutil.rmtree(grb_dataoutput + "/online/year=2019")
+    >>> shutil.rmtree(grb_dataoutput + "/online_checkpoint")
     """
     logger = init_logging()
     spark = init_sparksession(
@@ -349,13 +349,13 @@ def launch_joining_stream(arguments):
     ... })
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    >>> datajoin = pd.read_parquet(grb_datatest + "/grb/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datajoin = pd.read_parquet(grb_datatest + "/online/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
-    >>> shutil.rmtree(grb_datatest + "/grb/_spark_metadata")
-    >>> shutil.rmtree(grb_datatest + "/grb/year=2019")
-    >>> shutil.rmtree(grb_datatest + "/grb_checkpoint")
+    >>> shutil.rmtree(grb_datatest + "/online/_spark_metadata")
+    >>> shutil.rmtree(grb_datatest + "/online/year=2019")
+    >>> shutil.rmtree(grb_datatest + "/online_checkpoint")
     """
     config = get_config(arguments)
     logger = init_logging()
