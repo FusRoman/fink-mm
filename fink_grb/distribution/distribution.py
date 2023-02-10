@@ -216,7 +216,46 @@ def launch_distribution(arguments):
 
     Examples
     --------
+    >>> launch_distribution({
+    ... "--config" : None,
+    ... "--night" : "20190903",
+    ... "--exit_after" : 40
+    ... })
 
+    >>> from fink_client.consumer import AlertConsumer
+    >>> import tabulate
+
+    >>> maxtimeout = 10
+    >>> myconfig = {"username": "rlm", "bootstrap.servers": "localhost:9092", "group_id": "rlm_fink"}
+    >>> topics = ["fink_grb_bronze"]
+
+    >>> consumer = AlertConsumer(topics, myconfig)
+    >>> topic, alert, key = consumer.poll(maxtimeout)
+
+    >>> table = [[
+    ... alert["jd"],
+    ... topic,
+    ... alert["objectId"],
+    ... alert["fink_class"],
+    ... alert["rate"]
+    ... ]]
+
+    >>> headers = [
+    ... "Generated at (jd)",
+    ... "Topic",
+    ... "objectId",
+    ... "Fink_Class",
+    ... "Rate",
+    ... ]
+
+    >>> print(tabulate.tabulate(table, headers, tablefmt="pretty"))
+    +-------------------+-----------------+--------------+------------+---------------------+
+    | Generated at (jd) |      Topic      |   objectId   | Fink_Class |        Rate         |
+    +-------------------+-----------------+--------------+------------+---------------------+
+    |  2458729.6881481  | fink_grb_bronze | ZTF19abvxqrr | Ambiguous  | -1.7537370607895864 |
+    +-------------------+-----------------+--------------+------------+---------------------+
+
+    >>> shutil.rmtree("fink_grb/test/test_data/ztfxgcn_test/grb_distribute_checkpoint")
     """
     config = get_config(arguments)
     logger = init_logging()
