@@ -54,7 +54,7 @@ def grb_distribution(
     Examples
     --------
     >>> grb_distribution(
-    ... "fink_grb/test/test_data/ztfxgcn_test/",
+    ... "fink_grb/test/test_output/distribution/",
     ... "20230101",
     ... 30, 40,
     ... "localhost:9092",
@@ -88,6 +88,13 @@ def grb_distribution(
     ... ]
 
     >>> print(tabulate.tabulate(table, headers, tablefmt="pretty"))
+    +-------------------+-----------------+--------------+------------+---------------------+
+    | Generated at (jd) |      Topic      |   objectId   | Fink_Class |        Rate         |
+    +-------------------+-----------------+--------------+------------+---------------------+
+    |  2458729.6881481  | fink_grb_bronze | ZTF19abvxqrr | Ambiguous  | -1.7537370607895864 |
+    +-------------------+-----------------+--------------+------------+---------------------+
+
+    >>> shutil.rmtree("fink_grb/test/test_output/distribution/grb_distribute_checkpoint")
     """
     spark = init_sparksession(
         "science2grb_distribution_{}{}{}".format(night[0:4], night[4:6], night[6:8])
@@ -196,10 +203,12 @@ def grb_distribution(
 
 def launch_distribution(arguments):
     """
-
+    Launch the distribution of the grb cross ztf alerts, used by the command line interface.
 
     Parameters
     ----------
+    arguments : dictionnary
+        arguments parse from the command line.
 
     Returns
     -------
