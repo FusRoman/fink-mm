@@ -60,6 +60,31 @@ def grb_distribution(
     ... "localhost:9092",
     ... "toto", "tata"
     ... )
+
+
+    >>> myconfig = {"username": "rlm", "bootstrap.servers": "localhost:9092", "group_id": "rlm_fink"}
+    >>> topics = ["fink_grb_bronze"]
+
+    >>> consumer = AlertConsumer(topics, myconfig)
+    >>> topic, alert, key = consumer.poll(maxtimeout)
+
+    >>> table = [[
+    ... alert["jd"],
+    ... topic,
+    ... alert["objectId"],
+    ... alert["fink_class"],
+    ... alert["rate"]
+    ... ]]
+
+    >>> headers = [
+    ... "Generated at (jd)",
+    ... "Topic",
+    ... "objectId",
+    ... "Fink_Class",
+    ... "Rate",
+    ... ]
+
+    >>> print(tabulate.tabulate(table, headers, tablefmt="pretty"))
     """
     spark = init_sparksession(
         "science2grb_distribution_{}{}{}".format(night[0:4], night[4:6], night[6:8])
