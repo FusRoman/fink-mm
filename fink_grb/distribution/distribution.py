@@ -56,12 +56,12 @@ def grb_distribution(
     >>> grb_distribution(
     ... "fink_grb/test/test_data/ztfxgcn_test/",
     ... "20230101",
-    ... 30, 120,
+    ... 30, 40,
     ... "localhost:9092",
     ... "toto", "tata"
     ... )
 
-
+    >>> from fink_client.consumer import AlertConsumer
     >>> myconfig = {"username": "rlm", "bootstrap.servers": "localhost:9092", "group_id": "rlm_fink"}
     >>> topics = ["fink_grb_bronze"]
 
