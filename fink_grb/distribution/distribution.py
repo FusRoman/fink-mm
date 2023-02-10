@@ -62,6 +62,9 @@ def grb_distribution(
     ... )
 
     >>> from fink_client.consumer import AlertConsumer
+    >>> import tabulate
+
+    >>> maxtimeout = 10
     >>> myconfig = {"username": "rlm", "bootstrap.servers": "localhost:9092", "group_id": "rlm_fink"}
     >>> topics = ["fink_grb_bronze"]
 
