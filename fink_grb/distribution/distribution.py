@@ -255,7 +255,7 @@ def launch_distribution(arguments):
     |  2458729.6881481  | fink_grb_bronze | ZTF19abvxqrr | Ambiguous  | -1.7537370607895864 |
     +-------------------+-----------------+--------------+------------+---------------------+
 
-    >>> shutil.rmtree("fink_grb/test/test_data/ztfxgcn_test/grb_distribute_checkpoint")
+    >>> shutil.rmtree("fink_grb/test/test_output/grb_distribute_checkpoint")
     """
     config = get_config(arguments)
     logger = init_logging()
