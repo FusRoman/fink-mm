@@ -206,7 +206,7 @@ def ztf_join_gcn_stream(
     """
     logger = init_logging()
     spark = init_sparksession(
-        "science2grb_{}{}{}".format(night[0:4], night[4:6], night[6:8])
+        "science2grb_online_{}{}{}".format(night[0:4], night[4:6], night[6:8])
     )
 
     NSIDE = 4

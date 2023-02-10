@@ -195,7 +195,7 @@ def grb_distribution(
     if exit_after is not None:
         time.sleep(int(exit_after))
         grb_stream_distribute.stop()
-        logger.info("Exiting the science2grb streaming subprocess normally...")
+        logger.info("Exiting the science2grb distribution subprocess normally...")
     else:  # pragma: no cover
         # Wait for the end of queries
         spark.streams.awaitAnyTermination()

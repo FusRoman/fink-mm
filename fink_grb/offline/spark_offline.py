@@ -483,14 +483,14 @@ def launch_offline_mode(arguments, is_test=False):
     stdout, stderr = process.communicate()
     if process.returncode != 0:  # pragma: no cover
         logger.error(
-            "Fink_GRB joining stream spark application has ended with a non-zero returncode.\
+            "Fink_GRB offline crossmatch application has ended with a non-zero returncode.\
                 \n\t cause:\n\t\t{}\n\t\t{}".format(
                 stdout, stderr
             )
         )
         exit(1)
 
-    logger.info("Fink_GRB joining stream spark application ended normally")
+    logger.info("Fink_GRB offline crossmatch application ended normally")
     return
 
 
