@@ -54,7 +54,7 @@ def grb_distribution(
     Examples
     --------
     >>> grb_distribution(
-    ... "fink_grb/test/test_output/distribution/",
+    ... "fink_grb/test/test_data/ztfxgcn_test/",
     ... "20230101",
     ... 30, 40,
     ... "localhost:9092",
@@ -94,7 +94,7 @@ def grb_distribution(
     |  2458729.6881481  | fink_grb_bronze | ZTF19abvxqrr | Ambiguous  | -1.7537370607895864 |
     +-------------------+-----------------+--------------+------------+---------------------+
 
-    >>> shutil.rmtree("fink_grb/test/test_output/distribution/grb_distribute_checkpoint")
+    >>> shutil.rmtree("fink_grb/test/test_data/ztfxgcn_test/grb_distribute_checkpoint")
     """
     spark = init_sparksession(
         "science2grb_distribution_{}{}{}".format(night[0:4], night[4:6], night[6:8])
