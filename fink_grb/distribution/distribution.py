@@ -334,14 +334,14 @@ def launch_distribution(arguments):
 if __name__ == "__main__":
 
     if sys.argv[1] == "test":
-        from fink_utils.test.tester import spark_unit_tests_science
+        from fink_utils.test.tester import spark_unit_tests_broker
         from pandas.testing import assert_frame_equal  # noqa: F401
         import shutil  # noqa: F401
 
         globs = globals()
 
         # Run the test suite
-        spark_unit_tests_science(globs)
+        spark_unit_tests_broker(globs)
 
     elif sys.argv[1] == "prod":  # pragma: no cover
 
