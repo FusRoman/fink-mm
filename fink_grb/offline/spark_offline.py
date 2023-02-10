@@ -174,8 +174,8 @@ def spark_offline(
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
-    >>> shutil.rmtree(grb_dataoutput + "/offline/year=2019")
-    >>> os.remove(grb_dataoutput + "/offline/_SUCCESS")
+    # >>> shutil.rmtree(grb_dataoutput + "/offline/year=2019")
+    # >>> os.remove(grb_dataoutput + "/offline/_SUCCESS")
     """
     with open(hbase_catalog) as f:
         catalog = json.load(f)
