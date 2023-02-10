@@ -318,7 +318,7 @@ def launch_offline_mode(arguments, is_test=False):
     Examples
     --------
     >>> gcn_datatest = "fink_grb/test/test_data/gcn_test"
-    >>> grb_dataoutput = "fink_grb/test/test_output"
+    >>> grb_dataoutput = "fink_grb/test/test_output/offline"
     >>> launch_offline_mode({
     ... "--config" : None,
     ... "--night" : "20190903",
