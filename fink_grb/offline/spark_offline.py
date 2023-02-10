@@ -167,11 +167,12 @@ def spark_offline(
     ... False
     ... )
 
-    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_offline_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    >>> datatest = datatest.drop(["grb_proba"], axis=1)
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/offline/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
     >>> datajoin.to_parquet("fink_grb/test/test_data/grb_offline_join_output.parquet")
     >>> datajoin = datajoin.drop("grb_proba", axis=1)
+
+    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_offline_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datatest = datatest.drop(["grb_proba"], axis=1)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
@@ -326,10 +327,11 @@ def launch_offline_mode(arguments, is_test=False):
     ... is_test=True
     ... )
 
-    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_offline_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    >>> datatest = datatest.drop(["grb_proba"], axis=1)
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
     >>> datajoin = datajoin.drop("grb_proba", axis=1)
+
+    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_offline_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datatest = datatest.drop(["grb_proba"], axis=1)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
