@@ -91,7 +91,7 @@ def grb_distribution(
     +-------------------+-----------------+--------------+------------+---------------------+
     | Generated at (jd) |      Topic      |   objectId   | Fink_Class |        Rate         |
     +-------------------+-----------------+--------------+------------+---------------------+
-    |  2458729.6881481  | fink_grb_bronze | ZTF19abvxqrr | Ambiguous  | -1.7537370607895864 |
+    |  2458729.6881481  | fink_grb_bronze | ZTF19abvxuvu |  Unknown   | -1.6373900908205787 |
     +-------------------+-----------------+--------------+------------+---------------------+
 
     >>> shutil.rmtree("fink_grb/test/test_data/ztfxgcn_test/grb_distribute_checkpoint")
@@ -252,7 +252,7 @@ def launch_distribution(arguments):
     +-------------------+-----------------+--------------+------------+---------------------+
     | Generated at (jd) |      Topic      |   objectId   | Fink_Class |        Rate         |
     +-------------------+-----------------+--------------+------------+---------------------+
-    |  2458729.6881481  | fink_grb_bronze | ZTF19abvxqrr | Ambiguous  | -1.7537370607895864 |
+    |  2458729.6881481  | fink_grb_bronze | ZTF19abvxuvu |  Unknown   | -1.6373900908205787 |
     +-------------------+-----------------+--------------+------------+---------------------+
 
     >>> shutil.rmtree("fink_grb/test/test_output/grb_distribute_checkpoint")
