@@ -353,7 +353,7 @@ def launch_offline_mode(arguments, is_test=False):
         spark_jars,
         packages,
         external_files,
-    ) = read_additional_spark_options(arguments, config, logger, verbose)
+    ) = read_additional_spark_options(arguments, config, logger, verbose, is_test)
 
     (
         night,

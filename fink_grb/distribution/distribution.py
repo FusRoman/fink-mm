@@ -274,7 +274,7 @@ def launch_distribution(arguments):
         spark_jars,
         packages,
         external_files,
-    ) = read_additional_spark_options(arguments, config, logger, verbose)
+    ) = read_additional_spark_options(arguments, config, logger, verbose, False)
 
     (
         night,
