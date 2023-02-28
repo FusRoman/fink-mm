@@ -11,6 +11,7 @@ from fink_filters.classification import extract_fink_classification
 from fink_utils.spark.utils import concat_col
 
 from fink_grb.utils.grb_prob import grb_assoc
+# from fink_broker.tracklet_identification import add_tracklet_information
 
 
 def return_verbose_level(config, logger):
@@ -77,7 +78,12 @@ def get_hdfs_connector(host: str, port: int, user: str):
 
 
 def build_spark_submit(
-    spark_submit, application, external_python_libs, spark_jars, packages
+    spark_submit,
+    application,
+    external_python_libs,
+    spark_jars,
+    packages,
+    external_files,
 ):
     """
     Build the spark submit command line to launch spark jobs.
@@ -94,6 +100,8 @@ def build_spark_submit(
         list of external java libraries separated by ','.
     packages : string
         list of external java libraries hosted on maven, the java packages manager.
+    external_files : string
+        list of external files comma separated to load in the spark job.
 
     Return
     ------
@@ -108,10 +116,10 @@ def build_spark_submit(
     >>> spark_jars = "myjavalib.jar,myjavalib2.jar"
     >>> packages = "org.apache.mylib:sublib:1.0.0"
 
-    >>> build_spark_submit(spark_submit, application, external_python_libs, spark_jars, packages)
+    >>> build_spark_submit(spark_submit, application, external_python_libs, spark_jars, packages, "")
     'spark-submit --master local[2] --driver-memory 8G --executor-memory 4G --conf spark.cores.max=4 --conf spark.executor.cores=2 --py-files mypythonlibs.eggs,mypythonlibs2.py  --jars myjavalib.jar,myjavalib2.jar  --packages org.apache.mylib:sublib:1.0.0  myscript.py'
 
-    >>> build_spark_submit(spark_submit, application, "", "", "")
+    >>> build_spark_submit(spark_submit, application, "", "", "", "")
     'spark-submit --master local[2] --driver-memory 8G --executor-memory 4G --conf spark.cores.max=4 --conf spark.executor.cores=2 myscript.py'
     """
 
@@ -126,6 +134,9 @@ def build_spark_submit(
 
     if packages != "":
         spark_submit += " --packages {} ".format(packages)
+
+    if external_files != "":
+        spark_submit += " --files {} ".format(external_files)
 
     return spark_submit + " " + application
 
@@ -588,6 +599,14 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
         )
 
         df_grb = format_rate_results(df_grb, "c_rate")
+
+    # TODO : do something better with satellites
+    # df_grb = add_tracklet_information(df_grb)
+
+    df_grb = df_grb.withColumn(
+        'tracklet',
+        F.lit('')
+    )
 
     df_grb = df_grb.withColumn(
         "fink_class",

@@ -24,7 +24,7 @@ from fink_grb.utils.fun_utils import build_spark_submit, join_post_process
 from fink_grb.init import get_config, init_logging
 
 
-def ztf_grb_filter(spark_ztf):
+def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist):
     """
     filter the ztf alerts by taking cross-match values from ztf.
 
@@ -32,7 +32,19 @@ def ztf_grb_filter(spark_ztf):
     ----------
     spark_ztf : spark dataframe
         a spark dataframe containing alerts, this following columns are mandatory and have to be at the candidate level.
-            - ssdistnr, distpsnr1, neargaia
+            - ssdistnr, distpsnr1, sgscore1, neargaia
+    ast_dist: float
+        distance to nearest known solar system object; set to -999.0 if none [arcsec]
+        ssdistnr field
+    pansstar_dist: float
+        Distance of closest source from PS1 catalog; if exists within 30 arcsec [arcsec]
+        distpsnr1 field
+    pansstar_star_score: float
+        Star/Galaxy score of closest source from PS1 catalog 0 <= sgscore <= 1 where closer to 1 implies higher likelihood of being a star
+        sgscore1 field
+    gaia_dist: float
+        Distance to closest source from Gaia DR1 catalog irrespective of magnitude; if exists within 90 arcsec [arcsec]
+        neargaia field
 
     Returns
     -------
@@ -43,26 +55,27 @@ def ztf_grb_filter(spark_ztf):
     --------
     >>> sparkDF = spark.read.format('parquet').load(alert_data)
 
-    >>> spark_filter = ztf_grb_filter(sparkDF)
+    >>> spark_filter = ztf_grb_filter(sparkDF, 5, 2, 0, 5)
 
     >>> spark_filter.count()
     31
     """
     spark_filter = (
         spark_ztf.filter(
-            (spark_ztf.candidate.ssdistnr > 5)
+            (spark_ztf.candidate.ssdistnr > ast_dist)
             | (
                 spark_ztf.candidate.ssdistnr == -999.0
             )  # distance to nearest known SSO above 30 arcsecond
         )
         .filter(
-            (spark_ztf.candidate.distpsnr1 > 2)
+            (spark_ztf.candidate.distpsnr1 > pansstar_dist)
             | (
                 spark_ztf.candidate.distpsnr1 == -999.0
             )  # distance of closest source from Pan-Starrs 1 catalog above 30 arcsecond
+            | (spark_ztf.candidate.sgscore1 < pansstar_star_score)
         )
         .filter(
-            (spark_ztf.candidate.neargaia > 5)
+            (spark_ztf.candidate.neargaia > gaia_dist)
             | (
                 spark_ztf.candidate.neargaia == -999.0
             )  # distance of closest source from Gaia DR1 catalog above 60 arcsecond
@@ -127,6 +140,10 @@ def ztf_join_gcn_stream(
     night,
     exit_after,
     tinterval,
+    ast_dist,
+    pansstar_dist,
+    pansstar_star_score,
+    gaia_dist,
     logs=False,
 ):
     """
@@ -147,6 +164,18 @@ def ztf_join_gcn_stream(
         the maximum active time in second of the streaming process
     tinterval : int
         the processing interval time in second between the data batch
+    ast_dist: float
+        distance to nearest known solar system object; set to -999.0 if none [arcsec]
+        ssdistnr field
+    pansstar_dist: float
+        Distance of closest source from PS1 catalog; if exists within 30 arcsec [arcsec]
+        distpsnr1 field
+    pansstar_star_score: float
+        Star/Galaxy score of closest source from PS1 catalog 0 <= sgscore <= 1 where closer to 1 implies higher likelihood of being a star
+        sgscore1 field
+    gaia_dist: float
+        Distance to closest source from Gaia DR1 catalog irrespective of magnitude; if exists within 90 arcsec [arcsec]
+        neargaia field
 
     Returns
     -------
@@ -162,22 +191,22 @@ def ztf_join_gcn_stream(
     ... gcn_datatest,
     ... grb_dataoutput,
     ... "20190903",
-    ... 90,
-    ... 5
+    ... 90, 5, 5, 2, 0, 5
     ... )
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    >>> datajoin = pd.read_parquet(grb_dataoutput + "/grb/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datajoin = pd.read_parquet(grb_dataoutput + "/online/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+
+    >>> datajoin.to_parquet("fink_grb/test/test_data/grb_join_output.parquet")
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
-    >>> shutil.rmtree(grb_dataoutput + "/grb/_spark_metadata")
-    >>> shutil.rmtree(grb_dataoutput + "/grb/year=2019")
-    >>> shutil.rmtree(grb_dataoutput + "/grb_checkpoint")
+    >>> shutil.rmtree(grb_dataoutput + "/online/_spark_metadata")
+    >>> shutil.rmtree(grb_dataoutput + "/online_checkpoint")
     """
     logger = init_logging()
     spark = init_sparksession(
-        "science2grb_{}{}{}".format(night[0:4], night[4:6], night[6:8])
+        "science2grb_online_{}{}{}".format(night[0:4], night[4:6], night[6:8])
     )
 
     NSIDE = 4
@@ -193,7 +222,9 @@ def ztf_join_gcn_stream(
         latestfirst=False,
     )
 
-    df_ztf_stream = ztf_grb_filter(df_ztf_stream)
+    df_ztf_stream = ztf_grb_filter(
+        df_ztf_stream, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist
+    )
 
     gcn_rawdatapath = gcn_datapath_prefix + "/raw"
 
@@ -269,8 +300,8 @@ def ztf_join_gcn_stream(
     if "day" not in df_grb.columns:
         df_grb = df_grb.withColumn("day", F.date_format("timestamp", "dd"))
 
-    grbdatapath = grb_datapath_prefix + "/grb"
-    checkpointpath_grb_tmp = grb_datapath_prefix + "/grb_checkpoint"
+    grbdatapath = grb_datapath_prefix + "/online"
+    checkpointpath_grb_tmp = grb_datapath_prefix + "/online_checkpoint"
 
     query_grb = (
         df_grb.writeStream.outputMode("append")
@@ -319,13 +350,13 @@ def launch_joining_stream(arguments):
     ... })
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    >>> datajoin = pd.read_parquet(grb_datatest + "/grb/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datajoin = pd.read_parquet(grb_datatest + "/online/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
-    >>> shutil.rmtree(grb_datatest + "/grb/_spark_metadata")
-    >>> shutil.rmtree(grb_datatest + "/grb/year=2019")
-    >>> shutil.rmtree(grb_datatest + "/grb_checkpoint")
+    >>> shutil.rmtree(grb_datatest + "/online/_spark_metadata")
+    >>> shutil.rmtree(grb_datatest + "/online/year=2019")
+    >>> shutil.rmtree(grb_datatest + "/online_checkpoint")
     """
     config = get_config(arguments)
     logger = init_logging()
@@ -347,6 +378,11 @@ def launch_joining_stream(arguments):
         gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
         grb_datapath_prefix = config["PATH"]["online_grb_data_prefix"]
         tinterval = config["STREAM"]["tinterval"]
+
+        ast_dist = config["PRIOR_FILTER"]["ast_dist"]
+        pansstar_dist = config["PRIOR_FILTER"]["pansstar_dist"]
+        pansstar_star_score = config["PRIOR_FILTER"]["pansstar_star_score"]
+        gaia_dist = config["PRIOR_FILTER"]["gaia_dist"]
     except Exception as e:  # pragma: no cover
         logger.error("Config entry not found \n\t {}".format(e))
         exit(1)
@@ -388,6 +424,10 @@ def launch_joining_stream(arguments):
     application += " " + night
     application += " " + str(exit_after)
     application += " " + tinterval
+    application += " " + ast_dist
+    application += " " + pansstar_dist
+    application += " " + pansstar_star_score
+    application += " " + gaia_dist
 
     spark_submit = "spark-submit \
         --master {} \
@@ -411,7 +451,7 @@ def launch_joining_stream(arguments):
     )
 
     spark_submit = build_spark_submit(
-        spark_submit, application, external_python_libs, "", ""
+        spark_submit, application, external_python_libs, "", "", ""
     )
 
     process = subprocess.Popen(
@@ -447,7 +487,7 @@ if __name__ == "__main__":
 
         grb_data = "fink_grb/test/test_data/gcn_test/raw/year=2019/month=09/day=03"
         join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
-        alert_data = "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/ztf_science_test.parquet"
+        alert_data = "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/"
         globs["join_data"] = join_data
         globs["alert_data"] = alert_data
         globs["grb_data"] = grb_data
@@ -464,6 +504,11 @@ if __name__ == "__main__":
         exit_after = sys.argv[6]
         tinterval = sys.argv[7]
 
+        ast_dist = float(sys.argv[8])
+        pansstar_dist = float(sys.argv[9])
+        pansstar_star_score = float(sys.argv[10])
+        gaia_dist = float(sys.argv[11])
+
         ztf_join_gcn_stream(
             ztf_datapath_prefix,
             gcn_datapath_prefix,
@@ -471,4 +516,8 @@ if __name__ == "__main__":
             night,
             exit_after,
             tinterval,
+            ast_dist,
+            pansstar_dist,
+            pansstar_star_score,
+            gaia_dist,
         )
