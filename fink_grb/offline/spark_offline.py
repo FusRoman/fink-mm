@@ -20,7 +20,7 @@ from fink_grb.utils.fun_utils import (
     read_grb_admin_options,
     read_additional_spark_options
 )
-from fink_grb.utils.application import Application
+from fink_grb.utils.application import *
 from fink_grb.init import get_config, init_logging
 from fink_grb.online.ztf_join_gcn import box2pixs
 
