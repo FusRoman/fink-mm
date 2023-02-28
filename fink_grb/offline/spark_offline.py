@@ -421,6 +421,7 @@ if __name__ == "__main__":
         from pandas.testing import assert_frame_equal  # noqa: F401
         import shutil  # noqa: F401
         import pandas as pd  # noqa: F401
+        import os  # noqa: F401
 
         globs = globals()
 
