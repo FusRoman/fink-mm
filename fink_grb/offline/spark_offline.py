@@ -437,30 +437,4 @@ if __name__ == "__main__":
 
     if sys.argv[1] == "prod":  # pragma: no cover
 
-        hbase_catalog = sys.argv[2]
-        gcn_datapath_prefix = sys.argv[3]
-        grb_datapath_prefix = sys.argv[4]
-        night = sys.argv[5]
-        start_window = float(sys.argv[6])
-        time_window = int(sys.argv[7])
-
-        ast_dist = float(sys.argv[8])
-        pansstar_dist = float(sys.argv[9])
-        pansstar_star_score = float(sys.argv[10])
-        gaia_dist = float(sys.argv[11])
-
-        column_filter = True if sys.argv[12] == "True" else False
-
-        spark_offline(
-            hbase_catalog,
-            gcn_datapath_prefix,
-            grb_datapath_prefix,
-            night,
-            start_window,
-            time_window,
-            ast_dist,
-            pansstar_dist,
-            pansstar_star_score,
-            gaia_dist,
-            with_columns_filter=column_filter,
-        )
+        Application.OFFLINE.run_application()

@@ -279,7 +279,8 @@ def launch_distribution(arguments):
     (
         night,
         exit_after,
-        _, _,
+        _,
+        _,
         grb_datapath_prefix,
         tinterval,
         _,
@@ -345,20 +346,4 @@ if __name__ == "__main__":
 
     elif sys.argv[1] == "prod":  # pragma: no cover
 
-        grbdata_path = sys.argv[2]
-        night = sys.argv[3]
-        exit_after = sys.argv[4]
-        tinterval = sys.argv[5]
-        kafka_broker = sys.argv[6]
-        username_writer = sys.argv[7]
-        password_writer = sys.argv[8]
-
-        grb_distribution(
-            grbdata_path,
-            night,
-            tinterval,
-            exit_after,
-            kafka_broker,
-            username_writer,
-            password_writer,
-        )
+        Application.DISTRIBUTION.run_application()

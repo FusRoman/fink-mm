@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+import sys
 from pyarrow import fs
 
 from enum import Flag, auto
@@ -18,6 +19,9 @@ from fink_utils.spark.utils import concat_col
 
 import fink_grb
 from fink_grb.utils.grb_prob import grb_assoc
+from fink_grb.offline.spark_offline import spark_offline
+from fink_grb.online.ztf_join_gcn import ztf_join_gcn_stream
+from fink_grb.distribution.distribution import grb_distribution
 
 # from fink_broker.tracklet_identification import add_tracklet_information
 
@@ -956,9 +960,86 @@ class Application(Flag):
 
             return application
 
+    def run_application(self):
+        if self == Application.OFFLINE:
+
+            hbase_catalog = sys.argv[2]
+            gcn_datapath_prefix = sys.argv[3]
+            grb_datapath_prefix = sys.argv[4]
+            night = sys.argv[5]
+            start_window = float(sys.argv[6])
+            time_window = int(sys.argv[7])
+
+            ast_dist = float(sys.argv[8])
+            pansstar_dist = float(sys.argv[9])
+            pansstar_star_score = float(sys.argv[10])
+            gaia_dist = float(sys.argv[11])
+
+            column_filter = True if sys.argv[12] == "True" else False
+
+            spark_offline(
+                hbase_catalog,
+                gcn_datapath_prefix,
+                grb_datapath_prefix,
+                night,
+                start_window,
+                time_window,
+                ast_dist,
+                pansstar_dist,
+                pansstar_star_score,
+                gaia_dist,
+                with_columns_filter=column_filter,
+            )
+
+        elif self == Application.ONLINE:
+
+            ztf_datapath_prefix = sys.argv[2]
+            gcn_datapath_prefix = sys.argv[3]
+            grb_datapath_prefix = sys.argv[4]
+            night = sys.argv[5]
+            exit_after = sys.argv[6]
+            tinterval = sys.argv[7]
+
+            ast_dist = float(sys.argv[8])
+            pansstar_dist = float(sys.argv[9])
+            pansstar_star_score = float(sys.argv[10])
+            gaia_dist = float(sys.argv[11])
+
+            ztf_join_gcn_stream(
+                ztf_datapath_prefix,
+                gcn_datapath_prefix,
+                grb_datapath_prefix,
+                night,
+                exit_after,
+                tinterval,
+                ast_dist,
+                pansstar_dist,
+                pansstar_star_score,
+                gaia_dist,
+            )
+
+        elif self == Application.DISTRIBUTION:
+
+            grbdata_path = sys.argv[2]
+            night = sys.argv[3]
+            exit_after = sys.argv[4]
+            tinterval = sys.argv[5]
+            kafka_broker = sys.argv[6]
+            username_writer = sys.argv[7]
+            password_writer = sys.argv[8]
+
+            grb_distribution(
+                grbdata_path,
+                night,
+                tinterval,
+                exit_after,
+                kafka_broker,
+                username_writer,
+                password_writer,
+            )
+
 
 if __name__ == "__main__":  # pragma: no cover
-    import sys  # noqa: F401
     import doctest  # noqa: F401
     from pandas.testing import assert_frame_equal  # noqa: F401
     import pandas as pd  # noqa: F401

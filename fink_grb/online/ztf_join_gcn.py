@@ -465,27 +465,4 @@ if __name__ == "__main__":
 
     elif sys.argv[1] == "prod":  # pragma: no cover
 
-        ztf_datapath_prefix = sys.argv[2]
-        gcn_datapath_prefix = sys.argv[3]
-        grb_datapath_prefix = sys.argv[4]
-        night = sys.argv[5]
-        exit_after = sys.argv[6]
-        tinterval = sys.argv[7]
-
-        ast_dist = float(sys.argv[8])
-        pansstar_dist = float(sys.argv[9])
-        pansstar_star_score = float(sys.argv[10])
-        gaia_dist = float(sys.argv[11])
-
-        ztf_join_gcn_stream(
-            ztf_datapath_prefix,
-            gcn_datapath_prefix,
-            grb_datapath_prefix,
-            night,
-            exit_after,
-            tinterval,
-            ast_dist,
-            pansstar_dist,
-            pansstar_star_score,
-            gaia_dist,
-        )
+        Application.ONLINE.run_application()
