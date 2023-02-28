@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
+import os
 from pyarrow import fs
+
+from enum import Flag, auto
 
 import pyspark.sql.functions as F
 
@@ -576,7 +579,27 @@ def format_rate_results(spark_df, rate_column):
 
 
 def join_post_process(df_grb, with_rate=True, from_hbase=False):
+    """
+    Post processing after the join, used by offline and online
+    
+    Parameters
+    ----------
+    df_grb: PySpark DataFrame
+        the dataframe return by the gcn join ztf.
+    with_rate: boolean
+        if True, compute the rate.
+        should be True only when historical data are available in the alert packets.
+    from_hbase: boolean
+        if True, df_grb has been loaded from hbase
 
+    Returns
+    -------
+    df_grb: PySpark DataFrame
+        df_grb with the output schema, see conf/fink_grb_schema_version_1.0.avsc
+
+    Examples
+    --------
+    """
     if with_rate:
 
         df_grb = concat_col(df_grb, "magpsf")
@@ -676,6 +699,160 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
     df_grb = df_grb.select(column_to_return).filter("grb_proba != -1.0")
 
     return df_grb
+
+
+def read_and_build_spark_submit(config, logger):
+    """
+    """
+    try:
+        master_manager = config["STREAM"]["manager"]
+        principal_group = config["STREAM"]["principal"]
+        secret = config["STREAM"]["secret"]
+        role = config["STREAM"]["role"]
+        executor_env = config["STREAM"]["exec_env"]
+        driver_mem = config["STREAM"]["driver_memory"]
+        exec_mem = config["STREAM"]["executor_memory"]
+        max_core = config["STREAM"]["max_core"]
+        exec_core = config["STREAM"]["executor_core"]
+    except Exception as e:  # pragma: no cover
+        logger.error("Spark Admin config entry not found \n\t {}".format(e))
+        exit(1)
+
+    spark_submit = "spark-submit \
+        --master {} \
+        --conf spark.mesos.principal={} \
+        --conf spark.mesos.secret={} \
+        --conf spark.mesos.role={} \
+        --conf spark.executorEnv.HOME={} \
+        --driver-memory {}G \
+        --executor-memory {}G \
+        --conf spark.cores.max={} \
+        --conf spark.executor.cores={}".format(
+        master_manager,
+        principal_group,
+        secret,
+        role,
+        executor_env,
+        driver_mem,
+        exec_mem,
+        max_core,
+        exec_core,
+    )
+
+    return spark_submit
+
+
+def read_prior_params(config, logger):
+    """
+    """
+    try:
+        ast_dist = config["PRIOR_FILTER"]["ast_dist"]
+        pansstar_dist = config["PRIOR_FILTER"]["pansstar_dist"]
+        pansstar_star_score = config["PRIOR_FILTER"]["pansstar_star_score"]
+        gaia_dist = config["PRIOR_FILTER"]["gaia_dist"]
+    except Exception as e:  # pragma: no cover
+        logger.error("Prior filter config entry not found \n\t {}".format(e))
+        exit(1)
+
+    return ast_dist, pansstar_dist, pansstar_star_score, gaia_dist
+
+
+def read_additional_spark_options(arguments, config, logger, verbose, is_test):
+    """
+    """
+    try:
+        external_python_libs = config["STREAM"]["external_python_libs"]
+    except Exception as e:
+        if verbose:
+            logger.info(
+                "No external python dependencies specify in the following config file: {}\n\t{}".format(
+                    arguments["--config"], e
+                )
+            )
+        external_python_libs = ""
+
+    try:
+        spark_jars = config["STREAM"]["jars"]
+        if is_test:
+            fink_home = os.environ["FINK_HOME"]
+            spark_jars = "{}/libs/fink-broker_2.11-1.2.jar,{}/libs/hbase-spark-hbase2.2_spark3_scala2.11_hadoop2.7.jar,{}/libs/hbase-spark-protocol-shaded-hbase2.2_spark3_scala2.11_hadoop2.7.jar".format(
+                fink_home, fink_home, fink_home
+            )
+
+    except Exception as e:
+        if verbose:
+            logger.info(
+                "No spark jars dependencies specify in the following config file: {}\n\t{}".format(
+                    arguments["--config"], e
+                )
+            )
+        spark_jars = ""
+
+    try:
+        packages = config["STREAM"]["packages"]
+    except Exception as e:
+        if verbose:
+            logger.info(
+                "No packages dependencies specify in the following config file: {}\n\t{}".format(
+                    arguments["--config"], e
+                )
+            )
+        packages = ""
+
+    return external_python_libs, spark_jars, packages
+
+
+def read_grb_admin_options(arguments, config, logger):
+    """
+    """
+    try:
+        night = arguments["--night"]
+    except Exception as e:  # pragma: no cover
+        logger.error("Command line arguments not found: {}\n{}".format("--night", e))
+        exit(1)
+
+    try:
+        exit_after = arguments["--exit_after"]
+    except Exception as e:  # pragma: no cover
+        logger.error(
+            "Command line arguments not found: {}\n{}".format("--exit_after", e)
+        )
+        exit(1)
+
+    try:
+        ztf_datapath_prefix = config["PATH"]["online_ztf_data_prefix"]
+        gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
+        grb_datapath_prefix = config["PATH"]["online_grb_data_prefix"]
+        tinterval = config["STREAM"]["tinterval"]
+
+        hbase_catalog = config["PATH"]["hbase_catalog"]
+        time_window = int(config["OFFLINE"]["time_window"])
+
+        kafka_broker = config["DISTRIBUTION"]["kafka_broker"]
+        username_writer = config["DISTRIBUTION"]["username_writer"]
+        password_writer = config["DISTRIBUTION"]["password_writer"]
+    except Exception as e:  # pragma: no cover
+        logger.error("Config entry not found \n\t {}".format(e))
+        exit(1)
+
+    return (
+        night, exit_after,
+        ztf_datapath_prefix, 
+        gcn_datapath_prefix, 
+        grb_datapath_prefix,
+        tinterval,
+        hbase_catalog,
+        time_window,
+        kafka_broker,
+        username_writer,
+        password_writer
+        )
+
+class Application(Flag):
+    OFFLINE = auto()
+    ONLINE = auto()
+    DISTRIBUTION = auto()
+
 
 
 if __name__ == "__main__":  # pragma: no cover
