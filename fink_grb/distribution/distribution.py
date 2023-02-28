@@ -279,6 +279,7 @@ def launch_distribution(arguments):
     (
         night,
         exit_after,
+        _, _,
         grb_datapath_prefix,
         tinterval,
         _,
