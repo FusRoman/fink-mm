@@ -16,8 +16,6 @@ ZTF_ONLINE= # online_ztf_data_prefix
 GCN_ONLINE= # online_gcn_data_prefix
 ZTFXGRB_OUTPUT= # online_grb_data_prefix
 
-
-
 HDFS_HOME="/opt/hadoop-2/bin/"
 
 while true; do
@@ -29,7 +27,7 @@ while true; do
      if [[ $? == 0 ]]; then
         $(hdfs dfs -test -d ${GCN_ONLINE}/raw/year=${YEAR}/month=${MONTH}/day=${DAY})
         if [[ $? == 0 ]]; then
-            echo "Launching service"
+            echo "Launching science2grb"
     
             # LEASETIME must be computed by taking the difference between now and max end 
             LEASETIME=$(( `date +'%s' -d '17:00 today'` - `date +'%s' -d 'now'` ))
