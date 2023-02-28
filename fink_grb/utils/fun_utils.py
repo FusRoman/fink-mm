@@ -4,6 +4,9 @@ import os
 from pyarrow import fs
 
 from enum import Flag, auto
+from dateutil import parser
+
+from astropy.time import Time
 
 import pyspark.sql.functions as F
 
@@ -13,7 +16,9 @@ from pyspark.sql.types import DoubleType, ArrayType
 from fink_filters.classification import extract_fink_classification
 from fink_utils.spark.utils import concat_col
 
+import fink_grb
 from fink_grb.utils.grb_prob import grb_assoc
+
 # from fink_broker.tracklet_identification import add_tracklet_information
 
 
@@ -581,7 +586,7 @@ def format_rate_results(spark_df, rate_column):
 def join_post_process(df_grb, with_rate=True, from_hbase=False):
     """
     Post processing after the join, used by offline and online
-    
+
     Parameters
     ----------
     df_grb: PySpark DataFrame
@@ -626,10 +631,7 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
     # TODO : do something better with satellites
     # df_grb = add_tracklet_information(df_grb)
 
-    df_grb = df_grb.withColumn(
-        'tracklet',
-        F.lit('')
-    )
+    df_grb = df_grb.withColumn("tracklet", F.lit(""))
 
     df_grb = df_grb.withColumn(
         "fink_class",
@@ -702,8 +704,7 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
 
 
 def read_and_build_spark_submit(config, logger):
-    """
-    """
+    """ """
     try:
         master_manager = config["STREAM"]["manager"]
         principal_group = config["STREAM"]["principal"]
@@ -743,13 +744,14 @@ def read_and_build_spark_submit(config, logger):
 
 
 def read_prior_params(config, logger):
-    """
-    """
+    """ """
     try:
         ast_dist = config["PRIOR_FILTER"]["ast_dist"]
         pansstar_dist = config["PRIOR_FILTER"]["pansstar_dist"]
         pansstar_star_score = config["PRIOR_FILTER"]["pansstar_star_score"]
         gaia_dist = config["PRIOR_FILTER"]["gaia_dist"]
+
+        return (ast_dist, pansstar_dist, pansstar_star_score, gaia_dist)
     except Exception as e:  # pragma: no cover
         logger.error("Prior filter config entry not found \n\t {}".format(e))
         exit(1)
@@ -758,8 +760,7 @@ def read_prior_params(config, logger):
 
 
 def read_additional_spark_options(arguments, config, logger, verbose, is_test):
-    """
-    """
+    """ """
     try:
         external_python_libs = config["STREAM"]["external_python_libs"]
     except Exception as e:
@@ -799,12 +800,22 @@ def read_additional_spark_options(arguments, config, logger, verbose, is_test):
             )
         packages = ""
 
-    return external_python_libs, spark_jars, packages
+    try:
+        external_files = config["STREAM"]["external_files"]
+    except Exception as e:
+        if verbose:
+            logger.info(
+                "No external python dependencies specify in the following config file: {}\n\t{}".format(
+                    arguments["--config"], e
+                )
+            )
+        external_files = ""
+
+    return external_python_libs, spark_jars, packages, external_files
 
 
-def read_grb_admin_options(arguments, config, logger):
-    """
-    """
+def read_grb_admin_options(arguments, config, logger, is_test=False):
+    """ """
     try:
         night = arguments["--night"]
     except Exception as e:  # pragma: no cover
@@ -826,6 +837,15 @@ def read_grb_admin_options(arguments, config, logger):
         tinterval = config["STREAM"]["tinterval"]
 
         hbase_catalog = config["PATH"]["hbase_catalog"]
+        if is_test:
+            try:
+                fink_home = os.environ["FINK_HOME"]
+                hbase_catalog = fink_home + "/catalogs_hbase/ztf.jd.json"
+            except Exception as e:
+                logger.error(
+                    "FINK_HOME environment variable not found \n\t {}".format(e)
+                )
+
         time_window = int(config["OFFLINE"]["time_window"])
 
         kafka_broker = config["DISTRIBUTION"]["kafka_broker"]
@@ -836,23 +856,105 @@ def read_grb_admin_options(arguments, config, logger):
         exit(1)
 
     return (
-        night, exit_after,
-        ztf_datapath_prefix, 
-        gcn_datapath_prefix, 
+        night,
+        exit_after,
+        ztf_datapath_prefix,
+        gcn_datapath_prefix,
         grb_datapath_prefix,
         tinterval,
         hbase_catalog,
         time_window,
         kafka_broker,
         username_writer,
-        password_writer
-        )
+        password_writer,
+    )
+
 
 class Application(Flag):
     OFFLINE = auto()
     ONLINE = auto()
     DISTRIBUTION = auto()
 
+    def build_application(self, logger, **kwargs):
+        """ """
+        if self == Application.OFFLINE:
+            application = os.path.join(
+                os.path.dirname(fink_grb.__file__),
+                "offline",
+                "spark_offline.py prod",
+            )
+
+            try:
+                start_window_in_jd = (
+                    Time(parser.parse(kwargs["night"]), format="datetime").jd + 0.49
+                )  # + 0.49 to start the time window in the night
+
+                application += " " + kwargs["hbase_catalog"]
+                application += " " + kwargs["gcn_datapath_prefix"]
+                application += " " + kwargs["grb_datapath_prefix"]
+                application += " " + kwargs["night"]
+                application += " " + str(start_window_in_jd)
+                application += " " + str(kwargs["time_window"])
+                application += " " + kwargs["ast_dist"]
+                application += " " + kwargs["pansstar_dist"]
+                application += " " + kwargs["pansstar_star_score"]
+                application += " " + kwargs["gaia_dist"]
+
+                if kwargs["is_test"]:
+                    application += " " + str(False)
+                else:
+                    application += " " + str(True)
+            except Exception as e:
+                logger.error("Parameter not found \n\t {}\n\t{}".format(e, kwargs))
+                exit(1)
+
+            return application
+        elif self == Application.ONLINE:
+
+            application = os.path.join(
+                os.path.dirname(fink_grb.__file__),
+                "online",
+                "ztf_join_gcn.py prod",
+            )
+
+            try:
+                application += " " + kwargs["ztf_datapath_prefix"]
+                application += " " + kwargs["gcn_datapath_prefix"]
+                application += " " + kwargs["grb_datapath_prefix"]
+                application += " " + kwargs["night"]
+                application += " " + str(kwargs["exit_after"])
+                application += " " + kwargs["tinterval"]
+                application += " " + kwargs["ast_dist"]
+                application += " " + kwargs["pansstar_dist"]
+                application += " " + kwargs["pansstar_star_score"]
+                application += " " + kwargs["gaia_dist"]
+            except Exception as e:
+                logger.error("Parameter not found \n\t {}\n\t{}".format(e, kwargs))
+                exit(1)
+
+            return application
+
+        elif self == Application.DISTRIBUTION:
+
+            application = os.path.join(
+                os.path.dirname(fink_grb.__file__),
+                "distribution",
+                "distribution.py prod",
+            )
+
+            try:
+                application += " " + kwargs["grb_datapath_prefix"]
+                application += " " + kwargs["night"]
+                application += " " + str(kwargs["exit_after"])
+                application += " " + kwargs["tinterval"]
+                application += " " + kwargs["kafka_broker"]
+                application += " " + kwargs["username_writer"]
+                application += " " + kwargs["password_writer"]
+            except Exception as e:
+                logger.error("Parameter not found \n\t {}\n\t{}".format(e, kwargs))
+                exit(1)
+
+            return application
 
 
 if __name__ == "__main__":  # pragma: no cover
