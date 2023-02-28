@@ -20,7 +20,7 @@ from fink_grb.utils.fun_utils import (
     read_grb_admin_options,
     read_additional_spark_options
 )
-from fink_grb.utils.application import *
+import fink_grb.utils.application as apps
 from fink_grb.init import get_config, init_logging
 from fink_grb.online.ztf_join_gcn import box2pixs
 
@@ -369,7 +369,7 @@ def launch_offline_mode(arguments, is_test=False):
         _,
     ) = read_grb_admin_options(arguments, config, logger, is_test=is_test)
 
-    application = Application.OFFLINE.build_application(
+    application = apps.Application.OFFLINE.build_application(
         logger,
         hbase_catalog=hbase_catalog,
         gcn_datapath_prefix=gcn_datapath_prefix,
@@ -437,4 +437,4 @@ if __name__ == "__main__":
 
     if sys.argv[1] == "prod":  # pragma: no cover
 
-        Application.OFFLINE.run_application()
+        apps.Application.OFFLINE.run_application()

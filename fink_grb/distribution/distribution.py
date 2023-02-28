@@ -21,7 +21,7 @@ from fink_grb.utils.fun_utils import (
     read_grb_admin_options,
     read_additional_spark_options
 )
-from fink_grb.utils.application import *
+import fink_grb.utils.application as apps
 from fink_grb.init import get_config, init_logging
 from fink_grb.utils.fun_utils import build_spark_submit
 
@@ -290,7 +290,7 @@ def launch_distribution(arguments):
         password_writer,
     ) = read_grb_admin_options(arguments, config, logger)
 
-    application = Application.DISTRIBUTION.build_application(
+    application = apps.Application.DISTRIBUTION.build_application(
         logger,
         grb_datapath_prefix=grb_datapath_prefix,
         night=night,
@@ -346,4 +346,4 @@ if __name__ == "__main__":
 
     elif sys.argv[1] == "prod":  # pragma: no cover
 
-        Application.DISTRIBUTION.run_application()
+        apps.Application.DISTRIBUTION.run_application()

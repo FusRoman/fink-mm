@@ -6,9 +6,9 @@ from dateutil import parser
 from astropy.time import Time
 
 import fink_grb
-from fink_grb.offline.spark_offline import spark_offline
-from fink_grb.online.ztf_join_gcn import ztf_join_gcn_stream
-from fink_grb.distribution.distribution import grb_distribution
+import fink_grb.offline.spark_offline as offline
+import fink_grb.online.ztf_join_gcn as online
+import fink_grb.distribution.distribution as distrib
 
 
 class Application(Flag):
@@ -114,7 +114,7 @@ class Application(Flag):
 
             column_filter = True if sys.argv[12] == "True" else False
 
-            spark_offline(
+            offline.spark_offline(
                 hbase_catalog,
                 gcn_datapath_prefix,
                 grb_datapath_prefix,
@@ -142,7 +142,7 @@ class Application(Flag):
             pansstar_star_score = float(sys.argv[10])
             gaia_dist = float(sys.argv[11])
 
-            ztf_join_gcn_stream(
+            online.ztf_join_gcn_stream(
                 ztf_datapath_prefix,
                 gcn_datapath_prefix,
                 grb_datapath_prefix,
@@ -165,7 +165,7 @@ class Application(Flag):
             username_writer = sys.argv[7]
             password_writer = sys.argv[8]
 
-            grb_distribution(
+            distrib.grb_distribution(
                 grbdata_path,
                 night,
                 tinterval,

@@ -26,7 +26,7 @@ from fink_grb.utils.fun_utils import (
     read_additional_spark_options,
     read_grb_admin_options
 )
-from fink_grb.utils.application import *
+import fink_grb.utils.application as apps
 
 from fink_grb.init import get_config, init_logging
 
@@ -397,7 +397,7 @@ def launch_joining_stream(arguments):
         _,
     ) = read_grb_admin_options(arguments, config, logger)
 
-    application = Application.ONLINE.build_application(
+    application = apps.Application.ONLINE.build_application(
         logger,
         ztf_datapath_prefix=ztf_datapath_prefix,
         gcn_datapath_prefix=gcn_datapath_prefix,
@@ -465,4 +465,4 @@ if __name__ == "__main__":
 
     elif sys.argv[1] == "prod":  # pragma: no cover
 
-        Application.ONLINE.run_application()
+        apps.Application.ONLINE.run_application()
