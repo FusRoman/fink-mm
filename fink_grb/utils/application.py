@@ -132,7 +132,7 @@ class Application(Flag):
             gcn_datapath_prefix = sys.argv[3]
             grb_datapath_prefix = sys.argv[4]
             night = sys.argv[5]
-            NSIDE = sys.argv[6]
+            NSIDE = int(sys.argv[6])
             start_window = float(sys.argv[7])
             time_window = int(sys.argv[8])
 
@@ -164,7 +164,7 @@ class Application(Flag):
             gcn_datapath_prefix = sys.argv[3]
             grb_datapath_prefix = sys.argv[4]
             night = sys.argv[5]
-            NSIDE = sys.argv[6]
+            NSIDE = int(sys.argv[6])
             exit_after = sys.argv[7]
             tinterval = sys.argv[8]
 

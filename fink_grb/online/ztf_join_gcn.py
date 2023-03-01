@@ -423,11 +423,6 @@ def launch_joining_stream(arguments):
         external_files,
     )
 
-    logger.info(NSIDE)
-    logger.info("\n")
-    logger.info(spark_submit)
-
-
     process = subprocess.Popen(
         spark_submit,
         stdout=subprocess.PIPE,
