@@ -57,6 +57,7 @@ class Application(Flag):
                 application += " " + kwargs["gcn_datapath_prefix"]
                 application += " " + kwargs["grb_datapath_prefix"]
                 application += " " + kwargs["night"]
+                application += " " + kwargs["NSIDE"]
                 application += " " + str(start_window_in_jd)
                 application += " " + str(kwargs["time_window"])
                 application += " " + kwargs["ast_dist"]
@@ -86,6 +87,7 @@ class Application(Flag):
                 application += " " + kwargs["gcn_datapath_prefix"]
                 application += " " + kwargs["grb_datapath_prefix"]
                 application += " " + kwargs["night"]
+                application += " " + kwargs["NSIDE"]
                 application += " " + str(kwargs["exit_after"])
                 application += " " + kwargs["tinterval"]
                 application += " " + kwargs["ast_dist"]
@@ -130,21 +132,23 @@ class Application(Flag):
             gcn_datapath_prefix = sys.argv[3]
             grb_datapath_prefix = sys.argv[4]
             night = sys.argv[5]
-            start_window = float(sys.argv[6])
-            time_window = int(sys.argv[7])
+            NSIDE = sys.argv[6]
+            start_window = float(sys.argv[7])
+            time_window = int(sys.argv[8])
 
-            ast_dist = float(sys.argv[8])
-            pansstar_dist = float(sys.argv[9])
-            pansstar_star_score = float(sys.argv[10])
-            gaia_dist = float(sys.argv[11])
+            ast_dist = float(sys.argv[9])
+            pansstar_dist = float(sys.argv[10])
+            pansstar_star_score = float(sys.argv[11])
+            gaia_dist = float(sys.argv[12])
 
-            column_filter = True if sys.argv[12] == "True" else False
+            column_filter = True if sys.argv[13] == "True" else False
 
             offline.spark_offline(
                 hbase_catalog,
                 gcn_datapath_prefix,
                 grb_datapath_prefix,
                 night,
+                NSIDE,
                 start_window,
                 time_window,
                 ast_dist,
@@ -160,19 +164,21 @@ class Application(Flag):
             gcn_datapath_prefix = sys.argv[3]
             grb_datapath_prefix = sys.argv[4]
             night = sys.argv[5]
-            exit_after = sys.argv[6]
-            tinterval = sys.argv[7]
+            NSIDE = sys.argv[6]
+            exit_after = sys.argv[7]
+            tinterval = sys.argv[8]
 
-            ast_dist = float(sys.argv[8])
-            pansstar_dist = float(sys.argv[9])
-            pansstar_star_score = float(sys.argv[10])
-            gaia_dist = float(sys.argv[11])
+            ast_dist = float(sys.argv[9])
+            pansstar_dist = float(sys.argv[10])
+            pansstar_star_score = float(sys.argv[11])
+            gaia_dist = float(sys.argv[12])
 
             online.ztf_join_gcn_stream(
                 ztf_datapath_prefix,
                 gcn_datapath_prefix,
                 grb_datapath_prefix,
                 night,
+                NSIDE,
                 exit_after,
                 tinterval,
                 ast_dist,

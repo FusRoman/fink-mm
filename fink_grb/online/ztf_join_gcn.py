@@ -134,7 +134,7 @@ def box2pixs(ra, dec, radius, NSIDE):
     theta, phi = dec2theta(dec.values), ra2phi(ra.values)
     vec = hp.ang2vec(theta, phi)
     ipix_disc = [
-        hp.query_disc(nside=n, vec=v, radius=np.radians(r))
+        hp.query_disc(nside=n, vec=v, radius=np.radians(r), inclusive=True)
         for n, v, r in zip(NSIDE.values, vec, radius.values)
     ]
     return pd.Series(ipix_disc)
@@ -145,6 +145,7 @@ def ztf_join_gcn_stream(
     gcn_datapath_prefix,
     grb_datapath_prefix,
     night,
+    NSIDE,
     exit_after,
     tinterval,
     ast_dist,
@@ -215,8 +216,6 @@ def ztf_join_gcn_stream(
     spark = init_sparksession(
         "science2grb_online_{}{}{}".format(night[0:4], night[4:6], night[6:8])
     )
-
-    NSIDE = 4
 
     scidatapath = ztf_datapath_prefix + "/science"
 
@@ -390,6 +389,7 @@ def launch_joining_stream(arguments):
         gcn_datapath_prefix,
         grb_datapath_prefix,
         tinterval,
+        NSIDE,
         _,
         _,
         _,
@@ -403,6 +403,7 @@ def launch_joining_stream(arguments):
         gcn_datapath_prefix=gcn_datapath_prefix,
         grb_datapath_prefix=grb_datapath_prefix,
         night=night,
+        NSIDE=NSIDE,
         exit_after=exit_after,
         tinterval=tinterval,
         ast_dist=ast_dist,

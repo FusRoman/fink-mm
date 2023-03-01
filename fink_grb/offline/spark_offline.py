@@ -105,6 +105,7 @@ def spark_offline(
     gcn_read_path,
     grbxztf_write_path,
     night,
+    NSIDE,
     start_window,
     time_window,
     ast_dist,
@@ -249,8 +250,6 @@ def spark_offline(
 
     grb_alert.cache().count()
 
-    NSIDE = 4
-
     ztf_alert = ztf_alert.withColumn(
         "hpix",
         ang2pix(ztf_alert.ra, ztf_alert.dec, F.lit(NSIDE)),
@@ -362,6 +361,7 @@ def launch_offline_mode(arguments, is_test=False):
         gcn_datapath_prefix,
         grb_datapath_prefix,
         _,
+        NSIDE,
         hbase_catalog,
         time_window,
         _,
@@ -375,6 +375,7 @@ def launch_offline_mode(arguments, is_test=False):
         gcn_datapath_prefix=gcn_datapath_prefix,
         grb_datapath_prefix=grb_datapath_prefix,
         night=night,
+        NSIDE=NSIDE,
         time_window=time_window,
         ast_dist=ast_dist,
         pansstar_dist=pansstar_dist,

@@ -927,6 +927,8 @@ def read_grb_admin_options(arguments, config, logger, is_test=False):
         Path where to store the output of fink-grb.
     tinterval: String
         Time interval between batch processing for online mode.
+    NSIDE: String
+        Healpix map resolution, better if a power of 2
     hbase_catalog: String
         Path where are located the hbase catalog (used by offline mode)
     time_window: Integer
@@ -949,13 +951,13 @@ def read_grb_admin_options(arguments, config, logger, is_test=False):
     >>> logger = init_logging()
 
     >>> read_grb_admin_options(arguments, config, logger, False)
-    ('20221014', '120', 'fink_grb/test/test_data/ztf_test/online', 'fink_grb/test/test_data/gcn_test', 'fink_grb/test/test_output', '30', '/home/roman.le-montagner/fink-broker/catalogs_hbase/ztf.jd.json', 7, 'localhost:9092', 'toto', 'tata')
+    ('20221014', '120', 'fink_grb/test/test_data/ztf_test/online', 'fink_grb/test/test_data/gcn_test', 'fink_grb/test/test_output', '30', '4', '/home/roman.le-montagner/fink-broker/catalogs_hbase/ztf.jd.json', 7, 'localhost:9092', 'toto', 'tata')
 
     >>> res = read_grb_admin_options(arguments, config, logger, True)
 
     >>> fink_home = os.environ["FINK_HOME"]
     >>> expected_res = f'{fink_home}/catalogs_hbase/ztf.jd.json'
-    >>> res[6] == expected_res
+    >>> res[7] == expected_res
     True
     """
     try:
@@ -977,6 +979,7 @@ def read_grb_admin_options(arguments, config, logger, is_test=False):
         gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
         grb_datapath_prefix = config["PATH"]["online_grb_data_prefix"]
         tinterval = config["STREAM"]["tinterval"]
+        NSIDE = config["ADMIN"]["NSIDE"]
 
         hbase_catalog = config["PATH"]["hbase_catalog"]
         if is_test:
@@ -1004,6 +1007,7 @@ def read_grb_admin_options(arguments, config, logger, is_test=False):
         gcn_datapath_prefix,
         grb_datapath_prefix,
         tinterval,
+        NSIDE,
         hbase_catalog,
         time_window,
         kafka_broker,
