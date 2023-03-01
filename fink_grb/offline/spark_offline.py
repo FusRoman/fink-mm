@@ -22,7 +22,7 @@ from fink_grb.utils.fun_utils import (
 )
 import fink_grb.utils.application as apps
 from fink_grb.init import get_config, init_logging
-from fink_grb.online.ztf_join_gcn import box2pixs
+import fink_grb.online.ztf_join_gcn as ztf_online
 
 
 def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist):
@@ -261,7 +261,7 @@ def spark_offline(
     grb_alert = grb_alert.withColumn("err_degree", grb_alert["err_arcmin"] / 60)
     grb_alert = grb_alert.withColumn(
         "hpix_circle",
-        box2pixs(grb_alert.ra, grb_alert.dec, grb_alert.err_degree, F.lit(NSIDE)),
+        ztf_online.box2pixs(grb_alert.ra, grb_alert.dec, grb_alert.err_degree, F.lit(NSIDE)),
     )
     grb_alert = grb_alert.withColumn("hpix", explode("hpix_circle"))
 
