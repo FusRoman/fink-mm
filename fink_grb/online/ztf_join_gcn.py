@@ -469,6 +469,11 @@ if __name__ == "__main__":
     elif sys.argv[1] == "prod":  # pragma: no cover
 
         logger = init_logging()
-        logger.log("print argv: " + sys.argv)
+        logger.log("print argv: ")
+
+        for el in sys.argv:
+            logger.log(el)
+
+        logger.log("")
 
         apps.Application.ONLINE.run_application()
