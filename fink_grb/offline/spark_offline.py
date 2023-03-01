@@ -128,6 +128,8 @@ def spark_offline(
         path to store the cross match ZTF/GCN results
     night : string
         launching night of the script
+    NSIDE: String
+        Healpix map resolution, better if a power of 2
     start_window : float
         start date of the time window (in jd / julian date)
     time_window : int
@@ -163,6 +165,7 @@ def spark_offline(
     ... gcn_datatest,
     ... grb_dataoutput,
     ... "20190903",
+    ... 4,
     ... Time("2019-09-04").jd,
     ... 7, 5, 2, 0, 5,
     ... False

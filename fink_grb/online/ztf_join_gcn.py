@@ -168,6 +168,8 @@ def ztf_join_gcn_stream(
         the prefix path to save GRB join ZTF outputs.
     night : string
         the processing night
+    NSIDE: String
+        Healpix map resolution, better if a power of 2
     exit_after : int
         the maximum active time in second of the streaming process
     tinterval : int
@@ -199,7 +201,7 @@ def ztf_join_gcn_stream(
     ... gcn_datatest,
     ... grb_dataoutput,
     ... "20190903",
-    ... 90, 5, 5, 2, 0, 5
+    ... 4, 90, 5, 5, 2, 0, 5
     ... )
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
