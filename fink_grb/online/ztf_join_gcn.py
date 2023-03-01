@@ -423,6 +423,11 @@ def launch_joining_stream(arguments):
         external_files,
     )
 
+    logger.info(NSIDE)
+    logger.info("\n")
+    logger.info(spark_submit)
+
+
     process = subprocess.Popen(
         spark_submit,
         stdout=subprocess.PIPE,
@@ -467,13 +472,5 @@ if __name__ == "__main__":
         spark_unit_tests_science(globs)
 
     elif sys.argv[1] == "prod":  # pragma: no cover
-
-        logger = init_logging()
-        logger.info("print argv: ")
-
-        for el in sys.argv:
-            logger.info(el)
-
-        logger.info("")
 
         apps.Application.ONLINE.run_application()
