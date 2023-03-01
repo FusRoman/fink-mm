@@ -17,7 +17,30 @@ class Application(Flag):
     DISTRIBUTION = auto()
 
     def build_application(self, logger, **kwargs):
-        """ """
+        """
+        Return the command line application
+
+        Parameters
+        ----------
+        logger : logging object
+            the logger used to print logs
+        **kwargs : dictionary
+            keywords arguments (application dependants)
+            * OFFLINE:
+                hbase_catalog, gcn_datapath_prefix, grb_datapath_prefix, night,
+                    time_window, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist
+            * ONLINE:
+                ztf_datapath_prefix, gcn_datapath_prefix, grb_datapath_prefix, night,
+                    exit_after, tinterval, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist
+            * DISTRIBUTION:
+                grbdata_path, night, tinterval, exit_after,
+                    kafka_broker, username_writer, password_writer
+
+        Returns
+        -------
+        application : String
+            command line application to append to a spark-submit
+        """
         if self == Application.OFFLINE:
             application = os.path.join(
                 os.path.dirname(fink_grb.__file__),
@@ -98,6 +121,9 @@ class Application(Flag):
             return application
 
     def run_application(self):
+        """
+        Run the application
+        """
         if self == Application.OFFLINE:
 
             hbase_catalog = sys.argv[2]

@@ -19,7 +19,7 @@ from fink_grb.utils.fun_utils import (
     return_verbose_level,
     read_and_build_spark_submit,
     read_grb_admin_options,
-    read_additional_spark_options
+    read_additional_spark_options,
 )
 import fink_grb.utils.application as apps
 from fink_grb.init import get_config, init_logging

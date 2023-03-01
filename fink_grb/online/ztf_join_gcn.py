@@ -24,7 +24,7 @@ from fink_grb.utils.fun_utils import (
     read_and_build_spark_submit,
     read_prior_params,
     read_additional_spark_options,
-    read_grb_admin_options
+    read_grb_admin_options,
 )
 import fink_grb.utils.application as apps
 
