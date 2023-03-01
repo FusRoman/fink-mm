@@ -212,6 +212,7 @@ def ztf_join_gcn_stream(
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
     >>> shutil.rmtree(grb_dataoutput + "/online/_spark_metadata")
+    >>> shutil.rmtree(grb_datatest + "/online/year=2019")
     >>> shutil.rmtree(grb_dataoutput + "/online_checkpoint")
     """
     logger = init_logging()
@@ -276,9 +277,6 @@ def ztf_join_gcn_stream(
         "dec", "grb_dec"
     )
 
-    df_ztf_stream.writeStream.format("console").start()
-    df_grb_stream.writeStream.format("console").start()
-
     # join the two streams according to the healpix columns.
     # A pixel id will be assign to each alerts / gcn according to their position in the sky.
     # Each alerts / gcn with the same pixel id are in the same area of the sky.
@@ -294,11 +292,7 @@ def ztf_join_gcn_stream(
     ]
     df_grb = df_ztf_stream.join(df_grb_stream, join_condition, "inner")
 
-    df_grb.writeStream.format("console").start()
-
     df_grb = join_post_process(df_grb)
-
-    df_grb.writeStream.format("console").start()
 
     # re-create partitioning columns if needed.
     timecol = "jd"
@@ -429,8 +423,6 @@ def launch_joining_stream(arguments):
         packages,
         external_files,
     )
-
-    print(spark_submit)
 
     process = subprocess.Popen(
         spark_submit,

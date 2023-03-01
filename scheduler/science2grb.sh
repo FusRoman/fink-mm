@@ -50,15 +50,15 @@ done
 # Removing the _spark_metadata and grb_checkpoint directories are important. The next time the stream begins 
 # will not work if these two directories exists. 
 
-$(hdfs dfs -test -d ${ZTFXGRB_OUTPUT}/grb/_spark_metadata)
+$(hdfs dfs -test -d ${ZTFXGRB_OUTPUT}/online/_spark_metadata)
 if [[ $? == 0 ]]; then
-   echo "hdfs dfs -rm -r ${ZTFXGRB_OUTPUT}/grb/_spark_metadata"
+   echo "hdfs dfs -rm -r ${ZTFXGRB_OUTPUT}/online/_spark_metadata"
    hdfs dfs -rm -r ${ZTFXGRB_OUTPUT}/grb/_spark_metadata
 fi
 
-$(hdfs dfs -test -d ${ZTFXGRB_OUTPUT}/grb_checkpoint)
+$(hdfs dfs -test -d ${ZTFXGRB_OUTPUT}/online_checkpoint)
 if [[ $? == 0 ]]; then
-   echo "hdfs dfs -rm -r ${ZTFXGRB_OUTPUT}/grb_checkpoint"
+   echo "hdfs dfs -rm -r ${ZTFXGRB_OUTPUT}/online_checkpoint"
    hdfs dfs -rm -r ${ZTFXGRB_OUTPUT}/grb_checkpoint
 fi
 
