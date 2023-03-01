@@ -129,7 +129,7 @@ def box2pixs(ra, dec, radius, NSIDE):
     >>> spark_grb.withColumn("hpix", explode("hpix_circle"))\
             .orderBy("hpix")\
                 .select(["triggerId", "hpix"]).head(5)
-    [Row(triggerId=683499781, hpix=10), Row(triggerId=683499781, hpix=20), Row(triggerId=683499781, hpix=21), Row(triggerId=683499781, hpix=22), Row(triggerId=683499781, hpix=35)]
+    [Row(triggerId=683499781, hpix=3), Row(triggerId=683499781, hpix=9), Row(triggerId=683499781, hpix=10), Row(triggerId=683499781, hpix=11), Row(triggerId=683476673, hpix=13)]
     """
     theta, phi = dec2theta(dec.values), ra2phi(ra.values)
     vec = hp.ang2vec(theta, phi)
