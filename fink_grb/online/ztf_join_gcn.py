@@ -212,7 +212,6 @@ def ztf_join_gcn_stream(
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
     >>> shutil.rmtree(grb_dataoutput + "/online/_spark_metadata")
-    >>> shutil.rmtree(grb_dataoutput + "/online/year=2019")
     >>> shutil.rmtree(grb_dataoutput + "/online_checkpoint")
     """
     logger = init_logging()
@@ -364,6 +363,7 @@ def launch_joining_stream(arguments):
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
 
     >>> shutil.rmtree(grb_datatest + "/online/_spark_metadata")
+    >>> shutil.rmtree(grb_datatest + "/online/year=2019")
     >>> shutil.rmtree(grb_datatest + "/online_checkpoint")
     """
     config = get_config(arguments)
