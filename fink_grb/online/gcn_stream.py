@@ -166,14 +166,14 @@ def start_gcn_stream(arguments):
     if gcn_fs is None:
         if not os.path.exists(gcn_rawdatapath):
             logger.error(
-                "Path of the gcn stream output not found in your local file system : {}\nRun fink_grb init before".format(
+                "Path of the gcn stream output not found in your local file system : {}".format(
                     gcn_rawdatapath
                 )
             )
 
     if logs:
         logger.info(
-            "GCN stream initialisation successfull.\nThe deamon is in running and wait for gcn arrivals."
+            "GCN stream initialisation successfull.\nThe deamon is running and wait for gcn arrivals."
         )
 
     while True:
