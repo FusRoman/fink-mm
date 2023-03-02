@@ -6,7 +6,6 @@ warnings.filterwarnings("ignore")
 import pandas as pd  # noqa: F401
 import numpy as np
 import time
-import os
 import subprocess
 import sys
 import healpy as hp
@@ -19,8 +18,16 @@ from fink_utils.science.utils import ang2pix, ra2phi, dec2theta
 from fink_utils.spark.partitioning import convert_to_datetime
 from fink_utils.broker.sparkUtils import init_sparksession, connect_to_raw_database
 
-import fink_grb
-from fink_grb.utils.fun_utils import build_spark_submit, join_post_process
+from fink_grb.utils.fun_utils import (
+    build_spark_submit,
+    join_post_process,
+    read_and_build_spark_submit,
+    read_prior_params,
+    read_additional_spark_options,
+    read_grb_admin_options,
+)
+import fink_grb.utils.application as apps
+
 from fink_grb.init import get_config, init_logging
 
 
@@ -122,12 +129,12 @@ def box2pixs(ra, dec, radius, NSIDE):
     >>> spark_grb.withColumn("hpix", explode("hpix_circle"))\
             .orderBy("hpix")\
                 .select(["triggerId", "hpix"]).head(5)
-    [Row(triggerId=683499781, hpix=10), Row(triggerId=683499781, hpix=20), Row(triggerId=683499781, hpix=21), Row(triggerId=683499781, hpix=22), Row(triggerId=683499781, hpix=35)]
+    [Row(triggerId=683499781, hpix=3), Row(triggerId=683499781, hpix=9), Row(triggerId=683499781, hpix=10), Row(triggerId=683499781, hpix=11), Row(triggerId=683476673, hpix=13)]
     """
     theta, phi = dec2theta(dec.values), ra2phi(ra.values)
     vec = hp.ang2vec(theta, phi)
     ipix_disc = [
-        hp.query_disc(nside=n, vec=v, radius=np.radians(r))
+        hp.query_disc(nside=n, vec=v, radius=np.radians(r), inclusive=True)
         for n, v, r in zip(NSIDE.values, vec, radius.values)
     ]
     return pd.Series(ipix_disc)
@@ -138,6 +145,7 @@ def ztf_join_gcn_stream(
     gcn_datapath_prefix,
     grb_datapath_prefix,
     night,
+    NSIDE,
     exit_after,
     tinterval,
     ast_dist,
@@ -160,6 +168,8 @@ def ztf_join_gcn_stream(
         the prefix path to save GRB join ZTF outputs.
     night : string
         the processing night
+    NSIDE: String
+        Healpix map resolution, better if a power of 2
     exit_after : int
         the maximum active time in second of the streaming process
     tinterval : int
@@ -191,7 +201,7 @@ def ztf_join_gcn_stream(
     ... gcn_datatest,
     ... grb_dataoutput,
     ... "20190903",
-    ... 90, 5, 5, 2, 0, 5
+    ... 4, 90, 5, 5, 2, 0, 5
     ... )
 
     >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
@@ -208,8 +218,6 @@ def ztf_join_gcn_stream(
     spark = init_sparksession(
         "science2grb_online_{}{}{}".format(night[0:4], night[4:6], night[6:8])
     )
-
-    NSIDE = 4
 
     scidatapath = ztf_datapath_prefix + "/science"
 
@@ -363,95 +371,56 @@ def launch_joining_stream(arguments):
 
     verbose = return_verbose_level(config, logger)
 
-    try:
-        master_manager = config["STREAM"]["manager"]
-        principal_group = config["STREAM"]["principal"]
-        secret = config["STREAM"]["secret"]
-        role = config["STREAM"]["role"]
-        executor_env = config["STREAM"]["exec_env"]
-        driver_mem = config["STREAM"]["driver_memory"]
-        exec_mem = config["STREAM"]["executor_memory"]
-        max_core = config["STREAM"]["max_core"]
-        exec_core = config["STREAM"]["executor_core"]
+    spark_submit = read_and_build_spark_submit(config, logger)
 
-        ztf_datapath_prefix = config["PATH"]["online_ztf_data_prefix"]
-        gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
-        grb_datapath_prefix = config["PATH"]["online_grb_data_prefix"]
-        tinterval = config["STREAM"]["tinterval"]
-
-        ast_dist = config["PRIOR_FILTER"]["ast_dist"]
-        pansstar_dist = config["PRIOR_FILTER"]["pansstar_dist"]
-        pansstar_star_score = config["PRIOR_FILTER"]["pansstar_star_score"]
-        gaia_dist = config["PRIOR_FILTER"]["gaia_dist"]
-    except Exception as e:  # pragma: no cover
-        logger.error("Config entry not found \n\t {}".format(e))
-        exit(1)
-
-    try:
-        night = arguments["--night"]
-    except Exception as e:  # pragma: no cover
-        logger.error("Command line arguments not found: {}\n{}".format("--night", e))
-        exit(1)
-
-    try:
-        exit_after = arguments["--exit_after"]
-    except Exception as e:  # pragma: no cover
-        logger.error(
-            "Command line arguments not found: {}\n{}".format("--exit_after", e)
-        )
-        exit(1)
-
-    try:
-        external_python_libs = config["STREAM"]["external_python_libs"]
-    except Exception as e:
-        if verbose:
-            logger.info(
-                "No external python dependencies specify in the following config file: {}\n\t{}".format(
-                    arguments["--config"], e
-                )
-            )
-        external_python_libs = ""
-
-    application = os.path.join(
-        os.path.dirname(fink_grb.__file__),
-        "online",
-        "ztf_join_gcn.py prod",
+    ast_dist, pansstar_dist, pansstar_star_score, gaia_dist = read_prior_params(
+        config, logger
     )
 
-    application += " " + ztf_datapath_prefix
-    application += " " + gcn_datapath_prefix
-    application += " " + grb_datapath_prefix
-    application += " " + night
-    application += " " + str(exit_after)
-    application += " " + tinterval
-    application += " " + ast_dist
-    application += " " + pansstar_dist
-    application += " " + pansstar_star_score
-    application += " " + gaia_dist
+    (
+        external_python_libs,
+        spark_jars,
+        packages,
+        external_files,
+    ) = read_additional_spark_options(arguments, config, logger, verbose, False)
 
-    spark_submit = "spark-submit \
-        --master {} \
-        --conf spark.mesos.principal={} \
-        --conf spark.mesos.secret={} \
-        --conf spark.mesos.role={} \
-        --conf spark.executorEnv.HOME={} \
-        --driver-memory {}G \
-        --executor-memory {}G \
-        --conf spark.cores.max={} \
-        --conf spark.executor.cores={}".format(
-        master_manager,
-        principal_group,
-        secret,
-        role,
-        executor_env,
-        driver_mem,
-        exec_mem,
-        max_core,
-        exec_core,
+    (
+        night,
+        exit_after,
+        ztf_datapath_prefix,
+        gcn_datapath_prefix,
+        grb_datapath_prefix,
+        tinterval,
+        NSIDE,
+        _,
+        _,
+        _,
+        _,
+        _,
+    ) = read_grb_admin_options(arguments, config, logger)
+
+    application = apps.Application.ONLINE.build_application(
+        logger,
+        ztf_datapath_prefix=ztf_datapath_prefix,
+        gcn_datapath_prefix=gcn_datapath_prefix,
+        grb_datapath_prefix=grb_datapath_prefix,
+        night=night,
+        NSIDE=NSIDE,
+        exit_after=exit_after,
+        tinterval=tinterval,
+        ast_dist=ast_dist,
+        pansstar_dist=pansstar_dist,
+        pansstar_star_score=pansstar_star_score,
+        gaia_dist=gaia_dist,
     )
 
     spark_submit = build_spark_submit(
-        spark_submit, application, external_python_libs, "", "", ""
+        spark_submit,
+        application,
+        external_python_libs,
+        spark_jars,
+        packages,
+        external_files,
     )
 
     process = subprocess.Popen(
@@ -487,7 +456,9 @@ if __name__ == "__main__":
 
         grb_data = "fink_grb/test/test_data/gcn_test/raw/year=2019/month=09/day=03"
         join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
-        alert_data = "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/"
+        alert_data = (
+            "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/"
+        )
         globs["join_data"] = join_data
         globs["alert_data"] = alert_data
         globs["grb_data"] = grb_data
@@ -497,27 +468,4 @@ if __name__ == "__main__":
 
     elif sys.argv[1] == "prod":  # pragma: no cover
 
-        ztf_datapath_prefix = sys.argv[2]
-        gcn_datapath_prefix = sys.argv[3]
-        grb_datapath_prefix = sys.argv[4]
-        night = sys.argv[5]
-        exit_after = sys.argv[6]
-        tinterval = sys.argv[7]
-
-        ast_dist = float(sys.argv[8])
-        pansstar_dist = float(sys.argv[9])
-        pansstar_star_score = float(sys.argv[10])
-        gaia_dist = float(sys.argv[11])
-
-        ztf_join_gcn_stream(
-            ztf_datapath_prefix,
-            gcn_datapath_prefix,
-            grb_datapath_prefix,
-            night,
-            exit_after,
-            tinterval,
-            ast_dist,
-            pansstar_dist,
-            pansstar_star_score,
-            gaia_dist,
-        )
+        apps.Application.ONLINE.run_application()

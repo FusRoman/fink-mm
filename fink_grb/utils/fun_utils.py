@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import os
 from pyarrow import fs
 
 import pyspark.sql.functions as F
@@ -11,6 +12,7 @@ from fink_filters.classification import extract_fink_classification
 from fink_utils.spark.utils import concat_col
 
 from fink_grb.utils.grb_prob import grb_assoc
+
 # from fink_broker.tracklet_identification import add_tracklet_information
 
 
@@ -576,7 +578,27 @@ def format_rate_results(spark_df, rate_column):
 
 
 def join_post_process(df_grb, with_rate=True, from_hbase=False):
+    """
+    Post processing after the join, used by offline and online
 
+    Parameters
+    ----------
+    df_grb: PySpark DataFrame
+        the dataframe return by the gcn join ztf.
+    with_rate: boolean
+        if True, compute the rate.
+        should be True only when historical data are available in the alert packets.
+    from_hbase: boolean
+        if True, df_grb has been loaded from hbase
+
+    Returns
+    -------
+    df_grb: PySpark DataFrame
+        df_grb with the output schema, see conf/fink_grb_schema_version_1.0.avsc
+
+    Examples
+    --------
+    """
     if with_rate:
 
         df_grb = concat_col(df_grb, "magpsf")
@@ -603,10 +625,7 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
     # TODO : do something better with satellites
     # df_grb = add_tracklet_information(df_grb)
 
-    df_grb = df_grb.withColumn(
-        'tracklet',
-        F.lit('')
-    )
+    df_grb = df_grb.withColumn("tracklet", F.lit(""))
 
     df_grb = df_grb.withColumn(
         "fink_class",
@@ -678,8 +697,326 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
     return df_grb
 
 
+def read_and_build_spark_submit(config, logger):
+    """
+    Read the field from the config file related to spark configuration
+
+    Parameters
+    ----------
+    config : ConfigParser
+        the ConfigParser object containing the entry from the config file
+    logger : logging object
+        the logger used to print logs
+
+    Returns
+    -------
+    spark_submit: String
+        the spark-submit command line that will launch the application
+
+    Examples
+    --------
+    >>> config = get_config({"--config" : "fink_grb/conf/fink_grb.conf"})
+    >>> logger = init_logging()
+    >>> read_and_build_spark_submit(config, logger)
+    'spark-submit         --master local[2]         --conf spark.mesos.principal=         --conf spark.mesos.secret=         --conf spark.mesos.role=         --conf spark.executorEnv.HOME=/path/to/user/         --driver-memory 4G         --executor-memory 8G         --conf spark.cores.max=16         --conf spark.executor.cores=8'
+    """
+    try:
+        master_manager = config["STREAM"]["manager"]
+        principal_group = config["STREAM"]["principal"]
+        secret = config["STREAM"]["secret"]
+        role = config["STREAM"]["role"]
+        executor_env = config["STREAM"]["exec_env"]
+        driver_mem = config["STREAM"]["driver_memory"]
+        exec_mem = config["STREAM"]["executor_memory"]
+        max_core = config["STREAM"]["max_core"]
+        exec_core = config["STREAM"]["executor_core"]
+    except Exception as e:  # pragma: no cover
+        logger.error("Spark Admin config entry not found \n\t {}".format(e))
+        exit(1)
+
+    spark_submit = "spark-submit \
+        --master {} \
+        --conf spark.mesos.principal={} \
+        --conf spark.mesos.secret={} \
+        --conf spark.mesos.role={} \
+        --conf spark.executorEnv.HOME={} \
+        --driver-memory {}G \
+        --executor-memory {}G \
+        --conf spark.cores.max={} \
+        --conf spark.executor.cores={}".format(
+        master_manager,
+        principal_group,
+        secret,
+        role,
+        executor_env,
+        driver_mem,
+        exec_mem,
+        max_core,
+        exec_core,
+    )
+
+    return spark_submit
+
+
+def read_prior_params(config, logger):
+    """
+    Read the field from config file related to prior filter parameters
+
+    Parameters
+    ----------
+    config : ConfigParser
+        the ConfigParser object containing the entry from the config file
+    logger : logging object
+        the logger used to print logs
+
+    Returns
+    -------
+    ast_dist: String
+        minimal distance to associates an alerts to a known asteroids from MPC (ssdistnr ZTF field)
+    pansstar_dist: String
+        minimal distance to associates an alerts to a known source from Pansstar1 catalog (distpsnr1 ZTF field)
+    pansstar_star_score: String
+        minimal value to be a point source, star/galaxy SExtractor score (sgscore1 ZTF field)
+    gaia_dist: String
+        minimal distance to associates an alerts to a known source from GaiaDR1 catalog (neargaia ZTF field)
+
+    Examples
+    --------
+    >>> config = get_config({"--config" : "fink_grb/conf/fink_grb.conf"})
+    >>> logger = init_logging()
+    >>> read_prior_params(config, logger)
+    ('5', '2', '0', '5')
+    """
+    try:
+        ast_dist = config["PRIOR_FILTER"]["ast_dist"]
+        pansstar_dist = config["PRIOR_FILTER"]["pansstar_dist"]
+        pansstar_star_score = config["PRIOR_FILTER"]["pansstar_star_score"]
+        gaia_dist = config["PRIOR_FILTER"]["gaia_dist"]
+
+    except Exception as e:  # pragma: no cover
+        logger.error("Prior filter config entry not found \n\t {}".format(e))
+        exit(1)
+
+    return ast_dist, pansstar_dist, pansstar_star_score, gaia_dist
+
+
+def read_additional_spark_options(arguments, config, logger, verbose, is_test):
+    """
+    Read the field from config file related to additional spark options.
+    If multiples library or python .egg are found, they must be comma separated with no space.
+    If the field is not found or empty, return an empty string for the corresponding field.
+
+    Parameters
+    ----------
+    arguments : dictionnary
+        arguments parse from the command line.
+    config : ConfigParser
+        the ConfigParser object containing the entry from the config file
+    logger : logging object
+        the logger used to print logs
+    verbose: boolean
+        enable verbosity, print log in the terminal
+    is_test: boolean
+        if true, configure the function for the offline mode test behavior.
+
+    Returns
+    -------
+    external_python_libs: String
+        python .egg to send to the spark application
+    spark_jars: String
+        java .jar library to send to the spark application
+    packages: String
+        Maven java packages to send to the application
+    external_files: String
+        files in any format to send to the spark application.
+
+    Examples
+    --------
+    >>> arguments = {"--config" : "fink_grb/conf/fink_grb.conf"}
+    >>> config = get_config(arguments)
+    >>> logger = init_logging()
+    >>> res = read_additional_spark_options(arguments, config, logger, True, True)
+
+    >>> fink_home = os.environ["FINK_HOME"]
+    >>> expected_res_1 = f'{fink_home}/libs/fink-broker_2.11-1.2.jar,{fink_home}/libs/hbase-spark-hbase2.2_spark3_scala2.11_hadoop2.7.jar,{fink_home}/libs/hbase-spark-protocol-shaded-hbase2.2_spark3_scala2.11_hadoop2.7.jar'
+    >>> res[1] == expected_res_1
+    True
+
+    >>> read_additional_spark_options(arguments, config, logger, True, False)
+    ('', '', 'org.apache.spark:spark-streaming-kafka-0-10-assembly_2.12:3.1.3,org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.3,org.apache.spark:spark-avro_2.12:3.1.3,org.apache.hbase:hbase-shaded-mapreduce:2.2.7', '')
+    """
+    try:
+        external_python_libs = config["STREAM"]["external_python_libs"]
+    except Exception as e:
+        if verbose:
+            logger.info(
+                "No external python dependencies specify in the following config file: {}\n\t{}".format(
+                    arguments["--config"], e
+                )
+            )
+        external_python_libs = ""
+
+    try:
+        spark_jars = config["STREAM"]["jars"]
+        if is_test:
+            fink_home = os.environ["FINK_HOME"]
+            spark_jars = "{}/libs/fink-broker_2.11-1.2.jar,{}/libs/hbase-spark-hbase2.2_spark3_scala2.11_hadoop2.7.jar,{}/libs/hbase-spark-protocol-shaded-hbase2.2_spark3_scala2.11_hadoop2.7.jar".format(
+                fink_home, fink_home, fink_home
+            )
+
+    except Exception as e:
+        if verbose:
+            logger.info(
+                "No spark jars dependencies specify in the following config file: {}\n\t{}".format(
+                    arguments["--config"], e
+                )
+            )
+        spark_jars = ""
+
+    try:
+        packages = config["STREAM"]["packages"]
+    except Exception as e:
+        if verbose:
+            logger.info(
+                "No packages dependencies specify in the following config file: {}\n\t{}".format(
+                    arguments["--config"], e
+                )
+            )
+        packages = ""
+
+    try:
+        external_files = config["STREAM"]["external_files"]
+    except Exception as e:
+        if verbose:
+            logger.info(
+                "No external python dependencies specify in the following config file: {}\n\t{}".format(
+                    arguments["--config"], e
+                )
+            )
+        external_files = ""
+
+    return external_python_libs, spark_jars, packages, external_files
+
+
+def read_grb_admin_options(arguments, config, logger, is_test=False):
+    """
+    Parse the command line arguments and read the config file to return the configuration parameters of fink-grb
+
+    Parameters
+    ----------
+    arguments : dictionnary
+        arguments parse from the command line.
+    config : ConfigParser
+        the ConfigParser object containing the entry from the config file
+    logger : logging object
+        the logger used to print logs
+    is_test: boolean
+        if true, configure the function for the offline mode test behavior.
+
+    Returns
+    -------
+    night: String
+        The current processing night
+    exit_after: String
+        Quit the application after 'exit_after' seconds
+    ztf_datapath_prefix: String
+        Path where are located the ZTF live data.
+    gcn_datapath_prefix: String
+        Path where are located the GCN live data.
+    grb_datapath_prefix: String
+        Path where to store the output of fink-grb.
+    tinterval: String
+        Time interval between batch processing for online mode.
+    NSIDE: String
+        Healpix map resolution, better if a power of 2
+    hbase_catalog: String
+        Path where are located the hbase catalog (used by offline mode)
+    time_window: Integer
+        Time window in the past to get ZTF alerts for offline mode.
+    kafka_broker: String
+        IP adress and port of the kafka broker for distribution
+    username_writer: String
+        Username of the kafka writer
+    password_writer: String
+        password of the kafka writer
+
+    Examples
+    --------
+    >>> arguments = {
+    ... "--config" : "fink_grb/conf/fink_grb.conf",
+    ... "--night" : "20221014",
+    ... "--exit_after" : "120"
+    ... }
+    >>> config = get_config(arguments)
+    >>> logger = init_logging()
+
+    >>> read_grb_admin_options(arguments, config, logger, False)
+    ('20221014', '120', 'fink_grb/test/test_data/ztf_test/online', 'fink_grb/test/test_data/gcn_test', 'fink_grb/test/test_output', '30', '4', '/home/roman.le-montagner/fink-broker/catalogs_hbase/ztf.jd.json', 7, 'localhost:9092', 'toto', 'tata')
+
+    >>> res = read_grb_admin_options(arguments, config, logger, True)
+
+    >>> fink_home = os.environ["FINK_HOME"]
+    >>> expected_res = f'{fink_home}/catalogs_hbase/ztf.jd.json'
+    >>> res[7] == expected_res
+    True
+    """
+    try:
+        night = arguments["--night"]
+    except Exception as e:  # pragma: no cover
+        logger.error("Command line arguments not found: {}\n{}".format("--night", e))
+        exit(1)
+
+    try:
+        exit_after = arguments["--exit_after"]
+    except Exception as e:  # pragma: no cover
+        logger.error(
+            "Command line arguments not found: {}\n{}".format("--exit_after", e)
+        )
+        exit(1)
+
+    try:
+        ztf_datapath_prefix = config["PATH"]["online_ztf_data_prefix"]
+        gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
+        grb_datapath_prefix = config["PATH"]["online_grb_data_prefix"]
+        tinterval = config["STREAM"]["tinterval"]
+        NSIDE = config["ADMIN"]["NSIDE"]
+
+        hbase_catalog = config["PATH"]["hbase_catalog"]
+        if is_test:
+            try:
+                fink_home = os.environ["FINK_HOME"]
+                hbase_catalog = fink_home + "/catalogs_hbase/ztf.jd.json"
+            except Exception as e:
+                logger.error(
+                    "FINK_HOME environment variable not found \n\t {}".format(e)
+                )
+
+        time_window = int(config["OFFLINE"]["time_window"])
+
+        kafka_broker = config["DISTRIBUTION"]["kafka_broker"]
+        username_writer = config["DISTRIBUTION"]["username_writer"]
+        password_writer = config["DISTRIBUTION"]["password_writer"]
+    except Exception as e:  # pragma: no cover
+        logger.error("Config entry not found \n\t {}".format(e))
+        exit(1)
+
+    return (
+        night,
+        exit_after,
+        ztf_datapath_prefix,
+        gcn_datapath_prefix,
+        grb_datapath_prefix,
+        tinterval,
+        NSIDE,
+        hbase_catalog,
+        time_window,
+        kafka_broker,
+        username_writer,
+        password_writer,
+    )
+
+
 if __name__ == "__main__":  # pragma: no cover
-    import sys  # noqa: F401
     import doctest  # noqa: F401
     from pandas.testing import assert_frame_equal  # noqa: F401
     import pandas as pd  # noqa: F401

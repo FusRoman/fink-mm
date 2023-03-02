@@ -6,23 +6,23 @@ from fink_utils.broker.sparkUtils import init_sparksession
 
 from pyspark.sql import functions as F
 from pyspark.sql.functions import explode, col
-import os
 import sys
 import subprocess
-from dateutil import parser
-
-from astropy.time import Time
 
 from fink_utils.spark.partitioning import convert_to_datetime
 
-import fink_grb
 from fink_grb.utils.fun_utils import (
     return_verbose_level,
     build_spark_submit,
     join_post_process,
+    read_and_build_spark_submit,
+    read_prior_params,
+    read_grb_admin_options,
+    read_additional_spark_options,
 )
+import fink_grb.utils.application as apps
 from fink_grb.init import get_config, init_logging
-from fink_grb.online.ztf_join_gcn import box2pixs
+import fink_grb.online.ztf_join_gcn as ztf_online
 
 
 def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist):
@@ -105,6 +105,7 @@ def spark_offline(
     gcn_read_path,
     grbxztf_write_path,
     night,
+    NSIDE,
     start_window,
     time_window,
     ast_dist,
@@ -127,6 +128,8 @@ def spark_offline(
         path to store the cross match ZTF/GCN results
     night : string
         launching night of the script
+    NSIDE: String
+        Healpix map resolution, better if a power of 2
     start_window : float
         start date of the time window (in jd / julian date)
     time_window : int
@@ -162,6 +165,7 @@ def spark_offline(
     ... gcn_datatest,
     ... grb_dataoutput,
     ... "20190903",
+    ... 4,
     ... Time("2019-09-04").jd,
     ... 7, 5, 2, 0, 5,
     ... False
@@ -249,8 +253,6 @@ def spark_offline(
 
     grb_alert.cache().count()
 
-    NSIDE = 4
-
     ztf_alert = ztf_alert.withColumn(
         "hpix",
         ang2pix(ztf_alert.ra, ztf_alert.dec, F.lit(NSIDE)),
@@ -259,7 +261,7 @@ def spark_offline(
     grb_alert = grb_alert.withColumn("err_degree", grb_alert["err_arcmin"] / 60)
     grb_alert = grb_alert.withColumn(
         "hpix_circle",
-        box2pixs(grb_alert.ra, grb_alert.dec, grb_alert.err_degree, F.lit(NSIDE)),
+        ztf_online.box2pixs(grb_alert.ra, grb_alert.dec, grb_alert.err_degree, F.lit(NSIDE)),
     )
     grb_alert = grb_alert.withColumn("hpix", explode("hpix_circle"))
 
@@ -342,134 +344,56 @@ def launch_offline_mode(arguments, is_test=False):
 
     verbose = return_verbose_level(config, logger)
 
-    try:
-        master_manager = config["STREAM"]["manager"]
-        principal_group = config["STREAM"]["principal"]
-        secret = config["STREAM"]["secret"]
-        role = config["STREAM"]["role"]
-        executor_env = config["STREAM"]["exec_env"]
-        driver_mem = config["STREAM"]["driver_memory"]
-        exec_mem = config["STREAM"]["executor_memory"]
-        max_core = config["STREAM"]["max_core"]
-        exec_core = config["STREAM"]["executor_core"]
+    spark_submit = read_and_build_spark_submit(config, logger)
 
-        gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
-        grb_datapath_prefix = config["PATH"]["online_grb_data_prefix"]
-        hbase_catalog = config["PATH"]["hbase_catalog"]
-
-        ast_dist = config["PRIOR_FILTER"]["ast_dist"]
-        pansstar_dist = config["PRIOR_FILTER"]["pansstar_dist"]
-        pansstar_star_score = config["PRIOR_FILTER"]["pansstar_star_score"]
-        gaia_dist = config["PRIOR_FILTER"]["gaia_dist"]
-        if is_test:
-            try:
-                fink_home = os.environ["FINK_HOME"]
-                hbase_catalog = fink_home + "/catalogs_hbase/ztf.jd.json"
-            except Exception as e:
-                logger.error(
-                    "FINK_HOME environment variable not found \n\t {}".format(e)
-                )
-
-        time_window = int(config["OFFLINE"]["time_window"])
-    except Exception as e:  # pragma: no cover
-        logger.error("Config entry not found \n\t {}".format(e))
-        exit(1)
-
-    try:
-        night = arguments["--night"]
-    except Exception as e:  # pragma: no cover
-        logger.error("Command line arguments not found: {}\n{}".format("--night", e))
-        exit(1)
-
-    try:
-        external_python_libs = config["STREAM"]["external_python_libs"]
-    except Exception as e:
-        if verbose:
-            logger.info(
-                "No external python dependencies specify in the following config file: {}\n\t{}".format(
-                    arguments["--config"], e
-                )
-            )
-        external_python_libs = ""
-
-    try:
-        spark_jars = config["STREAM"]["jars"]
-        if is_test:
-            fink_home = os.environ["FINK_HOME"]
-            spark_jars = "{}/libs/fink-broker_2.11-1.2.jar,{}/libs/hbase-spark-hbase2.2_spark3_scala2.11_hadoop2.7.jar,{}/libs/hbase-spark-protocol-shaded-hbase2.2_spark3_scala2.11_hadoop2.7.jar".format(
-                fink_home, fink_home, fink_home
-            )
-
-    except Exception as e:
-        if verbose:
-            logger.info(
-                "No spark jars dependencies specify in the following config file: {}\n\t{}".format(
-                    arguments["--config"], e
-                )
-            )
-        spark_jars = ""
-
-    try:
-        packages = config["STREAM"]["packages"]
-    except Exception as e:
-        if verbose:
-            logger.info(
-                "No packages dependencies specify in the following config file: {}\n\t{}".format(
-                    arguments["--config"], e
-                )
-            )
-        packages = ""
-
-    application = os.path.join(
-        os.path.dirname(fink_grb.__file__),
-        "offline",
-        "spark_offline.py prod",
+    ast_dist, pansstar_dist, pansstar_star_score, gaia_dist = read_prior_params(
+        config, logger
     )
 
-    start_window_in_jd = (
-        Time(parser.parse(night), format="datetime").jd + 0.49
-    )  # + 0.49 to start the time window in the night
+    (
+        external_python_libs,
+        spark_jars,
+        packages,
+        external_files,
+    ) = read_additional_spark_options(arguments, config, logger, verbose, is_test)
 
-    application += " " + hbase_catalog
-    application += " " + gcn_datapath_prefix
-    application += " " + grb_datapath_prefix
-    application += " " + night
-    application += " " + str(start_window_in_jd)
-    application += " " + str(time_window)
-    application += " " + ast_dist
-    application += " " + pansstar_dist
-    application += " " + pansstar_star_score
-    application += " " + gaia_dist
+    (
+        night,
+        _,
+        _,
+        gcn_datapath_prefix,
+        grb_datapath_prefix,
+        _,
+        NSIDE,
+        hbase_catalog,
+        time_window,
+        _,
+        _,
+        _,
+    ) = read_grb_admin_options(arguments, config, logger, is_test=is_test)
 
-    if is_test:
-        application += " " + str(False)
-    else:
-        application += " " + str(True)
-
-    spark_submit = "spark-submit \
-            --master {} \
-            --conf spark.mesos.principal={} \
-            --conf spark.mesos.secret={} \
-            --conf spark.mesos.role={} \
-            --conf spark.executorEnv.HOME={} \
-            --driver-memory {}G \
-            --executor-memory {}G \
-            --conf spark.cores.max={} \
-            --conf spark.executor.cores={} \
-            ".format(
-        master_manager,
-        principal_group,
-        secret,
-        role,
-        executor_env,
-        driver_mem,
-        exec_mem,
-        max_core,
-        exec_core,
+    application = apps.Application.OFFLINE.build_application(
+        logger,
+        hbase_catalog=hbase_catalog,
+        gcn_datapath_prefix=gcn_datapath_prefix,
+        grb_datapath_prefix=grb_datapath_prefix,
+        night=night,
+        NSIDE=NSIDE,
+        time_window=time_window,
+        ast_dist=ast_dist,
+        pansstar_dist=pansstar_dist,
+        pansstar_star_score=pansstar_star_score,
+        gaia_dist=gaia_dist,
+        is_test=is_test,
     )
 
     spark_submit = build_spark_submit(
-        spark_submit, application, external_python_libs, spark_jars, packages, ""
+        spark_submit,
+        application,
+        external_python_libs,
+        spark_jars,
+        packages,
+        external_files,
     )
 
     process = subprocess.Popen(
@@ -501,11 +425,14 @@ if __name__ == "__main__":
         from pandas.testing import assert_frame_equal  # noqa: F401
         import shutil  # noqa: F401
         import pandas as pd  # noqa: F401
+        import os  # noqa: F401
 
         globs = globals()
 
         join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
-        alert_data = "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/"
+        alert_data = (
+            "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/"
+        )
         globs["join_data"] = join_data
         globs["alert_data"] = alert_data
 
@@ -514,30 +441,4 @@ if __name__ == "__main__":
 
     if sys.argv[1] == "prod":  # pragma: no cover
 
-        hbase_catalog = sys.argv[2]
-        gcn_datapath_prefix = sys.argv[3]
-        grb_datapath_prefix = sys.argv[4]
-        night = sys.argv[5]
-        start_window = float(sys.argv[6])
-        time_window = int(sys.argv[7])
-
-        ast_dist = float(sys.argv[8])
-        pansstar_dist = float(sys.argv[9])
-        pansstar_star_score = float(sys.argv[10])
-        gaia_dist = float(sys.argv[11])
-
-        column_filter = True if sys.argv[12] == "True" else False
-
-        spark_offline(
-            hbase_catalog,
-            gcn_datapath_prefix,
-            grb_datapath_prefix,
-            night,
-            start_window,
-            time_window,
-            ast_dist,
-            pansstar_dist,
-            pansstar_star_score,
-            gaia_dist,
-            with_columns_filter=column_filter,
-        )
+        apps.Application.OFFLINE.run_application()
