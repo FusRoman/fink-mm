@@ -285,6 +285,7 @@ def launch_distribution(arguments):
         tinterval,
         _,
         _,
+        _,
         kafka_broker,
         username_writer,
         password_writer,
