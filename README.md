@@ -1,5 +1,5 @@
 # Fink_GRB
-Correlation of the Fink alerts with multi-messenger instruments
+Correlation of the Fink alerts with multi-messenger instruments for real-time purpose
 * Available Instrument
     * Gamma-Ray: Fermi, Swift, Integral
     * X-Ray: Swift
@@ -21,7 +21,7 @@ toto@linux:~$ pip install .
 toto@linux:~$ cp fink_grb/conf/fink_grb.conf /config_path
 ```
 and update your configuration file with your custom parameters.
-Please note, the paths in the configuration file must not end with a '/'.
+Please note that the configuration file's paths must not end with a '/'.
 
 ### Setup the Fink_GRB daemons
 * Start listening to GCN
@@ -43,3 +43,49 @@ The three scripts are not meant to be launched lonely but with cron jobs. The fo
 ```
 The above lines will launch the streaming services daily at 01:00 AM (Paris Timezone) until the end date specified in the scheduler script file. For both science2grb.sh and grb2distribution.sh, they finished at 05:00 PM (Paris Timezone). The start and end times have been set for ZTF (01:00 AM Paris -> 4:00 PM California / 5:00 PM Paris -> 08:00 AM California) and must be modified for LSST.
 The offline services start at 5:01 PM daily and finish automatically at the end of the process. 
+
+## Output description
+
+The module output is pushed into the folder specified by the config entry named 'online_grb_data_prefix'.
+The output could be local or in a HDFS cluster.
+Two folders are created inside; one called 'online' and one called 'offline'. Inside these two folders, the data are repartitions following the same principle: 'year=year/month=month/day=day'. At the end of the path, you will find ```.parquet``` files containing the data.
+
+### Fink_GRB Output Schema
+
+|Field              |Type  |Contents                                                                          |
+|-------------------|------|----------------------------------------------------------------------------------|
+|Available for both online and offline mode                                                                   |
+|ObjectId           |String|Unique ZTF identifier of the object                                               |
+|candid             |int   |Unique ZTF identifier of the alert                                                 |
+|ztf_ra             |float |ZTF right ascension                                                               |
+|ztf_dec            |float |ZTF declination                                                                   |
+|fid                |int   |filter id (ZTF, g=1, r=2, i=3)                                                    |
+|jdstarthist        |float |first variation time at 3 sigma of the object (in jd)                             |
+|rb                 |float |real bogus score                                                                  |
+|jd                 |float |alert emission time                                                               | 
+|instrument_or_event|String|Triggering instruments (GBM, XRT, ...)                                            |
+|platform           |String|Triggering platform (Fermi, Swift, IceCube, ...)                                  |
+|triggerId          |int   |Unique GCN identifier                                                             |
+|grb_ra             |float |GCN Event right ascension                                                         |
+|grb_dec            |float |GCN Event declination                                                             |
+|grb_loc_error      |float |GCN error location in arcminute                                                   |
+|triggerTimeUTC     |String|GCN TriggerTime in UTC                                                            |
+|grb_proba          |float |Serendipitous probability to associate the alerts with the GCN event             |
+|fink_class         |String|Fink Classification                                                               |
+|                                                                                                             |
+|Field available only for the online mode                                                                     |
+|delta_mag          |float |Difference of magnitude between the alert and the previous one                    |
+|rate               |float |Magnitude rate (magnitude/day)                                                    |
+|from_upper         |bool  |If true, the last alert used for the difference magnitude is an upper limit       |
+|start_vartime      |float |first variation time at 5 sigma of the object (in jd, only valid for 30 days)     |
+|diff_vartime       |float |difference between start_vartime and jd (if above 30, start_vartime is not valid) |
+
+### Fink-client topics related to Fink_GRB
+
+The connection to the distribution stream is made by the [fink-client](https://github.com/astrolabsoftware/fink-client). Three topics are available :
+
+|Topic Name     | Description                                                                              |
+|---------------|------------------------------------------------------------------------------------------|
+|fink_grb_bronze| Alerts with a real bogus (rb) >= 0.5, classified by Fink as SN candidate, Unknown and Ambiguous within the error location of a GCN event. |
+|fink_grb_silver| Alerts satisfying the bronze filter with a grb_proba >= 5 sigma.|
+|fink_grb_gold  |Alerts satisfying the silver filter with a mag_rate > 0.3 mag/day.|
