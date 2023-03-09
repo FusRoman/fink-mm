@@ -7,6 +7,9 @@ import json
 import io
 import shutil
 
+# This script is used to generate the avro schema used by the distribution
+# The schema will be pushed into fink_grb/conf/ and its name will be 'fink_grb_schema_version_*SCHEMA_VERSION*.avro'
+#   where *SCHEMA_VERSION* is the schema version
 
 SCHEMA_VERSION = "1.0"
 

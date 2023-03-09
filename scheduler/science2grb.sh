@@ -16,6 +16,7 @@ ZTF_ONLINE= # online_ztf_data_prefix
 GCN_ONLINE= # online_gcn_data_prefix
 ZTFXGRB_OUTPUT= # online_grb_data_prefix
 
+# pth of the hdfs installation
 HDFS_HOME="/opt/hadoop-2/bin/"
 
 while true; do
