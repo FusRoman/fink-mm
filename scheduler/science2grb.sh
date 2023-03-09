@@ -8,7 +8,8 @@ YEAR=${NIGHT:0:4}
 MONTH=${NIGHT:4:2}
 DAY=${NIGHT:6:2}
 
-FINK_GRB_HOME="/path/to/fink_grb/"
+FINK_GRB_CONFIG="path/config/file"
+FINK_GRB_LOG="path/to/store/log"
 
 
 # same entries as in the .conf
@@ -16,6 +17,7 @@ ZTF_ONLINE= # online_ztf_data_prefix
 GCN_ONLINE= # online_gcn_data_prefix
 ZTFXGRB_OUTPUT= # online_grb_data_prefix
 
+# pth of the hdfs installation
 HDFS_HOME="/opt/hadoop-2/bin/"
 
 while true; do
@@ -32,7 +34,7 @@ while true; do
             # LEASETIME must be computed by taking the difference between now and max end 
             LEASETIME=$(( `date +'%s' -d '17:00 today'` - `date +'%s' -d 'now'` ))
     
-            nohup fink_grb join_stream online --config ${FINK_GRB_HOME}/local.conf --night ${NIGHT} --exit_after ${LEASETIME} > ${FINK_GRB_HOME}/join_stream_${YEAR}${MONTH}${DAY}.log
+            nohup fink_grb join_stream online --config ${FINK_GRB_CONFIG} --night ${NIGHT} --exit_after ${LEASETIME} > ${FINK_GRB_LOG}/fink_grb_online_${YEAR}${MONTH}${DAY}.log 2>&1
             break
         fi
      fi
