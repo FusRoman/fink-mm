@@ -8,7 +8,8 @@ YEAR=${NIGHT:0:4}
 MONTH=${NIGHT:4:2}
 DAY=${NIGHT:6:2}
 
-FINK_GRB_HOME="/path/to/fink_grb/"
+FINK_GRB_CONFIG="path/config/file"
+FINK_GRB_LOG="path/to/store/log"
 
 
 # same entries as in the .conf
@@ -28,7 +29,7 @@ while true; do
             # LEASETIME must be computed by taking the difference between now and max end 
             LEASETIME=$(( `date +'%s' -d '17:00 today'` - `date +'%s' -d 'now'` ))
     
-            nohup fink_grb distribute --config ${FINK_GRB_HOME}/local.conf --night ${NIGHT} --exit_after ${LEASETIME} > ${FINK_GRB_HOME}/grb_distribution_${YEAR}${MONTH}${DAY}.log
+            nohup fink_grb distribute --config ${FINK_GRB_CONFIG} --night ${NIGHT} --exit_after ${LEASETIME} > ${FINK_GRB_LOG}/grb_distribution_${YEAR}${MONTH}${DAY}.log
             break
         fi
      fi
