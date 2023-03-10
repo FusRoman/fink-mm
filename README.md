@@ -87,7 +87,7 @@ Two folders are created inside; one called 'online' and one called 'offline'. In
 |grb_loc_error      |float |GCN error location in arcminute                                                   |
 |triggerTimeUTC     |String|GCN TriggerTime in UTC                                                            |
 |grb_proba          |float |Serendipitous probability to associate the alerts with the GCN event             |
-|fink_class         |String|Fink Classification                                                               |
+|fink_class         |String|[Fink Classification](https://fink-broker.readthedocs.io/en/latest/science/classification/)                                                               |
 |                                                                                                             |
 |Field available only for the online mode                                                                     |
 |delta_mag          |float |Difference of magnitude between the alert and the previous one                    |
