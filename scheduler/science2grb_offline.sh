@@ -3,7 +3,7 @@
 source ~/.bash_profile
 
 # Config 
-FINK_GRB_CONFIG=path/to/conf/fink_grb.conf
+FINK_GRB_CONFIG="path/to/conf/fink_grb.conf"
 FINK_GRB_LOG="path/to/store/log"
 
 NIGHT=`date +"%Y%m%d" -d "now"`
