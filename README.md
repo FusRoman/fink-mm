@@ -12,9 +12,9 @@ Correlation of the [Fink](https://fink-broker.org/) alerts with multi-messenger 
 ```console
 toto@linux:~$ git clone https://github.com/FusRoman/Fink_GRB.git
 ```
-* Install with pip
+* Install from GitHub with pip
 ```console
-toto@linux:~$ pip install .
+toto@linux:~$ pip install git+https://github.com/FusRoman/Fink_GRB@v0.6-beta
 ```
 * Copy the default config file in a custom location
 ```console
