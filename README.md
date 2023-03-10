@@ -29,7 +29,7 @@ Fink_GRB has multiples script in the scheduler folder to launch the different se
 * grb2distribution.sh launch the distribution services that will send the outputs of the online services in real-time to the registered users of the [fink-client](https://github.com/astrolabsoftware/fink-client). (latency: ZTF/LSST latency + 30 seconds + Network latency to reach fink-client)
 
 #### **Modify the scripts**
-Download the multiples scripts from GitHub:scheduler/
+Download the multiple scripts from GitHub:scheduler/
 These scripts use some paths that have to be modified before the deployment.
 * Two variables names `FINK_GRB_CONFIG` and `LOG_PATH` are common to all script. The first is the location of your configuration file, and the second is where to store log files. Either you modify the value of these variables directly in the scripts, science2grb.sh and science2grb_offline.sh or you remove the declaration in these scripts and export these variables within your ~/.bashrc or ~/.bash_profile.
 ```console
