@@ -55,13 +55,13 @@ done
 $(hdfs dfs -test -d ${ZTFXGRB_OUTPUT}/online/_spark_metadata)
 if [[ $? == 0 ]]; then
    echo "hdfs dfs -rm -r ${ZTFXGRB_OUTPUT}/online/_spark_metadata"
-   hdfs dfs -rm -r ${ZTFXGRB_OUTPUT}/grb/_spark_metadata
+   hdfs dfs -rm -r ${ZTFXGRB_OUTPUT}/online/_spark_metadata
 fi
 
 $(hdfs dfs -test -d ${ZTFXGRB_OUTPUT}/online_checkpoint)
 if [[ $? == 0 ]]; then
    echo "hdfs dfs -rm -r ${ZTFXGRB_OUTPUT}/online_checkpoint"
-   hdfs dfs -rm -r ${ZTFXGRB_OUTPUT}/grb_checkpoint
+   hdfs dfs -rm -r ${ZTFXGRB_OUTPUT}/online_checkpoint
 fi
 
 echo "Exit science2grb properly"
