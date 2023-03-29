@@ -41,3 +41,4 @@ while true; do
      echo "${DDATE}: no data yet. Sleeping..."
      sleep 5
 done
+
