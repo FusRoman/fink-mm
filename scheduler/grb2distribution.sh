@@ -24,14 +24,13 @@ while true; do
 
      $(hdfs dfs -test -d ${ZTFXGRB_OUTPUT}/online/year=${YEAR}/month=${MONTH}/day=${DAY})
      if [[ $? == 0 ]]; then
-            echo "Launching distribution"
-    
-            # LEASETIME must be computed by taking the difference between now and max end 
-            LEASETIME=$(( `date +'%s' -d '17:00 today'` - `date +'%s' -d 'now'` ))
-    
-            nohup fink_grb distribute --config ${FINK_GRB_CONFIG} --night ${NIGHT} --exit_after ${LEASETIME} > ${FINK_GRB_LOG}/grb_distribution_${YEAR}${MONTH}${DAY}.log
-            break
-        fi
+         echo "Launching distribution"
+
+         # LEASETIME must be computed by taking the difference between now and max end 
+         LEASETIME=$(( `date +'%s' -d '17:00 today'` - `date +'%s' -d 'now'` ))
+
+         nohup fink_grb distribute --config ${FINK_GRB_CONFIG} --night ${NIGHT} --exit_after ${LEASETIME} > ${FINK_GRB_LOG}/grb_distribution_${YEAR}${MONTH}${DAY}.log
+         break
      fi
      if [[ $LEASETIME -le 0 ]]
      then
@@ -42,3 +41,4 @@ while true; do
      echo "${DDATE}: no data yet. Sleeping..."
      sleep 5
 done
+
