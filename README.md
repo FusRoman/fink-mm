@@ -1,4 +1,8 @@
 # Fink_GRB
+
+[![PEP8](https://github.com/FusRoman/Fink_GRB/actions/workflows/linter.yml/badge.svg)](https://github.com/FusRoman/Fink_GRB/actions/workflows/linter.yml)
+[![Sentinel](https://github.com/FusRoman/Fink_GRB/actions/workflows/run_test.yml/badge.svg)](https://github.com/FusRoman/Fink_GRB/actions/workflows/run_test.yml)
+
 Correlation of the [Fink](https://fink-broker.org/) alerts with multi-messenger instruments for real-time purpose
 * Available Instruments
     * Gamma-Ray: [Fermi](https://fermi.gsfc.nasa.gov/), [Swift](https://swift.gsfc.nasa.gov/about_swift/), [Integral](https://www.cosmos.esa.int/web/integral/home)
