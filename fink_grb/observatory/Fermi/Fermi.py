@@ -22,7 +22,7 @@ class Fermi(Observatory):
 
         Example
         -------
-        >>> voevent = load_voevent(fermi_gbm_voevent_path)
+        >>> voevent = load_voevent_from_path(fermi_gbm_voevent_path)
         >>> obs = voevent_to_class(voevent)
         >>> type(obs)
         <class 'Fermi.Fermi'>

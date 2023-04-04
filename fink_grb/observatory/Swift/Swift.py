@@ -21,7 +21,7 @@ class Swift(Observatory):
 
         Example
         -------
-        >>> voevent = load_voevent(swift_bat_voevent_path)
+        >>> voevent = load_voevent_from_path(swift_bat_voevent_path)
         >>> obs = voevent_to_class(voevent)
         >>> type(obs)
         <class 'Swift.Swift'>

@@ -23,7 +23,7 @@ class IceCube(Observatory):
 
         Example
         -------
-        >>> voevent = load_voevent(icecube_gold_voevent_path)
+        >>> voevent = load_voevent_from_path(icecube_gold_voevent_path)
         >>> obs = voevent_to_class(voevent)
         >>> type(obs)
         <class 'IceCube.IceCube'>

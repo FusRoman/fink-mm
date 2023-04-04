@@ -21,7 +21,7 @@ class Integral(Observatory):
 
         Example
         -------
-        >>> voevent = load_voevent(integral_weak_voevent_path)
+        >>> voevent = load_voevent_from_path(integral_weak_voevent_path)
         >>> obs = voevent_to_class(voevent)
         >>> type(obs)
         <class 'Integral.Integral'>
