@@ -170,7 +170,7 @@ def start_gcn_stream(arguments):
 
     try:
         gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
-        gcn_rawdatapath = gcn_datapath_prefix + "/raw"
+        gcn_rawdatapath = gcn_datapath_prefix
     except Exception as e:
         logger.error("Config entry not found \n\t {}".format(e))
         exit(1)
@@ -182,6 +182,7 @@ def start_gcn_stream(arguments):
                     gcn_rawdatapath
                 )
             )
+            exit(1)
 
     if logs:
         logger.info(
