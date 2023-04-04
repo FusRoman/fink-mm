@@ -144,8 +144,8 @@ def start_gcn_stream(arguments):
 
             consumer = Consumer(
                 config=consumer_config,
-                client_id='7rraug1qk1mmed6u9akgbc6159',
-                client_secret='m1pre5dlc46jt7lr7m0dm860ndkmp73a1k8o6idbdlka5rmo3he',
+                client_id=config["CLIENT"]["id"], 
+                client_secret=config["CLIENT"]["secret"],
                 domain='test.gcn.nasa.gov'
             )
     except Exception as e:
