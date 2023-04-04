@@ -6,7 +6,7 @@ import pytz
 from fink_grb.init import get_config, init_logging
 import pandas as pd
 import pyarrow.parquet as pq
-from fink_grb.online.instruments import ALL_INSTRUMENTS
+from fink_grb.observatory.observatory import ALL_INSTRUMENTS
 from fink_grb.utils.fun_utils import get_hdfs_connector, return_verbose_level
 
 

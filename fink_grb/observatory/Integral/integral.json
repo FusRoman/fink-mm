@@ -1,0 +1,15 @@
+{
+    "name": "INTEGRAL",
+    "//gcn_description": "https://gcn.gsfc.nasa.gov/integral.html",
+    "packet_type": [
+        53, 54, 56
+    ],
+    "kafka_topics": [
+        "gcn.classic.voevent.INTEGRAL_OFFLINE",
+        "gcn.classic.voevent.INTEGRAL_POINTDIR",
+        "gcn.classic.voevent.INTEGRAL_REFINED",
+        "gcn.classic.voevent.INTEGRAL_SPIACS",
+        "gcn.classic.voevent.INTEGRAL_WAKEUP",
+        "gcn.classic.voevent.INTEGRAL_WEAK"
+    ]
+}

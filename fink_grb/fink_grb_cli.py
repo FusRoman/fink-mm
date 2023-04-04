@@ -35,7 +35,7 @@ def main():
     if arguments["gcn_stream"]:
 
         if arguments["start"]:
-            from fink_grb.online.gcn_stream import start_gcn_stream
+            from fink_grb.gcn_stream.gcn_stream import start_gcn_stream
 
             start_gcn_stream(arguments)
         elif arguments["monitor"]:

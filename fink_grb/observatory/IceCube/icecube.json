@@ -1,0 +1,12 @@
+{
+    "name": "ICECUBE",
+    "//gcn_description": "https://gcn.gsfc.nasa.gov/amon.html",
+    "packet_type": [
+        157, 173, 174, 176
+    ],
+    "kafka_topics": [
+        "gcn.classic.voevent.ICECUBE_ASTROTRACK_BRONZE",
+        "gcn.classic.voevent.ICECUBE_ASTROTRACK_GOLD",
+        "gcn.classic.voevent.ICECUBE_CASCADE"
+    ]
+}

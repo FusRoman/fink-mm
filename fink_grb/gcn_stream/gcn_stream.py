@@ -4,12 +4,12 @@ import pyarrow.parquet as pq
 import os
 
 from gcn_kafka import Consumer
-from fink_grb.online.instruments import LISTEN_PACKS, INSTR_SUBSCRIBES
+from fink_grb.observatory.observatory import LISTEN_PACKS, INSTR_SUBSCRIBES
 
 import io
 import logging
 
-import fink_grb.online.gcn_reader as gr
+import fink_grb.gcn_stream.gcn_reader as gr
 from fink_grb.init import get_config, init_logging
 from fink_grb.utils.fun_utils import return_verbose_level, get_hdfs_connector
 

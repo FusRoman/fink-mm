@@ -76,7 +76,7 @@ Two folders are created inside; one called 'online' and one called 'offline'. In
 |-------------------|------|----------------------------------------------------------------------------------|
 |Available for both online and offline mode                                                                   |
 |ObjectId           |String|Unique ZTF identifier of the object                                               |
-|candid             |int   |Unique ZTF identifier of the alert                                                 |
+|candid             |int   |Unique ZTF identifier of the alert                                                |
 |ztf_ra             |float |ZTF right ascension                                                               |
 |ztf_dec            |float |ZTF declination                                                                   |
 |fid                |int   |filter id (ZTF, g=1, r=2, i=3)                                                    |
@@ -90,8 +90,8 @@ Two folders are created inside; one called 'online' and one called 'offline'. In
 |grb_dec            |float |GCN Event declination                                                             |
 |grb_loc_error      |float |GCN error location in arcminute                                                   |
 |triggerTimeUTC     |String|GCN TriggerTime in UTC                                                            |
-|grb_proba          |float |Serendipitous probability to associate the alerts with the GCN event             |
-|fink_class         |String|[Fink Classification](https://fink-broker.readthedocs.io/en/latest/science/classification/)                                                               |
+|grb_proba          |float |Serendipitous probability to associate the alerts with the GCN event              |
+|fink_class         |String|[Fink Classification](https://fink-broker.readthedocs.io/en/latest/science/classification/)                                                                                              |
 |                                                                                                             |
 |Field available only for the online mode                                                                     |
 |delta_mag          |float |Difference of magnitude between the alert and the previous one                    |
@@ -106,6 +106,6 @@ The connection to the distribution stream is made by the [fink-client](https://g
 
 |Topic Name     | Description                                                                              |
 |---------------|------------------------------------------------------------------------------------------|
-|fink_grb_bronze| Alerts with a real bogus (rb) >= 0.5, classified by Fink as SN candidate, Unknown and Ambiguous within the error location of a GCN event. |
-|fink_grb_silver| Alerts satisfying the bronze filter with a grb_proba >= 5 sigma.|
-|fink_grb_gold  |Alerts satisfying the silver filter with a mag_rate > 0.3 mag/day.|
+|fink_grb_bronze| Alerts with a real bogus (rb) >= 0.5, classified by Fink as SN candidate, Unknown and Ambiguous within the error location of a GCN event.                                                                  |
+|fink_grb_silver| Alerts satisfying the bronze filter with a grb_proba >= 5 sigma.                         |
+|fink_grb_gold  |Alerts satisfying the silver filter with a mag_rate > 0.3 mag/day.                        |

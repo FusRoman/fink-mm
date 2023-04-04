@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from glob import glob
+import os.path as path
 from setuptools import setup, find_packages
 import fink_grb
 
@@ -17,7 +19,15 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=find_packages(),
-    package_data={"fink_grb": ["conf/fink_grb.conf", "conf/fink_grb_schema_version_{}.avsc".format(fink_grb.__distribution_schema_version__)]},
+    package_data={
+        "fink_grb": [
+            "conf/fink_grb.conf",
+            "conf/fink_grb_schema_version_{}.avsc".format(
+                fink_grb.__distribution_schema_version__
+            ),
+            "instruments/instrument_schema_version_1.0.json"
+        ] + [path.relpath(el, start="fink_grb") for el in glob("fink_grb/instruments/*/*.json")]
+    },
     install_requires=[
         "fink-utils>=0.8.0",
         "docopt>=0.6.2",
