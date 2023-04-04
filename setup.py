@@ -25,8 +25,8 @@ setup(
             "conf/fink_grb_schema_version_{}.avsc".format(
                 fink_grb.__distribution_schema_version__
             ),
-            "instruments/instrument_schema_version_1.0.json"
-        ] + [path.relpath(el, start="fink_grb") for el in glob("fink_grb/instruments/*/*.json")]
+            "observatory/observatory_schema_version_1.0.json"
+        ] + [path.relpath(el, start="fink_grb") for el in glob("fink_grb/observatory/*/*.json")]
     },
     install_requires=[
         "fink-utils>=0.8.0",
