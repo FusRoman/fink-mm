@@ -1,4 +1,7 @@
 import pytest
+import pandas
+import tempfile
+from pandas.testing import assert_frame_equal
 
 from fink_grb.gcn_stream.gcn_reader import load_voevent_from_path
 from fink_grb.observatory import voevent_to_class
@@ -6,6 +9,9 @@ from fink_grb.observatory import voevent_to_class
 
 @pytest.fixture(autouse=True)
 def init_test(doctest_namespace):
+    doctest_namespace["pd"] = pandas
+    doctest_namespace["tempfile"] = tempfile
+    doctest_namespace["assert_frame_equal"] = assert_frame_equal
     doctest_namespace["load_voevent_from_path"] = load_voevent_from_path
     doctest_namespace["voevent_to_class"] = voevent_to_class
 

@@ -175,11 +175,9 @@ class Observatory:
 
         Examples
         --------
-        >>> fermi_gbm.voevent_to_df()
-          observatory instrument event  ...  year  month  day
-        0       Fermi        GBM        ...  2022     07   29
-        <BLANKLINE>
-        [1 rows x 15 columns]
+        >>> fermi_gbm.voevent_to_df()[["triggerId", "observatory", "instrument", "event", "ra", "dec", "err_arcmin"]]
+           triggerId observatory instrument event      ra     dec  err_arcmin
+        0  680782656       Fermi        GBM        316.69 -4.1699       680.4
         """
 
         ack_time = dt.datetime.now()
