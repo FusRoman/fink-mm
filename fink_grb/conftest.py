@@ -1,4 +1,5 @@
 import pytest
+import os
 import pandas
 import tempfile
 from pandas.testing import assert_frame_equal
@@ -73,3 +74,34 @@ def init_icecube(doctest_namespace):
     doctest_namespace["icecube_cascade"] = icecube_cascade
     doctest_namespace["icecube_bronze"] = icecube_bronze
     doctest_namespace["icecube_gold"] = icecube_gold
+
+@pytest.fixture(autouse=True, scope="session")
+def init_spark(doctest_namespace):
+
+    grb_data = "fink_grb/test/test_data/gcn_test/raw/year=2019/month=09/day=03"
+    join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
+    alert_data = "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/"
+
+    doctest_namespace["grb_data"] = grb_data
+    doctest_namespace["join_data"] = join_data
+    doctest_namespace["alert_data"] = alert_data
+
+    from pyspark.sql import SparkSession
+    from pyspark import SparkConf
+
+    conf = SparkConf()
+    confdic = {
+        "spark.jars.packages": os.environ["FINK_PACKAGES"],
+        "spark.jars": os.environ["FINK_JARS"],
+        "spark.python.daemon.module": "coverage_daemon",
+    }
+    conf.setMaster("local[2]")
+    conf.setAppName("fink_test")
+    for k, v in confdic.items():
+        conf.set(key=k, value=v)
+    spark = SparkSession.builder.appName("fink_test").config(conf=conf).getOrCreate()
+
+    # Reduce the number of suffled partitions
+    spark.conf.set("spark.sql.shuffle.partitions", 2)
+
+    doctest_namespace["spark"] = spark
