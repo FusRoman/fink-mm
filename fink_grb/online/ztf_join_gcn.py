@@ -342,17 +342,16 @@ def launch_joining_stream(arguments):
 
     Examples
     --------
-    >>> with tempfile.TemporaryDirectory() as grb_dataoutput:
-    ...     launch_joining_stream({
-    ...         "--config" : None,
-    ...         "--night" : "20190903",
-    ...         "--exit_after" : 10
-    ...     })
+    >>> launch_joining_stream({
+    ...     "--config" : None,
+    ...     "--night" : "20190903",
+    ...     "--exit_after" : 10
+    ... })
 
-    ...     datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    ...     datajoin = pd.read_parquet(grb_dataoutput + "/online/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datajoin = pd.read_parquet("fink_grb/test/test_output/online/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
 
-    ...     assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
+    >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
     config = get_config(arguments)
     logger = init_logging()
@@ -435,25 +434,6 @@ def launch_joining_stream(arguments):
 
 if __name__ == "__main__":
 
-    if sys.argv[1] == "test":
-        from fink_utils.test.tester import spark_unit_tests_science
-        from pandas.testing import assert_frame_equal  # noqa: F401
-        import shutil  # noqa: F401
-
-        globs = globals()
-
-        grb_data = "fink_grb/test/test_data/gcn_test/raw/year=2019/month=09/day=03"
-        join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
-        alert_data = (
-            "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/"
-        )
-        globs["join_data"] = join_data
-        globs["alert_data"] = alert_data
-        globs["grb_data"] = grb_data
-
-        # Run the test suite
-        spark_unit_tests_science(globs)
-
-    elif sys.argv[1] == "prod":  # pragma: no cover
+    if sys.argv[1] == "prod":  # pragma: no cover
 
         apps.Application.ONLINE.run_application()

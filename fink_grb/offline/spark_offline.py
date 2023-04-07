@@ -408,25 +408,6 @@ def launch_offline_mode(arguments, is_test=False):
 
 if __name__ == "__main__":
 
-    if sys.argv[1] == "test":
-        from fink_utils.test.tester import spark_unit_tests_broker
-        from pandas.testing import assert_frame_equal  # noqa: F401
-        import shutil  # noqa: F401
-        import pandas as pd  # noqa: F401
-        import os  # noqa: F401
-
-        globs = globals()
-
-        join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
-        alert_data = (
-            "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/"
-        )
-        globs["join_data"] = join_data
-        globs["alert_data"] = alert_data
-
-        # Run the test suite
-        spark_unit_tests_broker(globs)
-
     if sys.argv[1] == "prod":  # pragma: no cover
 
         apps.Application.OFFLINE.run_application()

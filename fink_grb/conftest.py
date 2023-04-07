@@ -81,6 +81,9 @@ def init_spark(doctest_namespace):
     from astropy.time import Time
     import os
 
+    online_output_tempdir = tempfile.TemporaryDirectory()
+    doctest_namespace["online_output_tempdir"] = online_output_tempdir
+
     doctest_namespace["Time"] = Time
 
     grb_data = "fink_grb/test/test_data/gcn_test/raw/year=2019/month=09/day=03"
