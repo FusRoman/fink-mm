@@ -133,10 +133,12 @@ def init_spark(doctest_namespace):
     doctest_namespace["topics"] = topics
 
     from fink_grb.init import get_config, init_logging
+    from scipy import special
 
     path_data_fid_1 = "fink_grb/test/test_data/ztf_alert_samples_fid_1.parquet"
     path_data_fid_2 = "fink_grb/test/test_data/ztf_alert_samples_fid_2.parquet"
 
+    doctest_namespace["special"] = special
     doctest_namespace["get_config"] = get_config
     doctest_namespace["init_logging"] = init_logging
     doctest_namespace["data_fid_1"] = path_data_fid_1
@@ -161,3 +163,7 @@ def init_spark(doctest_namespace):
     spark.conf.set("spark.sql.shuffle.partitions", 2)
 
     doctest_namespace["spark"] = spark
+
+    import numpy as np
+    if np.__version__ >= "1.14.0":
+        np.set_printoptions(legacy="1.13")
