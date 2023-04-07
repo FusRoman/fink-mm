@@ -205,7 +205,7 @@ def launch_distribution(arguments):
     Examples
     --------
     >>> launch_distribution({
-    ... "--config" : None,
+    ... "--config" : "fink_grb/conf/distribute_for_test.conf",
     ... "--night" : "20190903",
     ... "--exit_after" : 10
     ... })
