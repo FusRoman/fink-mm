@@ -201,7 +201,7 @@ def ztf_join_gcn_stream(
     ...         gcn_datatest,
     ...         grb_dataoutput,
     ...         "20190903",
-    ...         4, 90, 5, 5, 2, 0, 5
+    ...         4, 30, 5, 5, 2, 0, 5
     ...     )
 
     ...     datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
@@ -351,7 +351,7 @@ def launch_joining_stream(arguments):
     ...     launch_joining_stream({
     ...         "--config" : None,
     ...         "--night" : "20190903",
-    ...         "--exit_after" : 90
+    ...         "--exit_after" : 30
     ...     })
 
     ...     datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
