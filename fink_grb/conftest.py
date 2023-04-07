@@ -112,7 +112,7 @@ def init_spark(doctest_namespace):
     from fink_client.consumer import AlertConsumer
     import tabulate
 
-    maxtimeout = 5
+    maxtimeout = 10
     myconfig = {"username": "rlm", "bootstrap.servers": "localhost:9092", "group_id": "rlm_fink"}
     topics = ["fink_grb_bronze"]
 
