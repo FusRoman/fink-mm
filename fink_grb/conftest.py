@@ -106,6 +106,28 @@ def init_spark(doctest_namespace):
     doctest_namespace["fink_home"] = fink_home
     doctest_namespace["hbase_catalog"] = hbase_catalog
 
+    from fink_client.consumer import AlertConsumer
+    import tabulate
+
+    maxtimeout = 10
+    myconfig = {"username": "rlm", "bootstrap.servers": "localhost:9092", "group_id": "rlm_fink"}
+    topics = ["fink_grb_bronze"]
+
+    headers = [
+        "Generated at (jd)",
+        "Topic",
+        "objectId",
+        "Fink_Class",
+        "Rate",
+    ]
+
+    doctest_namespace["AlertConsumer"] = AlertConsumer
+    doctest_namespace["ztfxgcn_test"] = "fink_grb/test/test_data/ztfxgcn_test/"
+    doctest_namespace["headers"] = headers
+    doctest_namespace["maxtimeout"] = maxtimeout
+    doctest_namespace["myconfig"] = myconfig
+    doctest_namespace["topics"] = topics
+
     from pyspark.sql import SparkSession
     from pyspark import SparkConf
 

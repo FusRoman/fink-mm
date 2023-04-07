@@ -59,19 +59,12 @@ def grb_distribution(
     Examples
     --------
     >>> grb_distribution(
-    ... "fink_grb/test/test_data/ztfxgcn_test/",
+    ... ztfxgcn_test,
     ... "20230101",
-    ... 30, 40,
+    ... 10, 40,
     ... "localhost:9092",
     ... "toto", "tata"
     ... )
-
-    >>> from fink_client.consumer import AlertConsumer
-    >>> import tabulate
-
-    >>> maxtimeout = 10
-    >>> myconfig = {"username": "rlm", "bootstrap.servers": "localhost:9092", "group_id": "rlm_fink"}
-    >>> topics = ["fink_grb_bronze"]
 
     >>> consumer = AlertConsumer(topics, myconfig)
     >>> topic, alert, key = consumer.poll(maxtimeout)
@@ -84,22 +77,12 @@ def grb_distribution(
     ... alert["rate"]
     ... ]]
 
-    >>> headers = [
-    ... "Generated at (jd)",
-    ... "Topic",
-    ... "objectId",
-    ... "Fink_Class",
-    ... "Rate",
-    ... ]
-
     >>> print(tabulate.tabulate(table, headers, tablefmt="pretty"))
     +-------------------+-----------------+--------------+------------+---------------------+
     | Generated at (jd) |      Topic      |   objectId   | Fink_Class |        Rate         |
     +-------------------+-----------------+--------------+------------+---------------------+
     |  2458729.6881481  | fink_grb_bronze | ZTF19abvxuvu |  Unknown   | -1.6373900908205787 |
     +-------------------+-----------------+--------------+------------+---------------------+
-
-    >>> shutil.rmtree("fink_grb/test/test_data/ztfxgcn_test/grb_distribute_checkpoint")
     """
     spark = init_sparksession(
         "science2grb_distribution_{}{}{}".format(night[0:4], night[4:6], night[6:8])
@@ -227,13 +210,6 @@ def launch_distribution(arguments):
     ... "--exit_after" : 40
     ... })
 
-    >>> from fink_client.consumer import AlertConsumer
-    >>> import tabulate
-
-    >>> maxtimeout = 10
-    >>> myconfig = {"username": "rlm", "bootstrap.servers": "localhost:9092", "group_id": "rlm_fink"}
-    >>> topics = ["fink_grb_bronze"]
-
     >>> consumer = AlertConsumer(topics, myconfig)
     >>> topic, alert, key = consumer.poll(maxtimeout)
 
@@ -245,22 +221,12 @@ def launch_distribution(arguments):
     ... alert["rate"]
     ... ]]
 
-    >>> headers = [
-    ... "Generated at (jd)",
-    ... "Topic",
-    ... "objectId",
-    ... "Fink_Class",
-    ... "Rate",
-    ... ]
-
     >>> print(tabulate.tabulate(table, headers, tablefmt="pretty"))
     +-------------------+-----------------+--------------+------------+---------------------+
     | Generated at (jd) |      Topic      |   objectId   | Fink_Class |        Rate         |
     +-------------------+-----------------+--------------+------------+---------------------+
     |  2458729.6881481  | fink_grb_bronze | ZTF19abvxuvu |  Unknown   | -1.6373900908205787 |
     +-------------------+-----------------+--------------+------------+---------------------+
-
-    >>> shutil.rmtree("fink_grb/test/test_output/grb_distribute_checkpoint")
     """
     config = get_config(arguments)
     logger = init_logging()
