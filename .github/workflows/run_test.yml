@@ -91,5 +91,5 @@ jobs:
 
     - name: Run test suites
       run: |
-        ./run_test.sh
+        coverage run --source=${ROOTPATH} --rcfile=${ROOTPATH}/.coveragerc -m pytest --doctest-modules fink_grb
         curl -s https://codecov.io/bash | bash
