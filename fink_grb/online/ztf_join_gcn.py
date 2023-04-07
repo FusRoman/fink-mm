@@ -195,24 +195,19 @@ def ztf_join_gcn_stream(
     --------
     >>> ztf_datatest = "fink_grb/test/test_data/ztf_test/online"
     >>> gcn_datatest = "fink_grb/test/test_data/gcn_test"
-    >>> grb_dataoutput = "fink_grb/test/test_output"
-    >>> ztf_join_gcn_stream(
-    ... ztf_datatest,
-    ... gcn_datatest,
-    ... grb_dataoutput,
-    ... "20190903",
-    ... 4, 90, 5, 5, 2, 0, 5
-    ... )
+    >>> with tempfile.TemporaryDirectory() as grb_dataoutput:
+    ...     ztf_join_gcn_stream(
+    ...         ztf_datatest,
+    ...         gcn_datatest,
+    ...         grb_dataoutput,
+    ...         "20190903",
+    ...         4, 90, 5, 5, 2, 0, 5
+    ...     )
 
-    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    >>> datajoin = pd.read_parquet(grb_dataoutput + "/online/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    ...     datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    ...     datajoin = pd.read_parquet(grb_dataoutput + "/online/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
 
-    >>> datajoin.to_parquet("fink_grb/test/test_data/grb_join_output.parquet")
-
-    >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
-
-    >>> shutil.rmtree(grb_dataoutput + "/online/_spark_metadata")
-    >>> shutil.rmtree(grb_dataoutput + "/online_checkpoint")
+    ...     assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
     logger = init_logging()
     spark = init_sparksession(
@@ -351,20 +346,18 @@ def launch_joining_stream(arguments):
     --------
     >>> grb_datatest = "fink_grb/test/test_output"
     >>> gcn_datatest = "fink_grb/test/test_data/gcn_test"
-    >>> launch_joining_stream({
-    ... "--config" : None,
-    ... "--night" : "20190903",
-    ... "--exit_after" : 90
-    ... })
 
-    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    >>> datajoin = pd.read_parquet(grb_datatest + "/online/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> with tempfile.TemporaryDirectory() as grb_dataoutput:
+    ...     launch_joining_stream({
+    ...         "--config" : None,
+    ...         "--night" : "20190903",
+    ...         "--exit_after" : 90
+    ...     })
 
-    >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
+    ...     datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    ...     datajoin = pd.read_parquet(grb_dataoutput + "/online/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
 
-    >>> shutil.rmtree(grb_datatest + "/online/_spark_metadata")
-    >>> shutil.rmtree(grb_datatest + "/online/year=2019")
-    >>> shutil.rmtree(grb_datatest + "/online_checkpoint")
+    ...     assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
     config = get_config(arguments)
     logger = init_logging()
