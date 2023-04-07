@@ -109,7 +109,7 @@ def init_spark(doctest_namespace):
     from fink_client.consumer import AlertConsumer
     import tabulate
 
-    maxtimeout = 10
+    maxtimeout = 5
     myconfig = {"username": "rlm", "bootstrap.servers": "localhost:9092", "group_id": "rlm_fink"}
     topics = ["fink_grb_bronze"]
 
@@ -122,6 +122,7 @@ def init_spark(doctest_namespace):
     ]
 
     doctest_namespace["AlertConsumer"] = AlertConsumer
+    doctest_namespace["tabulate"] = tabulate
     doctest_namespace["ztfxgcn_test"] = "fink_grb/test/test_data/ztfxgcn_test/"
     doctest_namespace["headers"] = headers
     doctest_namespace["maxtimeout"] = maxtimeout

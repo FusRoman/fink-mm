@@ -207,7 +207,7 @@ def launch_distribution(arguments):
     >>> launch_distribution({
     ... "--config" : None,
     ... "--night" : "20190903",
-    ... "--exit_after" : 40
+    ... "--exit_after" : 10
     ... })
 
     >>> consumer = AlertConsumer(topics, myconfig)
