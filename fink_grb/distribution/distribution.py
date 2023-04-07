@@ -61,7 +61,7 @@ def grb_distribution(
     >>> grb_distribution(
     ... ztfxgcn_test,
     ... "20230101",
-    ... 10, 40,
+    ... 30, 40,
     ... "localhost:9092",
     ... "toto", "tata"
     ... )
@@ -207,7 +207,7 @@ def launch_distribution(arguments):
     >>> launch_distribution({
     ... "--config" : "fink_grb/conf/distribute_for_test.conf",
     ... "--night" : "20230101",
-    ... "--exit_after" : 10
+    ... "--exit_after" : 30
     ... })
 
     >>> consumer = AlertConsumer(topics, myconfig)

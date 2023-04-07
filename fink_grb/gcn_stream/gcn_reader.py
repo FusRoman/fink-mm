@@ -73,17 +73,3 @@ def load_voevent_from_file(file: io.BufferedReader, verbose:bool = False) -> Obj
                 "failed to load the voevent:\n\tlocation={}\n\tcause={}".format(file, e)
             )
         raise e
-
-
-if __name__ == "__main__":  # pragma: no cover
-    import sys
-    import doctest
-    from pandas.testing import assert_frame_equal  # noqa: F401
-    import shutil  # noqa: F401
-    import io  # noqa: F401
-
-    if "unittest.util" in __import__("sys").modules:
-        # Show full diff in self.assertEqual.
-        __import__("sys").modules["unittest.util"]._MAX_LENGTH = 999999999
-
-    sys.exit(doctest.testmod()[0])

@@ -1015,23 +1015,3 @@ def read_grb_admin_options(arguments, config, logger, is_test=False):
         password_writer,
     )
 
-
-if __name__ == "__main__":  # pragma: no cover
-    import doctest  # noqa: F401
-    from pandas.testing import assert_frame_equal  # noqa: F401
-    import pandas as pd  # noqa: F401
-    import shutil  # noqa: F401
-    from fink_grb.init import get_config, init_logging  # noqa: F401
-    from fink_utils.spark.utils import concat_col  # noqa: F401
-
-    from fink_utils.test.tester import spark_unit_tests_science
-
-    globs = globals()
-
-    path_data_fid_1 = "fink_grb/test/test_data/ztf_alert_samples_fid_1.parquet"
-    path_data_fid_2 = "fink_grb/test/test_data/ztf_alert_samples_fid_2.parquet"
-    globs["data_fid_1"] = path_data_fid_1
-    globs["data_fid_2"] = path_data_fid_2
-
-    # Run the test suite
-    spark_unit_tests_science(globs)

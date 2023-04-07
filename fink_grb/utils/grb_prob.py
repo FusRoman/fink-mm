@@ -239,17 +239,3 @@ def grb_assoc(
 
     return pd.Series(grb_proba)
 
-
-if __name__ == "__main__":  # pragma: no cover
-    import pandas as pd  # noqa: F401
-    from math import sqrt  # noqa: F401
-    from scipy import special  # noqa: F401
-    from fink_utils.test.tester import spark_unit_tests_science
-    from pandas.testing import assert_frame_equal  # noqa: F401
-
-    globs = globals()
-
-    join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
-
-    # Run the test suite
-    spark_unit_tests_science(globs)
