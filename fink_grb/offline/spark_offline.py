@@ -332,8 +332,6 @@ def launch_offline_mode(arguments, is_test=False):
     ...     datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime", "grb_proba"], axis=1)
 
     ...     assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
-
-    >>> print("toto")
     """
     config = get_config(arguments)
     logger = init_logging()
