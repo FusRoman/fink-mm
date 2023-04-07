@@ -20,66 +20,112 @@ def init_test(doctest_namespace):
 @pytest.fixture(autouse=True)
 def init_fermi(doctest_namespace):
 
-    doctest_namespace["fermi_gbm_voevent_path"] = 'fink_grb/test/test_data/VODB/fermi/voevent_number=193.xml'
-    doctest_namespace["fermi_lat_voevent_path"] = 'fink_grb/test/test_data/VODB/fermi/voevent_number=2842.xml'
+    doctest_namespace[
+        "fermi_gbm_voevent_path"
+    ] = "fink_grb/test/test_data/VODB/fermi/voevent_number=193.xml"
+    doctest_namespace[
+        "fermi_lat_voevent_path"
+    ] = "fink_grb/test/test_data/VODB/fermi/voevent_number=2842.xml"
 
-    fermi_gbm = voevent_to_class(load_voevent_from_path(doctest_namespace["fermi_gbm_voevent_path"]))
-    fermi_lat = voevent_to_class(load_voevent_from_path(doctest_namespace["fermi_lat_voevent_path"]))
+    fermi_gbm = voevent_to_class(
+        load_voevent_from_path(doctest_namespace["fermi_gbm_voevent_path"])
+    )
+    fermi_lat = voevent_to_class(
+        load_voevent_from_path(doctest_namespace["fermi_lat_voevent_path"])
+    )
 
-    
     doctest_namespace["fermi_gbm"] = fermi_gbm
     doctest_namespace["fermi_lat"] = fermi_lat
+
 
 @pytest.fixture(autouse=True)
 def init_swift(doctest_namespace):
 
-    doctest_namespace["swift_bat_voevent_path"] = 'fink_grb/test/test_data/VODB/swift/voevent_number=392.xml'
-    doctest_namespace["swift_xrt_voevent_path"] = 'fink_grb/test/test_data/VODB/swift/voevent_number=4554.xml'
-    doctest_namespace["swift_uvot_voevent_path"] = 'fink_grb/test/test_data/VODB/swift/voevent_number=8582.xml'
+    doctest_namespace[
+        "swift_bat_voevent_path"
+    ] = "fink_grb/test/test_data/VODB/swift/voevent_number=392.xml"
+    doctest_namespace[
+        "swift_xrt_voevent_path"
+    ] = "fink_grb/test/test_data/VODB/swift/voevent_number=4554.xml"
+    doctest_namespace[
+        "swift_uvot_voevent_path"
+    ] = "fink_grb/test/test_data/VODB/swift/voevent_number=8582.xml"
 
-    swift_bat = voevent_to_class(load_voevent_from_path(doctest_namespace["swift_bat_voevent_path"]))
-    swift_xrt = voevent_to_class(load_voevent_from_path(doctest_namespace["swift_xrt_voevent_path"]))
-    swift_uvot = voevent_to_class(load_voevent_from_path(doctest_namespace["swift_uvot_voevent_path"]))
+    swift_bat = voevent_to_class(
+        load_voevent_from_path(doctest_namespace["swift_bat_voevent_path"])
+    )
+    swift_xrt = voevent_to_class(
+        load_voevent_from_path(doctest_namespace["swift_xrt_voevent_path"])
+    )
+    swift_uvot = voevent_to_class(
+        load_voevent_from_path(doctest_namespace["swift_uvot_voevent_path"])
+    )
 
     doctest_namespace["swift_bat"] = swift_bat
     doctest_namespace["swift_xrt"] = swift_xrt
     doctest_namespace["swift_uvot"] = swift_uvot
 
+
 @pytest.fixture(autouse=True)
 def init_integral(doctest_namespace):
 
-    doctest_namespace["integral_weak_voevent_path"] = 'fink_grb/test/test_data/VODB/integral/voevent_number=737.xml'
-    doctest_namespace["integral_wakeup_voevent_path"] = 'fink_grb/test/test_data/VODB/integral/voevent_number=18790.xml'
-    doctest_namespace["integral_refined_voevent_path"] = 'fink_grb/test/test_data/VODB/integral/voevent_number=18791.xml'
+    doctest_namespace[
+        "integral_weak_voevent_path"
+    ] = "fink_grb/test/test_data/VODB/integral/voevent_number=737.xml"
+    doctest_namespace[
+        "integral_wakeup_voevent_path"
+    ] = "fink_grb/test/test_data/VODB/integral/voevent_number=18790.xml"
+    doctest_namespace[
+        "integral_refined_voevent_path"
+    ] = "fink_grb/test/test_data/VODB/integral/voevent_number=18791.xml"
 
-    integral_weak = voevent_to_class(load_voevent_from_path(doctest_namespace["integral_weak_voevent_path"]))
-    integral_wakeup = voevent_to_class(load_voevent_from_path(doctest_namespace["integral_wakeup_voevent_path"]))
-    integral_refined = voevent_to_class(load_voevent_from_path(doctest_namespace["integral_refined_voevent_path"]))
+    integral_weak = voevent_to_class(
+        load_voevent_from_path(doctest_namespace["integral_weak_voevent_path"])
+    )
+    integral_wakeup = voevent_to_class(
+        load_voevent_from_path(doctest_namespace["integral_wakeup_voevent_path"])
+    )
+    integral_refined = voevent_to_class(
+        load_voevent_from_path(doctest_namespace["integral_refined_voevent_path"])
+    )
 
     doctest_namespace["integral_weak"] = integral_weak
     doctest_namespace["integral_wakeup"] = integral_wakeup
     doctest_namespace["integral_refined"] = integral_refined
 
+
 @pytest.fixture(autouse=True)
 def init_icecube(doctest_namespace):
 
-    doctest_namespace["icecube_cascade_voevent_path"] = 'fink_grb/test/test_data/VODB/icecube/voevent_number=825.xml'
-    doctest_namespace["icecube_bronze_voevent_path"] = 'fink_grb/test/test_data/VODB/icecube/voevent_number=3028.xml'
-    doctest_namespace["icecube_gold_voevent_path"] = 'fink_grb/test/test_data/VODB/icecube/voevent_number=45412.xml'
+    doctest_namespace[
+        "icecube_cascade_voevent_path"
+    ] = "fink_grb/test/test_data/VODB/icecube/voevent_number=825.xml"
+    doctest_namespace[
+        "icecube_bronze_voevent_path"
+    ] = "fink_grb/test/test_data/VODB/icecube/voevent_number=3028.xml"
+    doctest_namespace[
+        "icecube_gold_voevent_path"
+    ] = "fink_grb/test/test_data/VODB/icecube/voevent_number=45412.xml"
 
-    icecube_cascade = voevent_to_class(load_voevent_from_path(doctest_namespace["icecube_cascade_voevent_path"]))
-    icecube_bronze = voevent_to_class(load_voevent_from_path(doctest_namespace["icecube_bronze_voevent_path"]))
-    icecube_gold = voevent_to_class(load_voevent_from_path(doctest_namespace["icecube_gold_voevent_path"]))
+    icecube_cascade = voevent_to_class(
+        load_voevent_from_path(doctest_namespace["icecube_cascade_voevent_path"])
+    )
+    icecube_bronze = voevent_to_class(
+        load_voevent_from_path(doctest_namespace["icecube_bronze_voevent_path"])
+    )
+    icecube_gold = voevent_to_class(
+        load_voevent_from_path(doctest_namespace["icecube_gold_voevent_path"])
+    )
 
     doctest_namespace["icecube_cascade"] = icecube_cascade
     doctest_namespace["icecube_bronze"] = icecube_bronze
     doctest_namespace["icecube_gold"] = icecube_gold
 
+
 @pytest.fixture(autouse=True, scope="session")
 def init_spark(doctest_namespace):
 
     from astropy.time import Time
-    import os
 
     online_output_tempdir = tempfile.TemporaryDirectory()
     doctest_namespace["online_output_tempdir"] = online_output_tempdir
@@ -88,12 +134,13 @@ def init_spark(doctest_namespace):
 
     grb_data = "fink_grb/test/test_data/gcn_test/raw/year=2019/month=09/day=03"
     join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
-    alert_data = "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/"
+    alert_data = (
+        "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/"
+    )
 
     doctest_namespace["grb_data"] = grb_data
     doctest_namespace["join_data"] = join_data
     doctest_namespace["alert_data"] = alert_data
-
 
     ztf_datatest = "fink_grb/test/test_data/ztf_test/online"
     gcn_datatest = "fink_grb/test/test_data/gcn_test"
@@ -113,7 +160,11 @@ def init_spark(doctest_namespace):
     import tabulate
 
     maxtimeout = 10
-    myconfig = {"username": "rlm", "bootstrap.servers": "localhost:9092", "group_id": "rlm_fink"}
+    myconfig = {
+        "username": "rlm",
+        "bootstrap.servers": "localhost:9092",
+        "group_id": "rlm_fink",
+    }
     topics = ["fink_grb_bronze"]
 
     headers = [
@@ -167,5 +218,6 @@ def init_spark(doctest_namespace):
     doctest_namespace["spark"] = spark
 
     import numpy as np
+
     if np.__version__ >= "1.14.0":
         np.set_printoptions(legacy="1.13")

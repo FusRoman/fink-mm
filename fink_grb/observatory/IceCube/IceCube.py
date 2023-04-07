@@ -28,7 +28,9 @@ class IceCube(Observatory):
         >>> type(obs)
         <class 'IceCube.IceCube'>
         """
-        super().__init__(path.join(OBSERVATORY_PATH, "IceCube", "icecube.json"), voevent)
+        super().__init__(
+            path.join(OBSERVATORY_PATH, "IceCube", "icecube.json"), voevent
+        )
 
     def get_trigger_id(self):
         """
@@ -53,8 +55,8 @@ class IceCube(Observatory):
     def err_to_arcminute(self):
         """
         Return the error box of the voevent in arcminute
-        
-        Example 
+
+        Example
         -------
         >>> icecube_cascade.err_to_arcminute()
         773.778

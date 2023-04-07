@@ -13,6 +13,7 @@ from fink_grb.init import get_config, init_logging
 from fink_grb.utils.fun_utils import return_verbose_level, get_hdfs_connector
 from fink_grb.observatory import voevent_to_class, TOPICS
 
+
 def signal_handler(signal, frame):  # pragma: no cover
     """
     The signal handler function for the gcn stream.
@@ -51,7 +52,7 @@ def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False, gcn_fs=None):
 
     Examples
     --------
-    
+
     >>> f = open('fink_grb/test/test_data/voevent_number=9897.xml').read().encode("UTF-8")
     >>> logger = init_logging()
     >>> with tempfile.TemporaryDirectory() as tmp_dir_gcn:
@@ -125,28 +126,25 @@ def start_gcn_stream(arguments):
 
     try:
         consumer_config = {
-            'group.id': 'fink_mm',
-            'auto.offset.reset': 'earliest',
-            'enable.auto.commit': False
+            "group.id": "fink_mm",
+            "auto.offset.reset": "earliest",
+            "enable.auto.commit": False,
         }
-        
+
         consumer = Consumer(
             config=consumer_config,
-            client_id=config["CLIENT"]["id"], 
-            client_secret=config["CLIENT"]["secret"]
+            client_id=config["CLIENT"]["id"],
+            client_secret=config["CLIENT"]["secret"],
         )
 
         if arguments["--test"]:
-            consumer_config = {
-                'group.id': '',
-                'auto.offset.reset': 'earliest'
-            }
+            consumer_config = {"group.id": "", "auto.offset.reset": "earliest"}
 
             consumer = Consumer(
                 config=consumer_config,
-                client_id=config["CLIENT"]["id"], 
+                client_id=config["CLIENT"]["id"],
                 client_secret=config["CLIENT"]["secret"],
-                domain='test.gcn.nasa.gov'
+                domain="test.gcn.nasa.gov",
             )
     except Exception as e:
         logger.error("Config entry not found \n\t {}".format(e))
@@ -191,7 +189,7 @@ def start_gcn_stream(arguments):
 
     while True:
         message = consumer.consume(timeout=2)
-        
+
         if len(message) != 0:
             for gcn in message:
                 if logs:

@@ -238,4 +238,3 @@ def grb_assoc(
     grb_proba[time_condition & spatial_condition] = p_ser[0]
 
     return pd.Series(grb_proba)
-

@@ -18,33 +18,35 @@ def __import_module(module_path):
 
     return getattr(sys.modules[module_name], module_name)
 
+
 def __get_observatory_class():
-    all_obs = glob(
-        path.join(
-            path.dirname(fink_grb.__file__),
-            "observatory/*/*.py"
-        )
-    )
+    all_obs = glob(path.join(path.dirname(fink_grb.__file__), "observatory/*/*.py"))
 
     # remove the multiple __init__.py
     all_obs = [p for p in all_obs if path.basename(p) != "__init__.py"]
 
     name_obs = [path.basename(el).split(".")[0].lower() for el in all_obs]
 
-    return {n_instr: __import_module(path_instr) for n_instr, path_instr in zip(name_obs, all_obs)}
+    return {
+        n_instr: __import_module(path_instr)
+        for n_instr, path_instr in zip(name_obs, all_obs)
+    }
+
 
 def __get_topics():
     p = files("fink_grb").__str__() + "/observatory/*/*.json"
     res = []
     for p_json in glob(p):
-        with open(p_json, 'r') as f:
+        with open(p_json, "r") as f:
             instr_data = json.loads(f.read())
             res += instr_data["kafka_topics"]
     return res
 
 
-OBSERVATORY_PATH="observatory"
-OBSERVATORY_JSON_SCHEMA_PATH = files("fink_grb").joinpath("observatory/observatory_schema_version_1.0.json")
+OBSERVATORY_PATH = "observatory"
+OBSERVATORY_JSON_SCHEMA_PATH = files("fink_grb").joinpath(
+    "observatory/observatory_schema_version_1.0.json"
+)
 __OBS_CLASS = __get_observatory_class()
 TOPICS = __get_topics()
 
@@ -91,10 +93,13 @@ def __get_detector(voevent):
 
     return instr_name
 
-# The fink_grb.observatory import have to be after the OBSERVATORY_JSON_SCHEMA_PATH definiton 
+
+# The fink_grb.observatory import have to be after the OBSERVATORY_JSON_SCHEMA_PATH definiton
 # to avoid a circular import issue
 from fink_grb.observatory import observatory
 from lxml.objectify import ObjectifiedElement
+
+
 def voevent_to_class(voevent: ObjectifiedElement) -> observatory.Observatory:
     """
     Return the observatory class corresponding to the voevent

@@ -253,7 +253,9 @@ def spark_offline(
     grb_alert = grb_alert.withColumn("err_degree", grb_alert["err_arcmin"] / 60)
     grb_alert = grb_alert.withColumn(
         "hpix_circle",
-        ztf_online.box2pixs(grb_alert.ra, grb_alert.dec, grb_alert.err_degree, F.lit(NSIDE)),
+        ztf_online.box2pixs(
+            grb_alert.ra, grb_alert.dec, grb_alert.err_degree, F.lit(NSIDE)
+        ),
     )
     grb_alert = grb_alert.withColumn("hpix", explode("hpix_circle"))
 

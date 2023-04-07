@@ -1,4 +1,3 @@
-import json
 import voeventparse as vp
 import os.path as path
 
@@ -26,7 +25,9 @@ class Integral(Observatory):
         >>> type(obs)
         <class 'Integral.Integral'>
         """
-        super().__init__(path.join(OBSERVATORY_PATH, "Integral", "integral.json"), voevent)
+        super().__init__(
+            path.join(OBSERVATORY_PATH, "Integral", "integral.json"), voevent
+        )
 
     def get_trigger_id(self):
         """
@@ -48,8 +49,8 @@ class Integral(Observatory):
     def err_to_arcminute(self):
         """
         Return the error box of the voevent in arcminute
-        
-        Example 
+
+        Example
         -------
         >>> integral_weak.err_to_arcminute()
         0.0656

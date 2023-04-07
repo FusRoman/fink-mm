@@ -1,4 +1,3 @@
-import json
 import voeventparse as vp
 import os.path as path
 
@@ -6,6 +5,7 @@ from lxml.objectify import ObjectifiedElement
 
 from fink_grb.observatory import OBSERVATORY_PATH
 from fink_grb.observatory.observatory import Observatory, BadInstrument
+
 
 class Fermi(Observatory):
     """
@@ -47,8 +47,8 @@ class Fermi(Observatory):
     def err_to_arcminute(self):
         """
         Return the error box of the voevent in arcminute
-        
-        Example 
+
+        Example
         -------
         >>> fermi_gbm.err_to_arcminute()
         680.4
@@ -57,7 +57,7 @@ class Fermi(Observatory):
         """
         instrument = self.detect_instruments()
         coords = vp.get_event_position(self.voevent)
-        err = 1/60 if coords.err == 0.0 else coords.err
+        err = 1 / 60 if coords.err == 0.0 else coords.err
 
         if instrument == "GBM":
             return err * 60
@@ -65,6 +65,7 @@ class Fermi(Observatory):
             return err
         else:
             raise BadInstrument("{} is not a Fermi instrument".format(instrument))
+
 
 if __name__ == "__main__":
 

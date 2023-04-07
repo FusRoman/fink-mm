@@ -1014,4 +1014,3 @@ def read_grb_admin_options(arguments, config, logger, is_test=False):
         username_writer,
         password_writer,
     )
-

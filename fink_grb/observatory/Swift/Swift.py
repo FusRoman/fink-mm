@@ -1,4 +1,3 @@
-import json
 import voeventparse as vp
 import os.path as path
 
@@ -44,12 +43,12 @@ class Swift(Observatory):
         toplevel_params = vp.get_toplevel_params(self.voevent)
 
         return int(toplevel_params["TrigID"]["value"])
-    
+
     def err_to_arcminute(self):
         """
         Return the error box of the voevent in arcminute
-        
-        Example 
+
+        Example
         -------
         >>> swift_bat.err_to_arcminute()
         0.05
@@ -61,10 +60,9 @@ class Swift(Observatory):
         instrument = self.detect_instruments()
         coords = vp.get_event_position(self.voevent)
 
-        err = 1/60 if coords.err == 0.0 else coords.err
+        err = 1 / 60 if coords.err == 0.0 else coords.err
 
         if instrument in ["XRT", "UVOT", "BAT", "FOM"]:
             return err
         else:
             raise BadInstrument("{} is not a Swift instrument".format(instrument))
-

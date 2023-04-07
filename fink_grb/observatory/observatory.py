@@ -1,21 +1,22 @@
 import json
 from jsonschema import validate
 from importlib_resources import files
-import os.path as path
 import voeventparse as vp
 import datetime as dt
 from astropy.time import Time
 import pandas as pd
-import io
 from lxml.objectify import ObjectifiedElement
 
 from fink_grb.observatory import OBSERVATORY_JSON_SCHEMA_PATH
 
+
 class AbstractClassException(Exception):
     pass
 
+
 class BadInstrument(Exception):
     pass
+
 
 class Observatory:
     """
@@ -30,7 +31,7 @@ class Observatory:
         ----------
         instr_file : string
             Path of the .json describing an observatory
-        voevent : 
+        voevent :
             List of packet_type to listen.
 
         Example
@@ -43,10 +44,10 @@ class Observatory:
 
         instr_path = files("fink_grb").joinpath(instr_file)
 
-        with open(instr_path, 'r') as f:
+        with open(instr_path, "r") as f:
             instr_data = json.loads(f.read())
 
-        with open(OBSERVATORY_JSON_SCHEMA_PATH, 'r') as f:
+        with open(OBSERVATORY_JSON_SCHEMA_PATH, "r") as f:
             schema = json.loads(f.read())
 
         validate(instance=instr_data, schema=schema)
@@ -55,7 +56,6 @@ class Observatory:
         self.packet_type = instr_data["packet_type"]
         self.topics = instr_data["kafka_topics"]
         self.voevent = voevent
-
 
     def __str__(self) -> str:
         return self.observatory
@@ -116,7 +116,7 @@ class Observatory:
         gcn_packet_type = toplevel_params["Packet_Type"]["value"]
 
         return int(gcn_packet_type) in self.packet_type
-    
+
     def detect_instruments(self):
         """
         Detect the instrument that emitted the voevent in the ivorn field.
@@ -138,14 +138,18 @@ class Observatory:
         return self.voevent.attrib["ivorn"].split("#")[1].split("_")[0]
 
     def get_trigger_id(self):
-        raise AbstractClassException("""
+        raise AbstractClassException(
+            """
             Call get_trigger_id from Observatory.
-            Observatory is an abstract class, cannot be instanciate""")
+            Observatory is an abstract class, cannot be instanciate"""
+        )
 
     def err_to_arcminute(self):
-        raise AbstractClassException("""
+        raise AbstractClassException(
+            """
             Call err_to_arcminute from Observatory.
-            Observatory is an abstract class, cannot be instanciate""")
+            Observatory is an abstract class, cannot be instanciate"""
+        )
 
     def voevent_to_df(self):
         """
@@ -214,5 +218,5 @@ class Observatory:
         return df
 
 
-## command to call to run the doctest : 
+# command to call to run the doctest :
 # pytest --doctest-modules fink_grb/observatory/observatory.py -W ignore::DeprecationWarning
