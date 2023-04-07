@@ -134,11 +134,13 @@ def init_spark(doctest_namespace):
 
     from fink_grb.init import get_config, init_logging
     from scipy import special
+    from math import sqrt
 
     path_data_fid_1 = "fink_grb/test/test_data/ztf_alert_samples_fid_1.parquet"
     path_data_fid_2 = "fink_grb/test/test_data/ztf_alert_samples_fid_2.parquet"
 
     doctest_namespace["special"] = special
+    doctest_namespace["sqrt"] = sqrt
     doctest_namespace["get_config"] = get_config
     doctest_namespace["init_logging"] = init_logging
     doctest_namespace["data_fid_1"] = path_data_fid_1
