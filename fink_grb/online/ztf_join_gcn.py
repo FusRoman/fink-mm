@@ -193,8 +193,6 @@ def ztf_join_gcn_stream(
 
     Examples
     --------
-    >>> ztf_datatest = "fink_grb/test/test_data/ztf_test/online"
-    >>> gcn_datatest = "fink_grb/test/test_data/gcn_test"
     >>> with tempfile.TemporaryDirectory() as grb_dataoutput:
     ...     ztf_join_gcn_stream(
     ...         ztf_datatest,
@@ -204,7 +202,7 @@ def ztf_join_gcn_stream(
     ...         4, 10, 5, 5, 2, 0, 5
     ...     )
 
-    ...     datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    ...     datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
     ...     datajoin = pd.read_parquet(grb_dataoutput + "/online/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
 
     ...     assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
@@ -344,9 +342,6 @@ def launch_joining_stream(arguments):
 
     Examples
     --------
-    >>> grb_datatest = "fink_grb/test/test_output"
-    >>> gcn_datatest = "fink_grb/test/test_data/gcn_test"
-
     >>> with tempfile.TemporaryDirectory() as grb_dataoutput:
     ...     launch_joining_stream({
     ...         "--config" : None,
@@ -354,7 +349,7 @@ def launch_joining_stream(arguments):
     ...         "--exit_after" : 10
     ...     })
 
-    ...     datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    ...     datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
     ...     datajoin = pd.read_parquet(grb_dataoutput + "/online/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
 
     ...     assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)

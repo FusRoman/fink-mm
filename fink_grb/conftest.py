@@ -82,7 +82,6 @@ def init_spark(doctest_namespace):
     import os
 
     doctest_namespace["Time"] = Time
-    doctest_namespace["os"] = os
 
     grb_data = "fink_grb/test/test_data/gcn_test/raw/year=2019/month=09/day=03"
     join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
@@ -91,6 +90,21 @@ def init_spark(doctest_namespace):
     doctest_namespace["grb_data"] = grb_data
     doctest_namespace["join_data"] = join_data
     doctest_namespace["alert_data"] = alert_data
+
+
+    ztf_datatest = "fink_grb/test/test_data/ztf_test/online"
+    gcn_datatest = "fink_grb/test/test_data/gcn_test"
+    join_data_test = "fink_grb/test/test_data/grb_join_output.parquet"
+
+    doctest_namespace["ztf_datatest"] = ztf_datatest
+    doctest_namespace["gcn_datatest"] = gcn_datatest
+    doctest_namespace["join_data_test"] = join_data_test
+
+    fink_home = os.environ["FINK_HOME"]
+    hbase_catalog = fink_home + "/catalogs_hbase/ztf.jd.json"
+
+    doctest_namespace["fink_home"] = fink_home
+    doctest_namespace["hbase_catalog"] = hbase_catalog
 
     from pyspark.sql import SparkSession
     from pyspark import SparkConf
