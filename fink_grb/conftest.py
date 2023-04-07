@@ -132,9 +132,13 @@ def init_spark(doctest_namespace):
     doctest_namespace["myconfig"] = myconfig
     doctest_namespace["topics"] = topics
 
+    from fink_grb.init import get_config, init_logging
 
     path_data_fid_1 = "fink_grb/test/test_data/ztf_alert_samples_fid_1.parquet"
     path_data_fid_2 = "fink_grb/test/test_data/ztf_alert_samples_fid_2.parquet"
+
+    doctest_namespace["get_config"] = get_config
+    doctest_namespace["init_logging"] = init_logging
     doctest_namespace["data_fid_1"] = path_data_fid_1
     doctest_namespace["data_fid_2"] = path_data_fid_2
 
