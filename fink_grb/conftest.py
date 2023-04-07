@@ -132,6 +132,12 @@ def init_spark(doctest_namespace):
     doctest_namespace["myconfig"] = myconfig
     doctest_namespace["topics"] = topics
 
+
+    path_data_fid_1 = "fink_grb/test/test_data/ztf_alert_samples_fid_1.parquet"
+    path_data_fid_2 = "fink_grb/test/test_data/ztf_alert_samples_fid_2.parquet"
+    doctest_namespace["data_fid_1"] = path_data_fid_1
+    doctest_namespace["data_fid_2"] = path_data_fid_2
+
     from pyspark.sql import SparkSession
     from pyspark import SparkConf
 
