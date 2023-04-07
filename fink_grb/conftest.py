@@ -78,6 +78,12 @@ def init_icecube(doctest_namespace):
 @pytest.fixture(autouse=True, scope="session")
 def init_spark(doctest_namespace):
 
+    from astropy.time import Time
+    import os
+
+    doctest_namespace["Time"] = Time
+    doctest_namespace["os"] = os
+
     grb_data = "fink_grb/test/test_data/gcn_test/raw/year=2019/month=09/day=03"
     join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
     alert_data = "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/"

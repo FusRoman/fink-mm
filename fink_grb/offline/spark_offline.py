@@ -154,7 +154,6 @@ def spark_offline(
 
     Examples
     --------
-    >>> from astropy.time import Time
     >>> fink_home = os.environ["FINK_HOME"]
     >>> hbase_catalog = fink_home + "/catalogs_hbase/ztf.jd.json"
     >>> gcn_datatest = "fink_grb/test/test_data/gcn_test"
