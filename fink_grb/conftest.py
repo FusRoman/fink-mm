@@ -93,7 +93,7 @@ def init_spark(doctest_namespace):
     confdic = {
         "spark.jars.packages": os.environ["FINK_PACKAGES"],
         "spark.jars": os.environ["FINK_JARS"],
-        "spark.python.daemon.module": "coverage_daemon",
+        # "spark.python.daemon.module": "coverage_daemon",
     }
     conf.setMaster("local[2]")
     conf.setAppName("fink_test")
