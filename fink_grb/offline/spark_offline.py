@@ -313,12 +313,12 @@ def launch_offline_mode(arguments, is_test=False):
     Examples
     --------
     >>> launch_offline_mode({
-    >>>         "--config" : None,
-    >>>         "--night" : "20190903",
-    >>>         "--exit_after" : 10
-    >>>     },
-    >>>     is_test=True
-    >>> )
+    ...         "--config" : None,
+    ...         "--night" : "20190903",
+    ...         "--exit_after" : 10
+    ...     },
+    ...     is_test=True
+    ... )
 
     >>> datajoin = pd.read_parquet("fink_grb/test/test_output/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
     >>> datajoin = datajoin.drop("grb_proba", axis=1)
