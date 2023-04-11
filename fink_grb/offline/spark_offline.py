@@ -321,8 +321,11 @@ def launch_offline_mode(arguments, is_test=False):
     ...         is_test=True
     ...     )
 
+    
+    ...     print(grb_dataoutput + "/year=2019")
     ...     datajoin = pd.read_parquet(grb_dataoutput + "/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
     ...     datajoin = datajoin.drop("grb_proba", axis=1)
+    ...     print(datajoin)
 
     ...     datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
     ...     datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime", "grb_proba"], axis=1)

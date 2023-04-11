@@ -345,7 +345,7 @@ def launch_joining_stream(arguments):
     >>> launch_joining_stream({
     ...     "--config" : None,
     ...     "--night" : "20190903",
-    ...     "--exit_after" : 30
+    ...     "--exit_after" : 60
     ... })
 
     >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
