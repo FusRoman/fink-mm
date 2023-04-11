@@ -37,12 +37,15 @@ setup(
         "astropy==4.3.1",
         "gcn-kafka>=0.1.2",
         "importlib-resources==5.9.0",
-        "pyarrow==9.0.0",  # WARNING: Version upper than the fink-broker version (pyarrow==4.0.1)
+        "pyarrow==11.0.0",  # WARNING: Version upper than the fink-broker version (pyarrow==4.0.1)
         "pyspark==3.3.0",
         "scipy==1.7.3",
         "voevent-parse==1.0.3",
         "fastavro==1.5.1",
         "healpy==1.16.1",
+        "tabulate==0.9.0",
+        "jsonschema==4.6.0",
+        "pytest==7.2.2"
     ],
     entry_points={"console_scripts": ["fink_grb=fink_grb.fink_grb_cli:main"]},
     license="Apache-2.0 License",
