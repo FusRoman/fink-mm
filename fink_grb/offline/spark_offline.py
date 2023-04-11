@@ -320,7 +320,7 @@ def launch_offline_mode(arguments, is_test=False):
     ...     is_test=True
     ... )
 
-    >>> datajoin = pd.read_parquet("fink_grb/test/test_output/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datajoin = pd.read_parquet("fink_grb/test/test_output/offline/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
     >>> datajoin = datajoin.drop("grb_proba", axis=1)
 
     >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
