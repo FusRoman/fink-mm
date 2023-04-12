@@ -319,7 +319,30 @@ def get_observatory(rawEvent: str) -> Observatory:
 
 @pandas_udf(ArrayType(IntegerType()))
 def get_pixels(rawEvent: pd.Series, NSIDE: pd.Series) -> pd.Series:
+    """
+    Compute the pixels within the error box for each voevent in the rawEvent parameters
 
+    Parameters
+    ----------
+    rawEvent: pd.Series containing string
+        the raw voevents
+    NSIDE: pd.Series containing integer
+        Healpix map resolution, better if a power of 2
+
+    Return
+    ------
+    pixels_list : pd.Series containing integer list
+        each sublist contains the pixel numbers whithin the error box of the voevent.
+
+    Examples
+    --------
+    >>> spark_grb = spark.read.format('parquet').load(grb_data)
+    >>> NSIDE = 4
+
+    >>> grb_pixs = spark_grb.withColumn("hpix", get_pixels(df_grb_stream.raw_event, F.lit(8)))
+
+    >>> grb_pixs.select(["triggerId", "hpix"]).show()
+    """
     return pd.Series(
         [
             get_observatory(event).get_pixels(nside)
