@@ -312,7 +312,7 @@ def get_observatory(rawEvent: str) -> Observatory:
     -------
     >>> pdf = pd.read_parquet(grb_data)
     >>> type(get_observatory(pdf["raw_event"].iloc[0]))
-    
+    <class 'Fermi.Fermi'>
     """
     return voevent_to_class(load_voevent_from_file(io.StringIO(rawEvent)))
 
