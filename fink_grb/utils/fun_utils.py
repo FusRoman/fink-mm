@@ -295,14 +295,19 @@ def sub_compute_rate(
         return abs_rate, norm_rate, first_variation_time, diff_start_hist, from_upper
 
 
-
 def get_observatory(rawEvent: str) -> Observatory:
     return voevent_to_class(load_voevent_from_file(io.StringIO(rawEvent)))
+
 
 @pandas_udf(ArrayType(IntegerType()))
 def get_pixels(rawEvent: pd.Series, NSIDE: pd.Series) -> pd.Series:
 
-    return pd.Series([get_observatory(event).get_pixels(nside) for event, nside in zip(rawEvent, NSIDE)])
+    return pd.Series(
+        [
+            get_observatory(event).get_pixels(nside)
+            for event, nside in zip(rawEvent, NSIDE)
+        ]
+    )
 
 
 @pandas_udf(ArrayType(DoubleType()))

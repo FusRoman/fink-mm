@@ -3,19 +3,14 @@ from fink_grb.utils.fun_utils import return_verbose_level
 
 warnings.filterwarnings("ignore")
 
-import pandas as pd  # noqa: F401
-import numpy as np
 import time
 import subprocess
 import sys
-import healpy as hp
-import io
 
 from pyspark.sql import functions as F
-from pyspark.sql.functions import pandas_udf, explode, col
-from pyspark.sql.types import IntegerType, ArrayType
+from pyspark.sql.functions import explode, col
 
-from fink_utils.science.utils import ang2pix, ra2phi, dec2theta
+from fink_utils.science.utils import ang2pix
 from fink_utils.spark.partitioning import convert_to_datetime
 from fink_utils.broker.sparkUtils import init_sparksession, connect_to_raw_database
 
@@ -243,7 +238,7 @@ def ztf_join_gcn_stream(
         logger.info("connection to the database successfull")
 
     # compute healpix column for each streaming df
-    
+
     # compute pixels for ztf alerts
     df_ztf_stream = df_ztf_stream.withColumn(
         "hpix",

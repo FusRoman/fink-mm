@@ -9,7 +9,6 @@ from lxml.objectify import ObjectifiedElement
 from pandera import DataFrameSchema, Column, Check, Index, check_output
 import numpy as np
 import healpy as hp
-import pandas as pd
 from fink_utils.science.utils import ra2phi, dec2theta
 
 from fink_grb.observatory import OBSERVATORY_JSON_SCHEMA_PATH
@@ -121,9 +120,7 @@ voevent_df_schema = DataFrameSchema(
         ),
         "triggerTimejd": Column(
             dtype="float64",
-            checks=[
-                Check.greater_than_or_equal_to(min_value=0)
-            ],
+            checks=[Check.greater_than_or_equal_to(min_value=0)],
             nullable=False,
             unique=False,
             coerce=False,
@@ -378,7 +375,7 @@ class Observatory:
 
         return df
 
-    def get_pixels(self, NSIDE: int)-> list:
+    def get_pixels(self, NSIDE: int) -> list:
         """
         Compute the pixels within the error box of the voevent
 
@@ -386,7 +383,7 @@ class Observatory:
         ----------
         NSIDE: integer
             Healpix map resolution, better if a power of 2
-        
+
         Return
         ------
         ipix_disc: integer list
@@ -395,14 +392,16 @@ class Observatory:
         Examples
         --------
         >>> icecube_bronze.get_pixels(32)
-
+        array([10349])
         """
         coords = vp.get_event_position(self.voevent)
         voevent_error = self.err_to_arcminute()
 
         theta, phi = dec2theta(coords.dec), ra2phi(coords.ra)
         vec = hp.ang2vec(theta, phi)
-        ipix_disc = hp.query_disc(NSIDE, vec, radius=np.radians(voevent_error / 60), inclusive=True)
+        ipix_disc = hp.query_disc(
+            NSIDE, vec, radius=np.radians(voevent_error / 60), inclusive=True
+        )
         return ipix_disc
 
 

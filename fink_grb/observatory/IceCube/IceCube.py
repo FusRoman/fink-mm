@@ -7,7 +7,11 @@ from pandera import check_output
 
 
 from fink_grb.observatory import OBSERVATORY_PATH
-from fink_grb.observatory.observatory import Observatory, BadInstrument, voevent_df_schema
+from fink_grb.observatory.observatory import (
+    Observatory,
+    BadInstrument,
+    voevent_df_schema,
+)
 
 
 class IceCube(Observatory):

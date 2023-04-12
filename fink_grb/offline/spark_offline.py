@@ -24,6 +24,7 @@ import fink_grb.utils.application as apps
 from fink_grb.init import get_config, init_logging
 from fink_grb.utils.fun_utils import get_pixels
 
+
 def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist):
     """
     filter the ztf alerts by taking cross-match values from ztf.
@@ -186,7 +187,7 @@ def spark_offline(
         .option("hbase.spark.use.hbasecontext", False)
         .option("hbase.spark.pushdown.columnfilter", with_columns_filter)
         .load()
-        .filter(~col("jd_objectId").startswith("schema_")) # remove key column
+        .filter(~col("jd_objectId").startswith("schema_"))  # remove key column
     )
 
     ztf_alert = ztf_alert.select(
