@@ -339,9 +339,12 @@ def get_pixels(rawEvent: pd.Series, NSIDE: pd.Series) -> pd.Series:
     >>> spark_grb = spark.read.format('parquet').load(grb_data)
     >>> NSIDE = 4
 
-    >>> grb_pixs = spark_grb.withColumn("hpix", get_pixels(spark_grb.raw_event, F.lit(8)))
+    >>> grb_pixs = spark_grb.withColumn("hpix_circle", get_pixels(spark_grb.raw_event, F.lit(8)))
 
-    >>> grb_pixs.select(["triggerId", "hpix"]).show()
+    >>> spark_grb.withColumn("hpix", explode("hpix_circle"))\
+          .orderBy("hpix")\
+               .select(["triggerId", "hpix"]).head(5)
+    
     """
     return pd.Series(
         [
