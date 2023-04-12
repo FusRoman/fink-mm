@@ -45,7 +45,8 @@ setup(
         "healpy==1.16.1",
         "tabulate==0.9.0",
         "jsonschema==4.6.0",
-        "pytest==7.2.2"
+        "pytest==7.2.2",
+        "pandera==0.14.5"
     ],
     entry_points={"console_scripts": ["fink_grb=fink_grb.fink_grb_cli:main"]},
     license="Apache-2.0 License",
