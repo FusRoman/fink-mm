@@ -9,6 +9,7 @@ import time
 import subprocess
 import sys
 import healpy as hp
+import io
 
 from pyspark.sql import functions as F
 from pyspark.sql.functions import pandas_udf, explode, col
@@ -27,8 +28,8 @@ from fink_grb.utils.fun_utils import (
     read_grb_admin_options,
 )
 import fink_grb.utils.application as apps
-
 from fink_grb.init import get_config, init_logging
+from fink_grb.utils.fun_utils import get_pixels
 
 
 def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist):
@@ -92,52 +93,52 @@ def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia
     return spark_filter
 
 
-@pandas_udf(ArrayType(IntegerType()))
-def box2pixs(ra, dec, radius, NSIDE):
-    """
-    Return all the pixels from a healpix map with NSIDE
-    overlapping the given area defined by the center ra, dec and the radius.
+# @pandas_udf(ArrayType(IntegerType()))
+# def box2pixs(ra, dec, radius, NSIDE):
+#     """
+#     Return all the pixels from a healpix map with NSIDE
+#     overlapping the given area defined by the center ra, dec and the radius.
 
-    Parameters
-    ----------
-    ra : pd.Series
-        right ascension columns
-    dec : pd.Series
-        declination columns
-    radius : pd.Series
-        error radius of the high energy events, must be in degrees
-    NSIDE : pd.Series
-        pixels size of the healpix map
+#     Parameters
+#     ----------
+#     ra : pd.Series
+#         right ascension columns
+#     dec : pd.Series
+#         declination columns
+#     radius : pd.Series
+#         error radius of the high energy events, must be in degrees
+#     NSIDE : pd.Series
+#         pixels size of the healpix map
 
-    Return
-    ------
-    ipix_disc : pd.Series
-        columns of array containing all the pixel numbers overlapping the error area.
+#     Return
+#     ------
+#     ipix_disc : pd.Series
+#         columns of array containing all the pixel numbers overlapping the error area.
 
-    Examples
-    --------
-    >>> spark_grb = spark.read.format('parquet').load(grb_data)
-    >>> NSIDE = 4
+#     Examples
+#     --------
+#     >>> spark_grb = spark.read.format('parquet').load(grb_data)
+#     >>> NSIDE = 4
 
-    >>> spark_grb = spark_grb.withColumn(
-    ... "err_degree", spark_grb["err_arcmin"] / 60
-    ... )
-    >>> spark_grb = spark_grb.withColumn("hpix_circle", box2pixs(
-    ...     spark_grb.ra, spark_grb.dec, spark_grb.err_degree, F.lit(NSIDE)
-    ... ))
+#     >>> spark_grb = spark_grb.withColumn(
+#     ... "err_degree", spark_grb["err_arcmin"] / 60
+#     ... )
+#     >>> spark_grb = spark_grb.withColumn("hpix_circle", box2pixs(
+#     ...     spark_grb.ra, spark_grb.dec, spark_grb.err_degree, F.lit(NSIDE)
+#     ... ))
 
-    >>> spark_grb.withColumn("hpix", explode("hpix_circle"))\
-            .orderBy("hpix")\
-                .select(["triggerId", "hpix"]).head(5)
-    [Row(triggerId=683499781, hpix=3), Row(triggerId=683499781, hpix=9), Row(triggerId=683499781, hpix=10), Row(triggerId=683499781, hpix=11), Row(triggerId=683476673, hpix=13)]
-    """
-    theta, phi = dec2theta(dec.values), ra2phi(ra.values)
-    vec = hp.ang2vec(theta, phi)
-    ipix_disc = [
-        hp.query_disc(nside=n, vec=v, radius=np.radians(r), inclusive=True)
-        for n, v, r in zip(NSIDE.values, vec, radius.values)
-    ]
-    return pd.Series(ipix_disc)
+#     >>> spark_grb.withColumn("hpix", explode("hpix_circle"))\
+#             .orderBy("hpix")\
+#                 .select(["triggerId", "hpix"]).head(5)
+#     [Row(triggerId=683499781, hpix=3), Row(triggerId=683499781, hpix=9), Row(triggerId=683499781, hpix=10), Row(triggerId=683499781, hpix=11), Row(triggerId=683476673, hpix=13)]
+#     """
+#     theta, phi = dec2theta(dec.values), ra2phi(ra.values)
+#     vec = hp.ang2vec(theta, phi)
+#     ipix_disc = [
+#         hp.query_disc(nside=n, vec=v, radius=np.radians(r), inclusive=True)
+#         for n, v, r in zip(NSIDE.values, vec, radius.values)
+#     ]
+#     return pd.Series(ipix_disc)
 
 
 def ztf_join_gcn_stream(
@@ -242,19 +243,17 @@ def ztf_join_gcn_stream(
         logger.info("connection to the database successfull")
 
     # compute healpix column for each streaming df
+    
+    # compute pixels for ztf alerts
     df_ztf_stream = df_ztf_stream.withColumn(
         "hpix",
         ang2pix(df_ztf_stream.candidate.ra, df_ztf_stream.candidate.dec, F.lit(NSIDE)),
     )
 
-    df_grb_stream = df_grb_stream.withColumn(
-        "err_degree", df_grb_stream["err_arcmin"] / 60
-    )
+    # compute pixels for gcn alerts
     df_grb_stream = df_grb_stream.withColumn(
         "hpix_circle",
-        box2pixs(
-            df_grb_stream.ra, df_grb_stream.dec, df_grb_stream.err_degree, F.lit(NSIDE)
-        ),
+        get_pixels(df_grb_stream.raw_event, F.lit(NSIDE)),
     )
     df_grb_stream = df_grb_stream.withColumn("hpix", explode("hpix_circle"))
 

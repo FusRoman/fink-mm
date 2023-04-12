@@ -7,6 +7,10 @@ from astropy.time import Time
 import pandas as pd
 from lxml.objectify import ObjectifiedElement
 from pandera import DataFrameSchema, Column, Check, Index, check_output
+import numpy as np
+import healpy as hp
+import pandas as pd
+from fink_utils.science.utils import ra2phi, dec2theta
 
 from fink_grb.observatory import OBSERVATORY_JSON_SCHEMA_PATH
 
@@ -219,10 +223,10 @@ class Observatory:
     def __repr__(self) -> str:
         return self.observatory
 
-    def subscribe(self):
+    def subscribe(self) -> list:
         return self.topics
 
-    def is_observation(self):
+    def is_observation(self) -> bool:
         """
         Test if the voevent is of type observation.
 
@@ -244,7 +248,7 @@ class Observatory:
         gcn_role = self.voevent.attrib["role"]
         return gcn_role == "observation"
 
-    def is_listened_packets_types(self):
+    def is_listened_packets_types(self) -> bool:
         """
         Test if the voevent packet type correspond to those we listen to.
 
@@ -273,7 +277,7 @@ class Observatory:
 
         return int(gcn_packet_type) in self.packet_type
 
-    def detect_instruments(self):
+    def detect_instruments(self) -> str:
         """
         Detect the instrument that emitted the voevent in the ivorn field.
 
@@ -308,7 +312,7 @@ class Observatory:
         )
 
     @check_output(voevent_df_schema)
-    def voevent_to_df(self):
+    def voevent_to_df(self) -> pd.DataFrame:
         """
         Convert a voevent object into a dataframe.
 
@@ -373,6 +377,33 @@ class Observatory:
         df["day"] = df["triggerTimeUTC"].dt.strftime("%d")
 
         return df
+
+    def get_pixels(self, NSIDE: int)-> list:
+        """
+        Compute the pixels within the error box of the voevent
+
+        Parameters
+        ----------
+        NSIDE: integer
+            Healpix map resolution, better if a power of 2
+        
+        Return
+        ------
+        ipix_disc: integer list
+            all the pixels within the error area of the voevent
+
+        Examples
+        --------
+        >>> fermi_gbm.get_pixels(32)
+        
+        """
+        coords = vp.get_event_position(self.voevent)
+        voevent_error = self.err_to_arcminute()
+
+        theta, phi = dec2theta(coords.dec), ra2phi(coords.ra)
+        vec = hp.ang2vec(theta, phi)
+        ipix_disc = hp.query_disc(NSIDE, vec, radius=np.radians(voevent_error / 60), inclusive=True)
+        return ipix_disc
 
 
 # command to call to run the doctest :

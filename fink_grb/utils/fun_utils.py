@@ -1,17 +1,21 @@
 import numpy as np
 import pandas as pd
 import os
+import io
 from pyarrow import fs
 
 import pyspark.sql.functions as F
 
 from pyspark.sql.functions import pandas_udf, col
-from pyspark.sql.types import DoubleType, ArrayType
+from pyspark.sql.types import DoubleType, ArrayType, IntegerType
 
 from fink_filters.classification import extract_fink_classification
 from fink_utils.spark.utils import concat_col
 
 from fink_grb.utils.grb_prob import grb_assoc
+from fink_grb.observatory import voevent_to_class
+from fink_grb.observatory.observatory import Observatory
+from fink_grb.gcn_stream.gcn_reader import load_voevent_from_file
 
 # from fink_broker.tracklet_identification import add_tracklet_information
 
@@ -289,6 +293,16 @@ def sub_compute_rate(
         norm_rate = abs_rate / (curr_jd - last_jd_curr_band)
         from_upper = False
         return abs_rate, norm_rate, first_variation_time, diff_start_hist, from_upper
+
+
+
+def get_observatory(rawEvent: str) -> Observatory:
+    return voevent_to_class(load_voevent_from_file(io.StringIO(rawEvent)))
+
+@pandas_udf(ArrayType(IntegerType()))
+def get_pixels(rawEvent: pd.Series, NSIDE: pd.Series) -> pd.Series:
+
+    return pd.Series([get_observatory(event).get_pixels(nside) for event, nside in zip(rawEvent, NSIDE)])
 
 
 @pandas_udf(ArrayType(DoubleType()))
