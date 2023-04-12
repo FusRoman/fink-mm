@@ -394,7 +394,7 @@ class Observatory:
 
         Examples
         --------
-        >>> fermi_lat.get_pixels(32)
+        >>> icecube_cascade.get_pixels(32)
 
         """
         coords = vp.get_event_position(self.voevent)
