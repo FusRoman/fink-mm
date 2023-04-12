@@ -6,6 +6,7 @@ import datetime as dt
 from astropy.time import Time
 import pandas as pd
 from lxml.objectify import ObjectifiedElement
+from pandera import DataFrameSchema, Column, Check, Index, check_output
 
 from fink_grb.observatory import OBSERVATORY_JSON_SCHEMA_PATH
 
@@ -16,6 +17,161 @@ class AbstractClassException(Exception):
 
 class BadInstrument(Exception):
     pass
+
+
+voevent_df_schema = DataFrameSchema(
+    columns={
+        "observatory": Column(
+            dtype="str",
+            checks=None,
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "instrument": Column(
+            dtype="str",
+            checks=None,
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "event": Column(
+            dtype="str",
+            checks=None,
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "ivorn": Column(
+            dtype="str",
+            checks=None,
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "triggerId": Column(
+            dtype="int64",
+            checks=None,
+            nullable=False,
+            unique=True,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "ra": Column(
+            dtype="float64",
+            checks=[
+                Check.greater_than_or_equal_to(min_value=0),
+                Check.less_than_or_equal_to(max_value=360),
+            ],
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "dec": Column(
+            dtype="float64",
+            checks=[
+                Check.greater_than_or_equal_to(min_value=-90),
+                Check.less_than_or_equal_to(max_value=90),
+            ],
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "err_arcmin": Column(
+            dtype="float64",
+            checks=None,
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "triggerTimejd": Column(
+            dtype="float64",
+            checks=[
+                Check.greater_than_or_equal_to(min_value=0)
+            ],
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "triggerTimeUTC": Column(
+            dtype="datetime64[ns, UTC]",
+            checks=None,
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "rawEvent": Column(
+            dtype="str",
+            checks=None,
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+    },
+    checks=None,
+    index=Index(
+        dtype="int64",
+        checks=None,
+        nullable=False,
+        coerce=False,
+        name=None,
+        description=None,
+        title=None,
+    ),
+    dtype=None,
+    coerce=True,
+    strict=False,
+    name=None,
+    ordered=False,
+    unique=None,
+    report_duplicates="all",
+    unique_column_names=False,
+    title=None,
+    description=None,
+)
 
 
 class Observatory:
@@ -151,6 +307,7 @@ class Observatory:
             Observatory is an abstract class, cannot be instanciate"""
         )
 
+    @check_output(voevent_df_schema)
     def voevent_to_df(self):
         """
         Convert a voevent object into a dataframe.

@@ -3,9 +3,11 @@ import datetime as dt
 from astropy.time import Time
 import voeventparse as vp
 import os.path as path
+from pandera import check_output
+
 
 from fink_grb.observatory import OBSERVATORY_PATH
-from fink_grb.observatory.observatory import Observatory, BadInstrument
+from fink_grb.observatory.observatory import Observatory, BadInstrument, voevent_df_schema
 
 
 class IceCube(Observatory):
@@ -75,6 +77,7 @@ class IceCube(Observatory):
         else:
             raise BadInstrument("{} is not a IceCube events".format(instrument))
 
+    @check_output(voevent_df_schema)
     def voevent_to_df(self):
         """
         Convert a voevent object into a dataframe.
