@@ -311,7 +311,7 @@ def get_observatory(rawEvent: str) -> Observatory:
     Example
     -------
     >>> pdf = pd.read_parquet(grb_data)
-    >>> get_observatory(pdf["raw_event"].iloc[0])
+    >>> type(get_observatory(pdf["raw_event"].iloc[0]))
     
     """
     return voevent_to_class(load_voevent_from_file(io.StringIO(rawEvent)))
