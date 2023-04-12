@@ -303,7 +303,7 @@ def get_observatory(rawEvent: str) -> Observatory:
     ----------
     rawEvent: string
         the raw voevent
-    
+
     Return
     ------
         an observatory class
