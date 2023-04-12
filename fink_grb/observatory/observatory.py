@@ -394,8 +394,8 @@ class Observatory:
 
         Examples
         --------
-        >>> fermi_gbm.get_pixels(32)
-        
+        >>> fermi_lat.get_pixels(32)
+
         """
         coords = vp.get_event_position(self.voevent)
         voevent_error = self.err_to_arcminute()
