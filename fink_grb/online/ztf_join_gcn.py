@@ -199,7 +199,7 @@ def ztf_join_gcn_stream(
     ...     )
 
     ...     datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    ...     datajoin = pd.read_parquet(grb_dataoutput + "/online/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    ...     datajoin = pd.read_parquet(grb_dataoutput + "/online").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
 
     ...     assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
