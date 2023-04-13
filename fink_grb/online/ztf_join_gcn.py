@@ -343,7 +343,7 @@ def launch_joining_stream(arguments):
     ... })
 
     >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    >>> datajoin = pd.read_parquet("fink_grb/test/test_output/online/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datajoin = pd.read_parquet("fink_grb/test/test_output/online").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """

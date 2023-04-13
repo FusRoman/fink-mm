@@ -144,7 +144,7 @@ def init_spark(doctest_namespace):
 
     ztf_datatest = "fink_grb/test/test_data/ztf_test/online"
     gcn_datatest = "fink_grb/test/test_data/gcn_test"
-    join_data_test = "fink_grb/test/test_data/grb_join_output.parquet"
+    join_data_test = "fink_grb/test/test_data/online"
 
     doctest_namespace["ztf_datatest"] = ztf_datatest
     doctest_namespace["gcn_datatest"] = gcn_datatest
