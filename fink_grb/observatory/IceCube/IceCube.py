@@ -148,7 +148,7 @@ class IceCube(Observatory):
                 "ackTime": [ack_time],
                 "triggerTimejd": [time_jd],
                 "triggerTimeUTC": [time_utc],
-                "rawEvent": vp.prettystr(self.voevent),
+                "raw_event": vp.prettystr(self.voevent),
             }
         )
 
