@@ -49,9 +49,7 @@ voevent_df_schema = DataFrameSchema(
         ),
         "triggerId": Column(
             dtype="int64",
-            checks=[
-                Check.greater_than_or_equal_to(0)
-            ],
+            checks=[Check.greater_than_or_equal_to(0)],
             nullable=False,
             unique=True,
             coerce=False,
@@ -90,9 +88,7 @@ voevent_df_schema = DataFrameSchema(
         ),
         "err_arcmin": Column(
             dtype="float64",
-            checks=[
-                Check.greater_than_or_equal_to(0)
-            ],
+            checks=[Check.greater_than_or_equal_to(0)],
             nullable=False,
             unique=False,
             coerce=False,
@@ -138,9 +134,7 @@ voevent_df_schema = DataFrameSchema(
     checks=None,
     index=Index(
         dtype="int64",
-        checks=[
-            Check.greater_than_or_equal_to(0)
-        ],
+        checks=[Check.greater_than_or_equal_to(0)],
         nullable=False,
         coerce=False,
         name=None,

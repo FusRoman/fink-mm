@@ -2,7 +2,7 @@ from pandera import DataFrameSchema, Column, Check, Index
 
 fink_candidate_schema = DataFrameSchema(
     columns={
-       "ssdistnr": Column(
+        "ssdistnr": Column(
             dtype="float64",
             checks=None,
             nullable=False,
@@ -39,7 +39,7 @@ fink_candidate_schema = DataFrameSchema(
             dtype="float64",
             checks=[
                 Check.greater_than_or_equal_to(0),
-                Check.less_than_or_equal_to(360)
+                Check.less_than_or_equal_to(360),
             ],
             nullable=False,
             unique=False,
@@ -53,7 +53,7 @@ fink_candidate_schema = DataFrameSchema(
             dtype="float64",
             checks=[
                 Check.greater_than_or_equal_to(-90),
-                Check.less_than_or_equal_to(90)
+                Check.less_than_or_equal_to(90),
             ],
             nullable=False,
             unique=False,
@@ -106,14 +106,12 @@ fink_candidate_schema = DataFrameSchema(
             regex=False,
             description="Star/Galaxy classification score from SExtractor",
             title=None,
-        )
+        ),
     },
     checks=None,
     index=Index(
         dtype="int64",
-        checks=[
-            Check.greater_than_or_equal_to(0)
-        ],
+        checks=[Check.greater_than_or_equal_to(0)],
         nullable=False,
         coerce=False,
         name=None,
@@ -134,10 +132,7 @@ fink_candidate_schema = DataFrameSchema(
 
 magpsf_col = Column(
     dtype="float64",
-    checks=[
-        Check.greater_than_or_equal_to(8),
-        Check.less_than_or_equal_to(23)
-    ],
+    checks=[Check.greater_than_or_equal_to(8), Check.less_than_or_equal_to(23)],
     nullable=False,
     unique=False,
     coerce=False,
@@ -149,10 +144,7 @@ magpsf_col = Column(
 
 diffmaglim = Column(
     dtype="float64",
-    checks=[
-        Check.greater_than_or_equal_to(8),
-        Check.less_than_or_equal_to(23)
-    ],
+    checks=[Check.greater_than_or_equal_to(8), Check.less_than_or_equal_to(23)],
     nullable=False,
     unique=False,
     coerce=False,
@@ -176,9 +168,7 @@ jd = Column(
 
 fid = Column(
     dtype="int64",
-    checks=[
-        Check.isin([1, 2, 3])
-    ],
+    checks=[Check.isin([1, 2, 3])],
     nullable=False,
     unique=False,
     coerce=False,
@@ -189,14 +179,11 @@ fid = Column(
 )
 
 
-
 fink_alert_minimal_schema = DataFrameSchema(
     columns={
         "objectId": Column(
             dtype="str",
-            checks=[
-                Check.str_matches("ZTF[0-9]{2}[a-z]{7}")
-            ],
+            checks=[Check.str_matches("ZTF[0-9]{2}[a-z]{7}")],
             nullable=False,
             unique=False,
             coerce=False,
@@ -207,9 +194,7 @@ fink_alert_minimal_schema = DataFrameSchema(
         ),
         "candid": Column(
             dtype="int64",
-            checks=[
-                Check.greater_than(0)
-            ],
+            checks=[Check.greater_than(0)],
             nullable=False,
             unique=True,
             coerce=False,
@@ -328,9 +313,7 @@ fink_alert_minimal_schema = DataFrameSchema(
     checks=None,
     index=Index(
         dtype="int64",
-        checks=[
-            Check.greater_than_or_equal_to(0)
-        ],
+        checks=[Check.greater_than_or_equal_to(0)],
         nullable=False,
         coerce=False,
         name=None,
