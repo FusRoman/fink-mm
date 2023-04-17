@@ -121,6 +121,8 @@ def grb_assoc(
     grb_error: pd.Series,
 ) -> pd.Series:
     """
+    DEPRECATED
+    
     Find the ztf alerts falling in the error box of the notices and emits after the trigger time.
     Then, Compute an association serendipitous probability for each of them and return it.
 
