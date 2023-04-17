@@ -303,12 +303,12 @@ class Observatory:
         1.7e-12
 
         >>> tr_time = Time("2022-07-29T21:13:01").jd
-        >>> r = fermi_gbm.association_proba(316.6900, -4.1699, tr2_time)
+        >>> r = fermi_gbm.association_proba(316.6900, -4.1699, tr_time)
         >>> print(round(r, 6))
         0.000387
 
         >>> tr_time = Time("2022-09-26T10:38:37").jd
-        >>> r = integral_refined.association_proba(273.9549, -37.2418, tr3_time+10)
+        >>> r = integral_refined.association_proba(273.9549, -37.2418, tr_time+10)
         >>> print(round(r, 9))
         1.9e-11
         """

@@ -353,7 +353,7 @@ def get_pixels(rawEvent: pd.Series, NSIDE: pd.Series) -> pd.Series:
     )
 
 
-@pandas_udf(ArrayType(DoubleType()))
+@pandas_udf(DoubleType())
 def get_association_proba(
     rawEvent: pd.Series, ztf_ra: pd.Series, ztf_dec: pd.Series, jdstarthist: pd.Series
 ) -> pd.Series:
