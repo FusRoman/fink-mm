@@ -309,7 +309,7 @@ class Observatory:
 
         >>> tr_time = Time("2022-09-26T10:38:37").jd
         >>> r = integral_refined.association_proba(273.9549, -37.2418, tr_time+10)
-        >>> print(round(r, 9))
+        >>> print(round(r, 12))
         1.9e-11
         """
 
