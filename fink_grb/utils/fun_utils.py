@@ -390,14 +390,14 @@ def get_association_proba(
     ...     "grb_proba",
     ...     get_association_proba(
     ...         sparkDF["raw_event"],
-    ...         sparkDF["ztf_ra"],
-    ...         sparkDF["ztf_dec"],
+    ...         sparkDF["ra"],
+    ...         sparkDF["dec"],
     ...         sparkDF["candidate.jdstarthist"],
     ...     ),
     ... )
 
     >>> df_proba.select(["objectId", "trigger_id", "grb_proba"]).show()
-    
+
     """
     return pd.Series(
         [
