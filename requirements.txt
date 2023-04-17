@@ -3,3 +3,4 @@ flake8
 black
 psutil==5.9.1
 avro==1.11.1
+codecov==2.1.12

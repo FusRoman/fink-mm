@@ -312,7 +312,7 @@ def launch_offline_mode(arguments, is_test=False):
     >>> launch_offline_mode({
     ...         "--config" : None,
     ...         "--night" : "20190903",
-    ...         "--exit_after" : 10
+    ...         "--exit_after" : 100
     ...     },
     ...     is_test=True
     ... )
