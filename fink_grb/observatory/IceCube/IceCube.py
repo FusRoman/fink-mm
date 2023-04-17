@@ -4,6 +4,8 @@ from astropy.time import Time
 import voeventparse as vp
 import os.path as path
 from pandera import check_output
+from astropy.coordinates import SkyCoord
+import astropy.units as u
 
 
 from fink_grb.observatory import OBSERVATORY_PATH
@@ -157,3 +159,68 @@ class IceCube(Observatory):
         df["day"] = df["triggerTimeUTC"].dt.strftime("%d")
 
         return df
+
+    def association_proba(
+        self, ztf_ra: float, ztf_dec: float, jdstarthist: float
+    ) -> float:
+        """
+        Compute the association probability between the IceCube event and a ztf alerts
+
+        Currently, test only if the ztf alerts fall within the error box of the event.
+        Return -1.0 if not and return 0.5 otherwise.
+        TODO: compute a better probability function between neutrino event and ztf alerts
+
+        Parameters
+        ----------
+        ztf_ra : double spark column
+            right ascension coordinates of the ztf alerts
+        ztf_dec : double spark column
+            declination coordinates of the ztf alerts
+        jdstarthist : double spark column
+            Earliest Julian date of epoch corresponding to ndethist [days]
+            ndethist : Number of spatially-coincident detections falling within 1.5 arcsec
+                going back to beginning of survey;
+                only detections that fell on the same field and readout-channel ID
+                where the input candidate was observed are counted.
+                All raw detections down to a photometric S/N of ~ 3 are included.
+
+        Return
+        ------
+        association_proba: double sp
+            association probability
+            0 <= proba <= 1 where closer to 0 implies higher likelihood of being associated with the events
+
+        Examples
+        --------
+
+        >>> icecube_bronze.association_proba(0, 0, 0)
+        -1.0
+
+        >>> tr_time = Time("2022-08-08T07:59:57.26").jd
+        >>> icecube_bronze.association_proba(132.3328, -42.7168, tr_time)
+        0.5
+        """
+
+        # array of error box
+        event_error = self.err_to_arcminute()
+
+        _, trigger_time_jd = self.get_trigger_time()
+
+        # alerts emits after the grb
+        delay = jdstarthist - trigger_time_jd
+        time_condition = delay >= 0
+
+        ztf_coords = SkyCoord(ztf_ra, ztf_dec, unit=u.degree)
+
+        coords = vp.get_event_position(self.voevent)
+        event_coord = SkyCoord(coords.ra, coords.dec, unit=u.degree)
+
+        # alerts falling within the event_error_box
+        spatial_condition = (
+            ztf_coords.separation(event_coord).arcminute <= 1.5 * event_error
+        )
+
+        if time_condition and spatial_condition:
+            return 0.5
+        else:
+            return -1.0

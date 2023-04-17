@@ -8,5 +8,6 @@
         "gcn.classic.voevent.ICECUBE_ASTROTRACK_BRONZE",
         "gcn.classic.voevent.ICECUBE_ASTROTRACK_GOLD",
         "gcn.classic.voevent.ICECUBE_CASCADE"
-    ]
+    ],
+    "grb_detection_rate": -1.0
 }

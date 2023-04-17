@@ -49,5 +49,6 @@
         "gcn.classic.voevent.SWIFT_XRT_SPER_PROC",
         "gcn.classic.voevent.SWIFT_XRT_THRESHPIX",
         "gcn.classic.voevent.SWIFT_XRT_THRESHPIX_PROC"
-    ]
+    ],
+    "grb_detection_rate": 100
 }

@@ -3,16 +3,21 @@ from jsonschema import validate
 from importlib_resources import files
 import voeventparse as vp
 import datetime as dt
-from astropy.time import Time
+from astropy.coordinates import SkyCoord
 import pandas as pd
 from lxml.objectify import ObjectifiedElement
 from pandera import check_output
 import numpy as np
 import healpy as hp
+
+import astropy.units as u
+from astropy.time import Time
+
 from fink_utils.science.utils import ra2phi, dec2theta
 
 from fink_grb.observatory import OBSERVATORY_JSON_SCHEMA_PATH
 from fink_grb.test.hypothesis.observatory_schema import voevent_df_schema
+from fink_grb.utils.grb_prob import p_ser_grb_vect
 
 
 class AbstractClassException(Exception):
@@ -60,6 +65,7 @@ class Observatory:
         self.observatory = instr_data["name"]
         self.packet_type = instr_data["packet_type"]
         self.topics = instr_data["kafka_topics"]
+        self.detection_rate = instr_data["grb_detection_rate"]
         self.voevent = voevent
 
     def __str__(self) -> str:
@@ -156,6 +162,12 @@ class Observatory:
             Observatory is an abstract class, cannot be instanciate"""
         )
 
+    def get_trigger_time(self):
+        time_utc = vp.get_event_time_as_utc(self.voevent)
+        time_jd = Time(time_utc, format="datetime").jd
+
+        return time_utc, time_jd
+
     @check_output(voevent_df_schema)
     def voevent_to_df(self) -> pd.DataFrame:
         """
@@ -194,9 +206,8 @@ class Observatory:
         trigger_id = self.get_trigger_id()
 
         coords = vp.get_event_position(self.voevent)
-        time_utc = vp.get_event_time_as_utc(self.voevent)
 
-        time_jd = Time(time_utc, format="datetime").jd
+        time_utc, time_jd = self.get_trigger_time()
 
         voevent_error = self.err_to_arcminute()
 
@@ -251,6 +262,97 @@ class Observatory:
             NSIDE, vec, radius=np.radians(voevent_error / 60), inclusive=True
         )
         return ipix_disc
+
+    def association_proba(
+        self, ztf_ra: float, ztf_dec: float, jdstarthist: float
+    ) -> float:
+        """
+        Compute the association probability between a gcn event and a ztf alerts
+
+        This default function for the observatory class are reliable for GRB event.
+        Overload this function to return a custom probability for other class of event.
+
+        Parameters
+        ----------
+        ztf_ra : double spark column
+            right ascension coordinates of the ztf alerts
+        ztf_dec : double spark column
+            declination coordinates of the ztf alerts
+        jdstarthist : double spark column
+            Earliest Julian date of epoch corresponding to ndethist [days]
+            ndethist : Number of spatially-coincident detections falling within 1.5 arcsec
+                going back to beginning of survey;
+                only detections that fell on the same field and readout-channel ID
+                where the input candidate was observed are counted.
+                All raw detections down to a photometric S/N of ~ 3 are included.
+
+        Return
+        ------
+        association_proba: double sp
+            association probability
+            0 <= proba <= 1 where closer to 0 implies higher likelihood of being associated with the events
+
+        Examples
+        --------
+        >>> swift_bat.association_proba(0, 0, 0)
+        -1.0
+
+        >>> tr_time = Time("2022-07-30T15:48:54.89").jd
+        >>> r = swift_bat.association_proba(225.0206, -69.4968, tr_time+1)
+        >>> print(round(r, 13))
+        1.7e-12
+
+        >>> tr_time = Time("2022-07-29T21:13:01").jd
+        >>> r = fermi_gbm.association_proba(316.6900, -4.1699, tr2_time)
+        >>> print(round(r, 6))
+        0.000387
+
+        >>> tr_time = Time("2022-09-26T10:38:37").jd
+        >>> r = integral_refined.association_proba(273.9549, -37.2418, tr3_time+10)
+        >>> print(round(r, 9))
+        1.9e-11
+        """
+
+        # grb detection rate (detection/year) for the self observatory
+        grb_det_rate = self.detection_rate
+
+        # array of error box
+        grb_error = self.err_to_arcminute()
+
+        _, trigger_time_jd = self.get_trigger_time()
+
+        # alerts emits after the grb
+        delay = jdstarthist - trigger_time_jd
+        time_condition = delay >= 0
+
+        ztf_coords = SkyCoord(ztf_ra, ztf_dec, unit=u.degree)
+
+        coords = vp.get_event_position(self.voevent)
+        grb_coord = SkyCoord(coords.ra, coords.dec, unit=u.degree)
+
+        # alerts falling within the grb_error_box
+        spatial_condition = (
+            ztf_coords.separation(grb_coord).arcminute <= 1.5 * grb_error
+        )  # 63.5 * grb_error
+
+        if time_condition and spatial_condition:
+
+            # convert the delay in year
+            delay_year = delay / 365.25
+
+            # compute serendipitous probability
+            p_ser = p_ser_grb_vect(
+                grb_error / 60,
+                delay_year,
+                grb_det_rate,
+            )
+
+            grb_proba = p_ser[0]
+
+            return grb_proba
+
+        else:
+            return -1.0
 
 
 # command to call to run the doctest :

@@ -11,5 +11,6 @@
         "gcn.classic.voevent.INTEGRAL_SPIACS",
         "gcn.classic.voevent.INTEGRAL_WAKEUP",
         "gcn.classic.voevent.INTEGRAL_WEAK"
-    ]
+    ],
+    "grb_detection_rate": 60
 }

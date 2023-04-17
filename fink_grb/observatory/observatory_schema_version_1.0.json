@@ -2,7 +2,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "fink_grb/instruments/instrument_schema_version_1.0.json",
     "title": "Instrument",
-    "description": "The description of an astronomical instrument sending alerts on the General Coordinates network",
+    "description": "The description of an astronomical observatory sending alerts on the General Coordinates network",
     "type": "object",
     "properties": {
       "name": {
@@ -30,6 +30,10 @@
         },
         "minItems": 1,
         "uniqueItems": true
+      },
+      "grb_detection_rate": {
+        "description": "number of gamma ray burst detection per year for the given observatory (if a gamma ray bust observatory)",
+        "type": "integer"
       }
     },
     "required": [ "name", "packet_type", "kafka_topics"]

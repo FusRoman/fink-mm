@@ -12,7 +12,6 @@ from pyspark.sql.types import DoubleType, ArrayType, IntegerType
 from fink_filters.classification import extract_fink_classification
 from fink_utils.spark.utils import concat_col
 
-from fink_grb.utils.grb_prob import grb_assoc
 from fink_grb.observatory import voevent_to_class
 from fink_grb.observatory.observatory import Observatory
 from fink_grb.gcn_stream.gcn_reader import load_voevent_from_file
@@ -350,6 +349,49 @@ def get_pixels(rawEvent: pd.Series, NSIDE: pd.Series) -> pd.Series:
         [
             get_observatory(event).get_pixels(nside)
             for event, nside in zip(rawEvent, NSIDE)
+        ]
+    )
+
+
+@pandas_udf(ArrayType(DoubleType()))
+def get_association_proba(
+    rawEvent: pd.Series, ztf_ra: pd.Series, ztf_dec: pd.Series, jdstarthist: pd.Series
+) -> pd.Series:
+    """
+    Compute the association probability between the ztf alerts and the gcn events.
+
+    Parameters
+    ----------
+    rawEvent: pd.Series containing string
+        the raw voevents
+    ztf_ra : double spark column
+        right ascension coordinates of the ztf alerts
+    ztf_dec : double spark column
+        declination coordinates of the ztf alerts
+    jdstarthist : double spark column
+        Earliest Julian date of epoch corresponding to ndethist [days]
+        ndethist : Number of spatially-coincident detections falling within 1.5 arcsec
+            going back to beginning of survey;
+            only detections that fell on the same field and readout-channel ID
+            where the input candidate was observed are counted.
+            All raw detections down to a photometric S/N of ~ 3 are included.
+
+    Return
+    ------
+    association_proba: double spark column
+        association probability
+        0 <= proba <= 1 where closer to 0 implies higher likelihood of being associated with the events
+
+    Examples
+    --------
+
+    """
+    return pd.Series(
+        [
+            get_observatory(event).association_proba(z_ra, z_dec, z_trigger_time)
+            for event, z_ra, z_dec, z_trigger_time in zip(
+                rawEvent, ztf_ra, ztf_dec, jdstarthist
+            )
         ]
     )
 
@@ -712,15 +754,11 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
     # refine the association and compute the serendipitous probability
     df_grb = df_grb.withColumn(
         "grb_proba",
-        grb_assoc(
+        get_association_proba(
+            df_grb["raw_event"],
             df_grb["ztf_ra"],
             df_grb["ztf_dec"],
             df_grb["{}".format("start_vartime" if with_rate else "jdstarthist")],
-            df_grb["observatory"],
-            df_grb["triggerTimeUTC"],
-            df_grb["grb_ra"],
-            df_grb["grb_dec"],
-            df_grb["err_arcmin"],
         ),
     )
 

@@ -25,5 +25,6 @@
         "gcn.classic.voevent.FERMI_LAT_TRANS",
         "gcn.classic.voevent.FERMI_POINTDIR",
         "gcn.classic.voevent.FERMI_SC_SLEW"
-    ]
+    ],
+    "grb_detection_rate": 250
 }
