@@ -30,7 +30,7 @@ setup(
     },
     install_requires=[
         "fink-utils>=0.8.0",
-        "fink-client>=4.3",
+        "fink-client>=4.4",
         "fink-filters>=3.8",
         "docopt>=0.6.2",
         "terminaltables>=3.1.10",
