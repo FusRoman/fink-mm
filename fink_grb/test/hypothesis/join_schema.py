@@ -1,10 +1,14 @@
 from pandera import DataFrameSchema, Column, Check, Index
 
+# minimum set of column required by fink_grb for candidate field in the ztf alerts
 fink_candidate_schema = DataFrameSchema(
     columns={
         "ssdistnr": Column(
             dtype="float64",
-            checks=None,
+            checks=[
+                Check.greater_than_or_equal_to(0),
+                Check.less_than_or_equal_to(30)
+            ],
             nullable=False,
             unique=False,
             coerce=False,
@@ -15,7 +19,10 @@ fink_candidate_schema = DataFrameSchema(
         ),
         "distpsnr1": Column(
             dtype="float64",
-            checks=None,
+            checks=[
+                Check.greater_than_or_equal_to(0),
+                Check.less_than_or_equal_to(30)
+            ],
             nullable=False,
             unique=False,
             coerce=False,
@@ -26,7 +33,10 @@ fink_candidate_schema = DataFrameSchema(
         ),
         "neargaia": Column(
             dtype="float64",
-            checks=None,
+            checks=[
+                Check.greater_than_or_equal_to(0),
+                Check.less_than_or_equal_to(90)
+            ],
             nullable=False,
             unique=False,
             coerce=False,
@@ -65,7 +75,9 @@ fink_candidate_schema = DataFrameSchema(
         ),
         "jdstarthist": Column(
             dtype="float64",
-            checks=None,
+            checks=[
+                Check.greater_than_or_equal_to(0)
+            ],
             nullable=False,
             unique=False,
             coerce=False,
@@ -76,7 +88,9 @@ fink_candidate_schema = DataFrameSchema(
         ),
         "ndethist": Column(
             dtype="int64",
-            checks=None,
+            checks=[
+                Check.greater_than_or_equal_to(0)
+            ],
             nullable=False,
             unique=False,
             coerce=False,
@@ -87,7 +101,10 @@ fink_candidate_schema = DataFrameSchema(
         ),
         "drb": Column(
             dtype="float64",
-            checks=None,
+            checks=[
+                Check.greater_than_or_equal_to(0),
+                Check.less_than_or_equal_to(1)
+            ],
             nullable=False,
             unique=False,
             coerce=False,
@@ -98,7 +115,10 @@ fink_candidate_schema = DataFrameSchema(
         ),
         "classtar": Column(
             dtype="float64",
-            checks=None,
+            checks=[
+                Check.greater_than_or_equal_to(0),
+                Check.less_than_or_equal_to(1)
+            ],
             nullable=False,
             unique=False,
             coerce=False,
