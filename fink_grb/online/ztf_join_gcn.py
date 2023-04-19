@@ -189,19 +189,20 @@ def ztf_join_gcn_stream(
 
     Examples
     --------
-    >>> with tempfile.TemporaryDirectory() as grb_dataoutput:
-    ...     ztf_join_gcn_stream(
-    ...         ztf_datatest,
-    ...         gcn_datatest,
-    ...         grb_dataoutput,
-    ...         "20190903",
-    ...         4, 10, 5, 5, 2, 0, 5
-    ...     )
+    >>> grb_dataoutput_dir = tempfile.TemporaryDirectory()
+    >>> grb_dataoutput = grb_dataoutput_dir.name
+    >>> ztf_join_gcn_stream(
+    ...     ztf_datatest,
+    ...     gcn_datatest,
+    ...     grb_dataoutput,
+    ...     "20190903",
+    ...     4, 100, 5, 5, 2, 0, 5
+    ... )
 
-    ...     datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    ...     datajoin = pd.read_parquet(grb_dataoutput + "/online").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datajoin = pd.read_parquet(grb_dataoutput + "/online").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
 
-    ...     assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
+    >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
     logger = init_logging()
     spark = init_sparksession(

@@ -216,7 +216,7 @@ def grb_assoc(
     ).jd
 
     # alerts emits after the grb
-    delay = jdstarthist - trigger_time
+    delay = trigger_time - jdstarthist
     time_condition = delay > 0
 
     ztf_coords = SkyCoord(ztf_ra, ztf_dec, unit=u.degree)

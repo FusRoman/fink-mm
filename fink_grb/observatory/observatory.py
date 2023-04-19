@@ -322,7 +322,7 @@ class Observatory:
         _, trigger_time_jd = self.get_trigger_time()
 
         # alerts emits after the grb
-        delay = jdstarthist - trigger_time_jd
+        delay = trigger_time_jd - jdstarthist
         time_condition = delay >= 0
 
         ztf_coords = SkyCoord(ztf_ra, ztf_dec, unit=u.degree)

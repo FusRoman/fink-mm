@@ -39,7 +39,7 @@ setup(
         "astropy==4.3.1",
         "gcn-kafka>=0.1.2",
         "importlib-resources==5.9.0",
-        "pyarrow==11.0.0",  # WARNING: Version upper than the fink-broker version (pyarrow==4.0.1)
+        "pyarrow==11.0.0",  # WARNING: Version upper than the fink-broker version (pyarrow==9.0.0)
         "pyspark==3.3.0",
         "scipy==1.7.3",
         "voevent-parse==1.0.3",
