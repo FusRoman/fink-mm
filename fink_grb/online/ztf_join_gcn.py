@@ -246,7 +246,6 @@ def ztf_join_gcn_stream(
         ang2pix(df_ztf_stream.candidate.ra, df_ztf_stream.candidate.dec, F.lit(NSIDE)),
     )
 
-
     # compute pixels for gcn alerts
     df_grb_stream = df_grb_stream.withColumn(
         "hpix_circle",
