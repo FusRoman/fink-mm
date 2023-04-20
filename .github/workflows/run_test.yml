@@ -118,13 +118,12 @@ on:
       - main
   pull_request:
 
-runs-on: ubuntu-latest
-
 jobs:
   job1:
     steps:
     - uses: actions/checkout@v2
     - name: j1
+    runs-on: ubuntu-latest
       run: |
         echo "jobs 1"
 
