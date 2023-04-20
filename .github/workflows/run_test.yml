@@ -120,17 +120,26 @@ on:
 
 jobs:
   job1:
+    steps:
+    - uses: actions/checkout@v2
+    - name: j1
     run: |
       echo "jobs 1"
   job2:
     needs: job1
+    steps:
+    - name: j2
     run: |
       echo "jobs 2"
   job3:
     needs: [job1, job2]
+    steps:
+    - name: j3
     run: |
       echo "jobs 3"
   job4:
     needs: job2
+    steps:
+    - name: j4
     run: |
       echo "jobs 4"
