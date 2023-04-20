@@ -129,6 +129,7 @@ jobs:
 
   job2:
     needs: job1
+    runs-on: ubuntu-latest
     steps:
     - name: j2
       run: |
@@ -136,6 +137,7 @@ jobs:
 
   job3:
     needs: [job1, job2]
+    runs-on: ubuntu-latest
     steps:
     - name: j3
       run: |
@@ -143,6 +145,7 @@ jobs:
 
   job4:
     needs: job2
+    runs-on: ubuntu-latest
     steps:
     - name: j4
       run: |
