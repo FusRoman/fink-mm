@@ -120,7 +120,7 @@ on:
 
 jobs:
   job1:
-  runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: j1
