@@ -164,7 +164,6 @@ jobs:
       shell: bash
       run: |
         fink_grb gcn_stream start --config $CONFIGFILE_PATH --test &
-# wait for gcn
         sleep 30s
 
     - name: Start services
