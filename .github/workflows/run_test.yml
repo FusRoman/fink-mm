@@ -107,6 +107,16 @@
 #         coverage run --source=${ROOTPATH} --rcfile=${ROOTPATH}/.coveragerc -m pytest --doctest-modules fink_grb
 #         curl -s https://codecov.io/bash | bash
 
+name: Sentinel
+run-name: Test runner
+
+on:
+  # Trigger the workflow on push or pull request,
+  # but only for the main branch
+  push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
   job1:
