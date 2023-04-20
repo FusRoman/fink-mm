@@ -118,6 +118,8 @@ on:
       - main
   pull_request:
 
+runs-on: ubuntu-latest
+
 jobs:
   job1:
     steps:
