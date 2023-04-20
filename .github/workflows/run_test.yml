@@ -1,4 +1,5 @@
 name: Sentinel
+run-name: Test runner
 
 on:
   # Trigger the workflow on push or pull request,
@@ -9,8 +10,9 @@ on:
   pull_request:
 
 jobs:
-  run-test:
-    name: run-test
+
+  init-container:
+    name: init_container
     runs-on: ubuntu-latest
 
     strategy:
@@ -19,7 +21,7 @@ jobs:
 
     container:
       image: ${{ matrix.container }}
-
+    
     steps:
     - uses: actions/checkout@v2
 
@@ -28,7 +30,6 @@ jobs:
         echo "ROOTPATH=`pwd`" >> $GITHUB_ENV
         echo "FINK_GRB=$GITHUB_WORKSPACE" >> $GITHUB_ENV
         echo "JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))" >> $GITHUB_ENV
-
 
     - name: Set up env [2/3]
       run: |
@@ -54,6 +55,12 @@ jobs:
       run: |
         pip install -r requirements.txt
 
+    - name: Start services
+      run: |
+        cd $USRLIBS
+        source scripts/start_services.sh --kafka-version ${KAFKA_VERSION} --hbase-version ${HBASE_VERSION}
+        cd $FINK_GRB
+    
     - name: Check env
       run: |
         echo "GITHUB_PATH: $GITHUB_PATH"
@@ -68,11 +75,10 @@ jobs:
         echo "FINK_JARS: $FINK_JARS"
         echo `python -V`
 
-    - name: Start services
-      run: |
-        cd $USRLIBS
-        source scripts/start_services.sh --kafka-version ${KAFKA_VERSION} --hbase-version ${HBASE_VERSION}
-        cd $FINK_GRB
+
+  run-unit-test:
+    name: run-unit-test
+    needs: init-container
 
     - name: Call raw2science
       run: |
