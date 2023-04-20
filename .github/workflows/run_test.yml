@@ -109,36 +109,36 @@ jobs:
 
   run-integration-test:
     name: run-integration-test
-      runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-      strategy:
-        matrix:
-          container: ["julienpeloton/fink-ci:prod"]
+    strategy:
+      matrix:
+        container: ["julienpeloton/fink-ci:prod"]
 
-      container:
-        image: ${{ matrix.container }}
+    container:
+      image: ${{ matrix.container }}
 
-      steps:
-      - uses: actions/checkout@v2
+    steps:
+    - uses: actions/checkout@v2
 
-      - name: Set up env [1/3]
-        run: |
-          echo "ROOTPATH=`pwd`" >> $GITHUB_ENV
-          echo "FINK_GRB=$GITHUB_WORKSPACE" >> $GITHUB_ENV
-          echo "JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))" >> $GITHUB_ENV
-
-      - name: Set up env [2/3]
-        run: |
-          echo "PYTHONPATH="${PYTHONPATH}:${SPARKLIB}:${FINK_GRB}"" >> $GITHUB_ENV
-      
-      - name: Install fink-broker
+    - name: Set up env [1/3]
       run: |
-        cd ${HOME}
-        git clone https://github.com/astrolabsoftware/fink-broker.git
-        cd fink-broker
-        pip install .
-        echo "FINK_HOME=${HOME}/fink-broker" >> $GITHUB_ENV
-        cd $FINK_GRB
+        echo "ROOTPATH=`pwd`" >> $GITHUB_ENV
+        echo "FINK_GRB=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+        echo "JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))" >> $GITHUB_ENV
+
+    - name: Set up env [2/3]
+      run: |
+        echo "PYTHONPATH="${PYTHONPATH}:${SPARKLIB}:${FINK_GRB}"" >> $GITHUB_ENV
+    
+    - name: Install fink-broker
+    run: |
+      cd ${HOME}
+      git clone https://github.com/astrolabsoftware/fink-broker.git
+      cd fink-broker
+      pip install .
+      echo "FINK_HOME=${HOME}/fink-broker" >> $GITHUB_ENV
+      cd $FINK_GRB
 
     - name: Set up env [3/3]
       run: |
