@@ -146,6 +146,7 @@ def start_gcn_stream(arguments):
                 client_secret=config["CLIENT"]["secret"],
                 domain="test.gcn.nasa.gov",
             )
+
     except Exception as e:
         logger.error("Config entry not found \n\t {}".format(e))
         exit(1)
