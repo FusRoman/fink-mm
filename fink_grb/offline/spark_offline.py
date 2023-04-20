@@ -154,25 +154,27 @@ def spark_offline(
 
     Examples
     --------
-    >>> with tempfile.TemporaryDirectory() as grb_dataoutput:
-    ...     spark_offline(
-    ...         hbase_catalog,
-    ...         gcn_datatest,
-    ...         grb_dataoutput,
-    ...         "20190903",
-    ...         4,
-    ...         Time("2019-09-04").jd,
-    ...         7, 5, 2, 0, 5,
-    ...         False
-    ...     )
+    >>> grb_dataoutput_dir = tempfile.TemporaryDirectory()
+    >>> grb_dataoutput = grb_dataoutput_dir.name
 
-    ...     datajoin = pd.read_parquet(grb_dataoutput + "/offline").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    ...     datajoin = datajoin.drop("grb_proba", axis=1)
+    >>> spark_offline(
+    ...    hbase_catalog,
+    ...    gcn_datatest,
+    ...    grb_dataoutput,
+    ...    "20190903",
+    ...    4,
+    ...    Time("2019-09-04").jd,
+    ...    7, 5, 2, 0, 5,
+    ...    False
+    ... )
 
-    ...     datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    ...     datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime", "grb_proba"], axis=1)
+    >>> datajoin = pd.read_parquet(grb_dataoutput + "/offline").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datajoin = datajoin.drop("grb_proba", axis=1)
 
-    ...     assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
+    >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime", "grb_proba"], axis=1)
+
+    >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
     with open(hbase_catalog) as f:
         catalog = json.load(f)
