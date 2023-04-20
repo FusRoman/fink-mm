@@ -155,9 +155,8 @@ jobs:
         echo "PYTHONPATH="${SPARK_HOME}/python/test_coverage:$PYTHONPATH"" >> $GITHUB_ENV
         echo "COVERAGE_PROCESS_START="${ROOTPATH}/.coveragerc"" >> $GITHUB_ENV
         python -m pip install .
-    
-    - name: Setup integration env
-        mkdir ci_gcn_test
+        mkdir fink_grb/ci_gcn_test
+        mkdir fink_grb/ci_join_test
 
     - name: Launch GCN stream
       shell: bash
