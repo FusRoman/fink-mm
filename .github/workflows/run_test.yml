@@ -106,7 +106,6 @@ jobs:
         coverage run --source=${ROOTPATH} --rcfile=${ROOTPATH}/.coveragerc -m pytest --doctest-modules fink_grb
         curl -s https://codecov.io/bash | bash
 
-
   run-integration-test:
     name: run-integration-test
     runs-on: ubuntu-latest
@@ -132,13 +131,13 @@ jobs:
         echo "PYTHONPATH="${PYTHONPATH}:${SPARKLIB}:${FINK_GRB}"" >> $GITHUB_ENV
     
     - name: Install fink-broker
-    run: |
-      cd ${HOME}
-      git clone https://github.com/astrolabsoftware/fink-broker.git
-      cd fink-broker
-      pip install .
-      echo "FINK_HOME=${HOME}/fink-broker" >> $GITHUB_ENV
-      cd $FINK_GRB
+      run: |
+        cd ${HOME}
+        git clone https://github.com/astrolabsoftware/fink-broker.git
+        cd fink-broker
+        pip install .
+        echo "FINK_HOME=${HOME}/fink-broker" >> $GITHUB_ENV
+        cd $FINK_GRB
 
     - name: Set up env [3/3]
       run: |
@@ -157,8 +156,8 @@ jobs:
         echo "COVERAGE_PROCESS_START="${ROOTPATH}/.coveragerc"" >> $GITHUB_ENV
         python -m pip install .
     
-    -name: Setup integration env
-      mkdir ci_gcn_test
+    - name: Setup integration env
+        mkdir ci_gcn_test
 
     - name: Launch GCN stream
       shell: bash
