@@ -126,6 +126,7 @@ jobs:
     - name: j1
       run: |
         echo "jobs 1"
+        echo "TOTO="toto"" >> $GITHUB_ENV
 
   job2:
     needs: job1
@@ -134,6 +135,7 @@ jobs:
     - name: j2
       run: |
         echo "jobs 2"
+        echo "TOTO: $TOTO"
 
   job3:
     needs: [job1, job2]
