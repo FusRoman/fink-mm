@@ -167,7 +167,8 @@ jobs:
         sleep 30s
 
     - name: Check GCN data
-      
+      run: |
+        ls -lth fink_grb/ci_gcn_test
 
     # - name: Start services
     #   run: |
