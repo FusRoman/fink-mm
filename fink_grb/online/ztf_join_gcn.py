@@ -224,7 +224,7 @@ def ztf_join_gcn_stream(
         df_ztf_stream, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist
     )
 
-    gcn_rawdatapath = gcn_datapath_prefix + "/raw"
+    gcn_rawdatapath = gcn_datapath_prefix
 
     # connection to the gcn stream
     df_grb_stream = connect_to_raw_database(

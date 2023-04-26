@@ -163,19 +163,21 @@ jobs:
     - name: Launch GCN stream
       shell: bash
       run: |
-        fink_grb gcn_stream start --config $CONFIGFILE_PATH --test > fink_grb_offline_${NIGHT}.log 2>&1 &
+        fink_grb gcn_stream start --config $CONFIGFILE_PATH --test
         sleep 30s
 
     - name: Check GCN data
       run: |
-        ls -lth fink_grb/ci_gcn_test/*/*/*
+        mkdir -p fink_grb/ci_gcn_test/year=2019/month=09/day=03
+        cp fink_grb/ci_gcn_test/*/*/*/* fink_grb/ci_gcn_test/year=2019/month=09/day=03
+        ls -lth fink_grb/ci_gcn_test/year=2019/month=09/day=03
 
     - name: Start services
       run: |
         cd $USRLIBS
         source scripts/start_services.sh --kafka-version ${KAFKA_VERSION} --hbase-version ${HBASE_VERSION}
         cd $FINK_GRB
-    
+
     - name: Call raw2science
       run: |
         fink start raw2science -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT --exit_after 40
