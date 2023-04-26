@@ -168,38 +168,40 @@ jobs:
 
     - name: Check GCN data
       run: |
-        ls -lth fink_grb/ci_gcn_test
+        ls -lth fink_grb/ci_gcn_test/*/*/*
 
-    # - name: Start services
-    #   run: |
-    #     cd $USRLIBS
-    #     source scripts/start_services.sh --kafka-version ${KAFKA_VERSION} --hbase-version ${HBASE_VERSION}
-    #     cd $FINK_GRB
+    - name: Start services
+      run: |
+        cd $USRLIBS
+        source scripts/start_services.sh --kafka-version ${KAFKA_VERSION} --hbase-version ${HBASE_VERSION}
+        cd $FINK_GRB
     
-    # - name: Call raw2science
-    #   run: |
-    #     fink start raw2science -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT --exit_after 40
+    - name: Call raw2science
+      run: |
+        fink start raw2science -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT --exit_after 40
 
-    # - name: Merge data
-    #   run: |
-    #     fink start merge -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT
+    - name: Merge data
+      run: |
+        fink start merge -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT
 
-    # - name: Push Hbase data
-    #   run: |
-    #     fink start index_archival -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT --index_table jd_objectId
+    - name: Push Hbase data
+      run: |
+        fink start index_archival -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT --index_table jd_objectId
 
-    # - name: Run online join streaming
-    #   run: |
-    #     fink_grb join_stream online --config $CONFIGFILE_PATH --night $NIGHT --exit_after 180 > fink_grb_online_${NIGHT}.log 2>&1
+    - name: Run online join streaming
+      run: |
+        fink_grb join_stream online --config $CONFIGFILE_PATH --night $NIGHT --exit_after 180 > fink_grb_online_${NIGHT}.log 2>&1
     
-    # - name: Check online stream
-    #   run: |
-    #     cat fink_grb_online_${NIGHT}.log
+    - name: Check online stream
+      run: |
+        cat fink_grb_online_${NIGHT}.log
+        ls -lth fink_grb/ci_join_test
     
-    # - name: Run offline stream
-    #   run: |
-    #     fink_grb join_stream offline --night $NIGHT --config $CONFIGFILE_PATH > fink_grb_offline_${NIGHT}.log 2>&1
+    - name: Run offline stream
+      run: |
+        fink_grb join_stream offline --night $NIGHT --config $CONFIGFILE_PATH > fink_grb_offline_${NIGHT}.log 2>&1
 
-    # - name: Check online stream
-    #   run: |
-    #     cat fink_grb_offline_${NIGHT}.log
+    - name: Check offline stream
+      run: |
+        cat fink_grb_offline_${NIGHT}.log
+        ls -lth fink_grb/ci_join_test
