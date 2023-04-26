@@ -163,7 +163,7 @@ jobs:
     - name: Launch GCN stream
       shell: bash
       run: |
-        fink_grb gcn_stream start --config $CONFIGFILE_PATH --test
+        fink_grb gcn_stream start --config $CONFIGFILE_PATH --test &
         sleep 30s
 
     - name: Check GCN data
