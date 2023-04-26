@@ -196,7 +196,7 @@ jobs:
     
     - name: Check online stream
       run: |
-        ls -lth fink_grb/ci_join_test/*/*/*/*
+        ls -lth fink_grb/ci_join_test/online/*/*/*
     
     - name: Run offline stream
       run: |
@@ -204,4 +204,4 @@ jobs:
 
     - name: Check offline stream
       run: |
-        ls -lth fink_grb/ci_join_test/*/*/*/*
+        ls -lth fink_grb/ci_join_test/offline/*/*/*
