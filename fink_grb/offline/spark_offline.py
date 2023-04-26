@@ -296,7 +296,7 @@ def spark_offline(
     )
 
 
-def launch_offline_mode(arguments, is_test=False):
+def launch_offline_mode(arguments):
     """
     Launch the offline grb module, used by the command line interface.
 
@@ -314,9 +314,9 @@ def launch_offline_mode(arguments, is_test=False):
     >>> launch_offline_mode({
     ...         "--config" : None,
     ...         "--night" : "20190903",
-    ...         "--exit_after" : 100
-    ...     },
-    ...     is_test=True
+    ...         "--exit_after" : 100,
+    ...         "--test" : True
+    ...     }
     ... )
 
     >>> datajoin = pd.read_parquet("fink_grb/test/test_output/offline").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
@@ -343,7 +343,7 @@ def launch_offline_mode(arguments, is_test=False):
         spark_jars,
         packages,
         external_files,
-    ) = read_additional_spark_options(arguments, config, logger, verbose, is_test)
+    ) = read_additional_spark_options(arguments, config, logger, verbose, arguments["--test"])
 
     (
         night,
@@ -358,7 +358,7 @@ def launch_offline_mode(arguments, is_test=False):
         _,
         _,
         _,
-    ) = read_grb_admin_options(arguments, config, logger, is_test=is_test)
+    ) = read_grb_admin_options(arguments, config, logger, is_test=arguments["--test"])
 
     application = apps.Application.OFFLINE.build_application(
         logger,
@@ -372,7 +372,7 @@ def launch_offline_mode(arguments, is_test=False):
         pansstar_dist=pansstar_dist,
         pansstar_star_score=pansstar_star_score,
         gaia_dist=gaia_dist,
-        is_test=is_test,
+        is_test=arguments["--test"],
     )
 
     spark_submit = build_spark_submit(

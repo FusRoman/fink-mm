@@ -163,7 +163,7 @@ jobs:
     - name: Launch GCN stream
       shell: bash
       run: |
-        fink_grb gcn_stream start --config $CONFIGFILE_PATH --test &
+        fink_grb gcn_stream start --config $CONFIGFILE_PATH --test > fink_grb_offline_${NIGHT}.log 2>&1 &
         sleep 30s
 
     - name: Check GCN data
@@ -196,7 +196,7 @@ jobs:
     
     - name: Check online stream
       run: |
-        ls -lth fink_grb/ci_join_test
+        ls -lth fink_grb/ci_join_test/*/*/*/*
     
     - name: Run offline stream
       run: |
@@ -204,4 +204,4 @@ jobs:
 
     - name: Check offline stream
       run: |
-        ls -lth fink_grb/ci_join_test
+        ls -lth fink_grb/ci_join_test/*/*/*/*
