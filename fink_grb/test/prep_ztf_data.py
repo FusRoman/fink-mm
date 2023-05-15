@@ -31,9 +31,8 @@ if __name__ == "__main__":
     import glob
     import pandas as pd
 
-    path_ztf_raw = glob.glob(
-        "fink_grb/test/test_data/ztf_test/online/raw/year=2019/month=09/day=03/"
-    )
+    path_ztf_raw = "fink_grb/test/test_data/ztf_test/online/raw/year=2019/month=09/day=03/"
+
     path_gcn_data = "fink_grb/ci_gcn_test/year=2019/month=09/day=03/"
 
     gcn_pdf = pd.read_parquet(path_gcn_data)
