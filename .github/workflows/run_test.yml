@@ -180,6 +180,7 @@ jobs:
 
     - name: Generate fake gcn counterparts
       run: |
+        ls -lth fink_grb/test/test_data/ztf_test/online/raw/*/*/*/*
         python fink_grb/test/prep_ztf_data.py
         ls -lth fink_grb/test/test_data/ztf_test/online/raw/year=2019/month=09/day=03/
 

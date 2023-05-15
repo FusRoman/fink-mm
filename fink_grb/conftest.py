@@ -222,8 +222,5 @@ def init_spark(doctest_namespace):
 
     doctest_namespace["spark"] = spark
 
-    import numpy as np
-
     if np.__version__ >= "1.14.0":
         np.set_printoptions(legacy="1.13")
-
