@@ -9,7 +9,7 @@ on:
   pull_request:
 
 env:
-  NIGHT: $(`date +"%Y%m%d" -d "now"`)
+  NIGHT: 20190903
   CONFIGFILE_PATH: fink_grb/conf/integration.conf
   SECRET_ID: ${{ secrets.GCN_TEST_ID }}
   SECRET_SECRET: ${{ secrets.GCN_TEST_SECRET }}
@@ -131,6 +131,7 @@ jobs:
     - name: Set up env [2/3]
       run: |
         echo "PYTHONPATH="${PYTHONPATH}:${SPARKLIB}:${FINK_GRB}"" >> $GITHUB_ENV
+        echo "NIGHT=`date +"%Y%m%d" -d "now"`" >> $GITHUB_ENV
     
     - name: Install fink-broker
       run: |
