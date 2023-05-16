@@ -165,7 +165,7 @@ jobs:
       shell: bash
       run: |
         fink_grb gcn_stream start --config $CONFIGFILE_PATH --test > fink_grb_gcnstream_${NIGHT}.log 2>&1 &
-        sleep 15s
+        sleep 20s
 
     - name: Check GCN data
       run: |
@@ -180,7 +180,8 @@ jobs:
     - name: Generate fake gcn counterparts
       run: |
         python fink_grb/test/prep_ztf_data.py
-        ls -lth fink_grb/test/test_data/ztf_test/online/raw/year=${NIGHT:0:4}/month=${NIGHT:4:2}/day=${NIGHT:6:2}/
+        mv fink_grb/test/test_data/ztf_test/online/raw/year=2019 fink_grb
+        ls -lth fink_grb/test/test_data/ztf_test/online/raw/*/*/*
 
     - name: Call raw2science
       run: |
