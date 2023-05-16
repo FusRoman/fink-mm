@@ -27,8 +27,6 @@ def spatial_time_align(ztf_raw_data, grb_pdf):
 
 
 if __name__ == "__main__":
-
-    import glob
     import pandas as pd
 
     path_ztf_raw = "fink_grb/test/test_data/ztf_test/online/raw/year=2019/month=09/day=03/"
