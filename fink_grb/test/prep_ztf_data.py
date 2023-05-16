@@ -2,10 +2,19 @@ import numpy as np
 from fink_grb.utils.fun_utils import get_observatory
 
 
-def spatial_time_align(ztf_raw_data, grb_pdf):
+def spatial_time_align(ztf_raw_data, gcn_pdf):
+    """Change data in the ztf test alerts to have some fake counterparts of gcn alerts
+
+    Args:
+        ztf_raw_data (DataFrame): ztf test alerts
+        gcn_pdf (DataFrame): gnc get from the gcn stream
+
+    Returns:
+        DataFrame: the ztf test alerts smae as the input but with additionnal alerts which are fake gcn counterparts.
+    """
     ztf_raw_data = ztf_raw_data.copy()
 
-    all_obs = grb_pdf["raw_event"].map(get_observatory).values
+    all_obs = gcn_pdf["raw_event"].map(get_observatory).values
     random_obs = np.random.choice(all_obs, int((len(all_obs) + 1) / 2))
     jd_gcn = [obs.get_trigger_time()[1] for obs in random_obs]
 

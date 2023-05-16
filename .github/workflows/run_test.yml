@@ -198,14 +198,14 @@ jobs:
     - name: Run online join streaming
       run: |
         fink_grb join_stream online --config $CONFIGFILE_PATH --night $NIGHT --exit_after 180
-    
+
     - name: Check online stream
       run: |
         ls -lth fink_grb/ci_join_test/online/*/*/*
-    
+
     - name: Run offline stream
       run: |
-        fink_grb join_stream offline --night $NIGHT --config $CONFIGFILE_PATH
+        fink_grb join_stream offline --night $NIGHT --config $CONFIGFILE_PATH --test
 
     - name: Check offline stream
       run: |
