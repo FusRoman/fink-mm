@@ -210,3 +210,11 @@ jobs:
     - name: Check offline stream
       run: |
         ls -lth fink_grb/ci_join_test/offline/*/*/*
+
+    - name: Online Distribution
+      run: |
+        fink_grb distribute --config $CONFIGFILE_PATH --night $NIGHT --exit_after 180
+    
+    - name: Check Distribution
+      run: |
+        python fink_grb/test/display_distribution.py

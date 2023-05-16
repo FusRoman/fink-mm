@@ -43,7 +43,6 @@ def spatial_time_align(ztf_raw_data, gcn_pdf):
     for rows_ztf, new_jd, new_coord in zip(
         ztf_raw_data.loc[rand_ztf_index, "candidate"], jd_gcn, coord_gcn
     ):
-
         rows_ztf["jdstarthist"] = new_jd + np.random.uniform(1, 5)
         rows_ztf["jd"] = new_jd + np.random.uniform(0.1, 1)
         rows_ztf["prv_candidates"] = None
