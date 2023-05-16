@@ -9,7 +9,7 @@ on:
   pull_request:
 
 env:
-  NIGHT: 20190903
+  NIGHT: $(`date +"%Y%m%d" -d "now"`)
   CONFIGFILE_PATH: fink_grb/conf/integration.conf
   SECRET_ID: ${{ secrets.GCN_TEST_ID }}
   SECRET_SECRET: ${{ secrets.GCN_TEST_SECRET }}
@@ -163,14 +163,12 @@ jobs:
     - name: Launch GCN stream
       shell: bash
       run: |
-        fink_grb gcn_stream start --config $CONFIGFILE_PATH --test > fink_grb_offline_${NIGHT}.log 2>&1 &
-        sleep 30s
+        fink_grb gcn_stream start --config $CONFIGFILE_PATH --test > fink_grb_gcnstream_${NIGHT}.log 2>&1 &
+        sleep 15s
 
     - name: Check GCN data
       run: |
-        mkdir -p fink_grb/ci_gcn_test/year=2019/month=09/day=03
-        cp fink_grb/ci_gcn_test/*/*/*/* fink_grb/ci_gcn_test/year=2019/month=09/day=03
-        ls -lth fink_grb/ci_gcn_test/year=2019/month=09/day=03
+        ls -lth fink_grb/ci_gcn_test/*/*/*
 
     - name: Start services
       run: |
@@ -181,11 +179,11 @@ jobs:
     - name: Generate fake gcn counterparts
       run: |
         python fink_grb/test/prep_ztf_data.py
-        ls -lth fink_grb/test/test_data/ztf_test/online/raw/year=2019/month=09/day=03/
+        ls -lth fink_grb/test/test_data/ztf_test/online/raw/year=${NIGHT:0:4}/month=${NIGHT:4:2}/day=${NIGHT:6:2}/
 
     - name: Call raw2science
       run: |
-        fink start raw2science -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT --exit_after 40
+        fink start raw2science -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT --exit_after 60
 
     - name: Merge data
       run: |
@@ -197,7 +195,7 @@ jobs:
 
     - name: Run online join streaming
       run: |
-        fink_grb join_stream online --config $CONFIGFILE_PATH --night $NIGHT --exit_after 180
+        fink_grb join_stream online --config $CONFIGFILE_PATH --night $NIGHT --exit_after 120
 
     - name: Check online stream
       run: |
@@ -213,7 +211,7 @@ jobs:
 
     - name: Online Distribution
       run: |
-        fink_grb distribute --config $CONFIGFILE_PATH --night $NIGHT --exit_after 180
+        fink_grb distribute --config $CONFIGFILE_PATH --night $NIGHT --exit_after 60
     
     - name: Check Distribution
       run: |

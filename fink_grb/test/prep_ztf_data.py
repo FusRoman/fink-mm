@@ -13,7 +13,7 @@ def spatial_time_align(ztf_raw_data, gcn_pdf):
         gcn_pdf (DataFrame): gnc get from the gcn stream
 
     Returns:
-        DataFrame: the ztf test alerts smae as the input but with additionnal alerts which are fake gcn counterparts.
+        DataFrame: the ztf test alerts same as the input but with additionnal alerts which are fake gcn counterparts.
     """
     ztf_raw_data = ztf_raw_data.copy()
 
@@ -35,7 +35,10 @@ def spatial_time_align(ztf_raw_data, gcn_pdf):
     ):
         # set their jd and jdstarthist after the trigger time of the gcn
         rows_ztf_cand["jdstarthist"] = new_jd + np.random.uniform(1, 5)
-        rows_ztf_prv[0]["jd"] = rows_ztf_cand["jdstarthist"] + np.random.uniform(0.1, 1)
+        rows_ztf_prv[0]["jd"] = rows_ztf_cand["jdstarthist"] + np.random.uniform(0.1, 2)
+
+        rows_ztf_cand["ra"] = new_coord.ra
+        rows_ztf_cand["dec"] = new_coord.dec
 
     # for some other alerts, remove the history and set their jdstarthist after the trigger time
     # set their coordinates on the gcn alerts.
@@ -44,7 +47,7 @@ def spatial_time_align(ztf_raw_data, gcn_pdf):
         ztf_raw_data.loc[rand_ztf_index, "candidate"], jd_gcn, coord_gcn
     ):
         rows_ztf["jdstarthist"] = new_jd + np.random.uniform(1, 5)
-        rows_ztf["jd"] = new_jd + np.random.uniform(0.1, 1)
+        rows_ztf["jd"] = rows_ztf["jdstarthist"] + np.random.uniform(0.1, 2)
         rows_ztf["prv_candidates"] = None
 
         rows_ztf["ra"] = new_coord.ra
@@ -55,6 +58,8 @@ def spatial_time_align(ztf_raw_data, gcn_pdf):
 
 if __name__ == "__main__":
     import pandas as pd
+    from datetime import datetime
+    from pathlib import Path
 
     path_ztf_raw = (
         "fink_grb/test/test_data/ztf_test/online/raw/year=2019/month=09/day=03/"
@@ -66,4 +71,13 @@ if __name__ == "__main__":
     ztf_pdf = pd.read_parquet(path_ztf_raw)
 
     new_ztf_raw = spatial_time_align(ztf_pdf, gcn_pdf)
-    new_ztf_raw.to_parquet(path_ztf_raw + "alert_alt.parquet")
+
+    today = datetime.today()
+
+    new_path_ztf_data = Path(
+        "fink_grb/test/test_data/ztf_test/online/raw/year={:04d}/month={:02d}/day={:02d}/".format(
+            today.year, today.month, today.day
+        )
+    )
+    new_path_ztf_data.mkdir(parents=True, exist_ok=True)
+    new_ztf_raw.to_parquet(new_path_ztf_data.joinpath("alert_alt.parquet"))
