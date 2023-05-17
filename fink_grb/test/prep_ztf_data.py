@@ -31,34 +31,39 @@ def spatial_time_align(ztf_raw_data, gcn_pdf):
 
     # select the same number of ztf alerts than the number of selected gcn alerts
     rand_ztf_index = np.random.choice(ztf_raw_data.index, len(random_obs))
-    for rows_ztf_cand, rows_ztf_prv, new_jd, new_coord in zip(
-        ztf_raw_data.loc[rand_ztf_index, "candidate"],
-        ztf_raw_data.loc[rand_ztf_index, "prv_candidates"],
+    for rows_idx, new_jd, new_coord in zip(
+        rand_ztf_index,
         jd_gcn,
         coord_gcn,
     ):
         # set their jd and jdstarthist after the trigger time of the gcn
-        rows_ztf_cand["jdstarthist"] = new_jd + np.random.uniform(1, 5)
-        rows_ztf_prv[-1]["jd"] = rows_ztf_cand["jdstarthist"] + np.random.uniform(
-            0.1, 1
-        )
-        rows_ztf_cand["jd"] = rows_ztf_prv[-1]["jd"] + np.random.uniform(0.1, 1)
+        ztf_raw_data.loc[rows_idx, "candidate"][
+            "jdstarthist"
+        ] = new_jd + np.random.uniform(0.01, 0.3)
 
-        rows_ztf_cand["ra"] = new_coord.ra
-        rows_ztf_cand["dec"] = new_coord.dec
+        ztf_raw_data.loc[rows_idx, "prv_candidates"][-1]["jd"] = ztf_raw_data.loc[
+            rows_idx, "candidate"
+        ]["jdstarthist"] + np.random.uniform(0.001, 0.1)
+
+        ztf_raw_data.loc[rows_idx, "candidate"]["jd"] = ztf_raw_data.loc[
+            rows_idx, "prv_candidates"
+        ][-1]["jd"] + np.random.uniform(0.01, 0.2)
+
+        ztf_raw_data.loc[rows_idx, "candidate"]["ra"] = new_coord.ra
+        ztf_raw_data.loc[rows_idx, "candidate"]["dec"] = new_coord.dec
 
     # for some other alerts, remove the history and set their jdstarthist after the trigger time
     # set their coordinates on the gcn alerts.
-    rand_ztf_index = np.random.choice(ztf_raw_data.index, len(random_obs))
-    for rows_ztf, new_jd, new_coord in zip(
-        ztf_raw_data.loc[rand_ztf_index, "candidate"], jd_gcn, coord_gcn
-    ):
-        rows_ztf["jdstarthist"] = new_jd + np.random.uniform(1, 5)
-        rows_ztf["jd"] = rows_ztf["jdstarthist"] + np.random.uniform(0.1, 2)
-        rows_ztf["prv_candidates"] = None
+    # rand_ztf_index = np.random.choice(ztf_raw_data.index, len(random_obs))
+    # for rows_ztf, new_jd, new_coord in zip(
+    #     ztf_raw_data.loc[rand_ztf_index, "candidate"], jd_gcn, coord_gcn
+    # ):
+    #     rows_ztf["jdstarthist"] = new_jd + np.random.uniform(1, 5)
+    #     rows_ztf["jd"] = rows_ztf["jdstarthist"] + np.random.uniform(0.1, 2)
+    #     rows_ztf["prv_candidates"] = None
 
-        rows_ztf["ra"] = new_coord.ra
-        rows_ztf["dec"] = new_coord.dec
+    #     rows_ztf["ra"] = new_coord.ra
+    #     rows_ztf["dec"] = new_coord.dec
 
     return ztf_raw_data
 
