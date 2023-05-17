@@ -59,9 +59,38 @@ def spatial_time_align(ztf_raw_data, gcn_pdf):
 
 if __name__ == "__main__":
     import pandas as pd
+    import os
+    import glob
     from datetime import datetime
     from pathlib import Path
+    from astropy.time import Time
 
+    # If no gcn exist today, create some with the current date
+    today = datetime.today()
+    gcn_data_path = "fink_grb/ci_gcn_test/year={:04d}/month={:02d}/day={:02d}/".format(
+        today.year, today.month, today.day
+    )
+
+    if not os.path.isdir(gcn_data_path):
+        path_gcn = glob.glob("fink_grb/ci_gcn_test/*/*/*/*")
+
+        random_gcn = np.random.choice(path_gcn, int((len(path_gcn) + 1) / 2))
+
+        for gcn_p in random_gcn:
+            gcn_pdf = pd.read_parquet(gcn_p)
+            today_time = Time(today)
+
+            obs = gcn_pdf["raw_event"].map(get_observatory).values[0]
+            obs.voevent.WhereWhen.ObsDataLocation[
+                0
+            ].ObservationLocation.AstroCoords.Time.TimeInstant.ISOTime = today_time.iso
+
+            obs_pdf = obs.voevent_to_df()
+            obs_pdf.to_parquet(
+                gcn_data_path + "{}_0".format(obs_pdf["triggerId"].iloc[0])
+            )
+
+    # create fake ztf counterparts for the gcn of the current date
     path_ztf_raw = (
         "fink_grb/test/test_data/ztf_test/online/raw/year=2019/month=09/day=03/"
     )
@@ -72,8 +101,6 @@ if __name__ == "__main__":
     ztf_pdf = pd.read_parquet(path_ztf_raw)
 
     new_ztf_raw = spatial_time_align(ztf_pdf, gcn_pdf)
-
-    today = datetime.today()
 
     new_path_ztf_data = Path(
         "fink_grb/test/test_data/ztf_test/online/raw/year={:04d}/month={:02d}/day={:02d}/".format(
