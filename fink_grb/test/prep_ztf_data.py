@@ -37,31 +37,39 @@ def spatial_time_align(ztf_raw_data, gcn_pdf):
         coord_gcn,
     ):
         # set their jd and jdstarthist after the trigger time of the gcn
-        ztf_raw_data.loc[rows_idx, "candidate"]["jdstarthist"] = new_jd + 0.01
+        ztf_raw_data.loc[rows_idx, "candidate"][
+            "jdstarthist"
+        ] = new_jd + np.random.uniform(0.01, 0.3)
 
-        ztf_raw_data.loc[rows_idx, "prv_candidates"][-1]["jd"] = (
-            ztf_raw_data.loc[rows_idx, "candidate"]["jdstarthist"] + 0.05
-        )
+        ztf_raw_data.loc[rows_idx, "prv_candidates"][-1]["jd"] = ztf_raw_data.loc[
+            rows_idx, "candidate"
+        ]["jdstarthist"] + np.random.uniform(0.001, 0.1)
 
-        ztf_raw_data.loc[rows_idx, "candidate"]["jd"] = (
-            ztf_raw_data.loc[rows_idx, "prv_candidates"][-1]["jd"] + 0.09
-        )
+        ztf_raw_data.loc[rows_idx, "candidate"]["jd"] = ztf_raw_data.loc[
+            rows_idx, "prv_candidates"
+        ][-1]["jd"] + np.random.uniform(0.01, 0.2)
 
         ztf_raw_data.loc[rows_idx, "candidate"]["ra"] = new_coord.ra
         ztf_raw_data.loc[rows_idx, "candidate"]["dec"] = new_coord.dec
 
-    # for some other alerts, remove the history and set their jdstarthist after the trigger time
-    # set their coordinates on the gcn alerts.
-    # rand_ztf_index = np.random.choice(ztf_raw_data.index, len(random_obs))
-    # for rows_ztf, new_jd, new_coord in zip(
-    #     ztf_raw_data.loc[rand_ztf_index, "candidate"], jd_gcn, coord_gcn
-    # ):
-    #     rows_ztf["jdstarthist"] = new_jd + np.random.uniform(1, 5)
-    #     rows_ztf["jd"] = rows_ztf["jdstarthist"] + np.random.uniform(0.1, 2)
-    #     rows_ztf["prv_candidates"] = None
+    today_time = Time(today)
+    for _ in range(10):
+        ztf_row = ztf_raw_data.loc[0]
+        ztf_row["candidate"]["jdstarthist"] = today_time.jd + np.random.uniform(
+            0.01, 0.3
+        )
 
-    #     rows_ztf["ra"] = new_coord.ra
-    #     rows_ztf["dec"] = new_coord.dec
+        ztf_row["prv_candidates"][-1]["jd"] = ztf_row["candidate"][
+            "jdstarthist"
+        ] + np.random.uniform(0.001, 0.1)
+
+        ztf_row["candidate"]["jd"] = ztf_row["prv_candidates"][-1][
+            "jd"
+        ] + np.random.uniform(0.01, 0.2)
+
+        ztf_row["candidate"]["ra"] = 0
+        ztf_row["candidate"]["dec"] = 1
+        ztf_raw_data.loc[len(ztf_raw_data)] = ztf_row
 
     return ztf_raw_data
 
@@ -79,29 +87,51 @@ if __name__ == "__main__":
     gcn_data_path = "fink_grb/ci_gcn_test/year={:04d}/month={:02d}/day={:02d}/".format(
         today.year, today.month, today.day
     )
+    new_path_gcn_today = Path(gcn_data_path)
+    new_path_gcn_today.mkdir(parents=True, exist_ok=True)
 
-    if not os.path.isdir(gcn_data_path):
-        path_gcn = glob.glob("fink_grb/ci_gcn_test/*/*/*/*")
+    path_gcn = glob.glob("fink_grb/ci_gcn_test/*/*/*/*")
+    random_gcn = np.random.choice(path_gcn, int((len(path_gcn) + 1) / 2))
 
-        # create directories with the current date
-        new_path_gcn_today = Path(gcn_data_path)
-        new_path_gcn_today.mkdir(parents=True, exist_ok=True)
+    for gcn_p in random_gcn:
+        gcn_pdf = pd.read_parquet(gcn_p)
+        today_time = Time(today)
 
-        random_gcn = np.random.choice(path_gcn, int((len(path_gcn) + 1) / 2))
+        obs = gcn_pdf["raw_event"].map(get_observatory).values[0]
+        obs.voevent.WhereWhen.ObsDataLocation[
+            0
+        ].ObservationLocation.AstroCoords.Time.TimeInstant.ISOTime = today_time.iso
 
-        for gcn_p in random_gcn:
-            gcn_pdf = pd.read_parquet(gcn_p)
-            today_time = Time(today)
+        obs_pdf = obs.voevent_to_df()
+        obs_pdf.to_parquet(
+            new_path_gcn_today.joinpath("{}_0".format(obs_pdf["triggerId"].iloc[0]))
+        )
 
-            obs = gcn_pdf["raw_event"].map(get_observatory).values[0]
-            obs.voevent.WhereWhen.ObsDataLocation[
-                0
-            ].ObservationLocation.AstroCoords.Time.TimeInstant.ISOTime = today_time.iso
+    # create other fake gcn today
+    gcn_pdf = pd.read_parquet(path_gcn[0])
+    for i in range(10):
+        today_time = Time(today)
 
-            obs_pdf = obs.voevent_to_df()
-            obs_pdf.to_parquet(
-                new_path_gcn_today.joinpath("{}_0".format(obs_pdf["triggerId"].iloc[0]))
-            )
+        obs = gcn_pdf["raw_event"].map(get_observatory).values[0]
+        obs.voevent.WhereWhen.ObsDataLocation[
+            0
+        ].ObservationLocation.AstroCoords.Time.TimeInstant.ISOTime = today_time.iso
+
+        obs.voevent.WhereWhen.ObsDataLocation[
+            0
+        ].ObservationLocation.AstroCoords.Position2D.Value2.C1 = 0
+        obs.voevent.WhereWhen.ObsDataLocation[
+            0
+        ].ObservationLocation.AstroCoords.Position2D.Value2.C2 = 1
+        obs.voevent.WhereWhen.ObsDataLocation[
+            0
+        ].ObservationLocation.AstroCoords.Position2D.Error2Radius = 10
+        obs.voevent.WhereWhen.ObsDataLocation[
+            0
+        ].ObservationLocation.AstroCoords.Position2D.attrib["unit"] = "deg"
+
+        obs_pdf = obs.voevent_to_df()
+        obs_pdf.to_parquet(new_path_gcn_today.joinpath("{}_0".format(i)))
 
     # create fake ztf counterparts for the gcn of the current date
     path_ztf_raw = (
