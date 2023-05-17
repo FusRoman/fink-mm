@@ -17,10 +17,12 @@ def spatial_time_align(ztf_raw_data, gcn_pdf):
     """
     ztf_raw_data = ztf_raw_data.copy()
 
-    all_obs = gcn_pdf["raw_event"].map(get_observatory).values
+    first_obs = gcn_pdf["raw_event"].iloc[:-4].map(get_observatory).values
+    last_obs = gcn_pdf["raw_event"].iloc[-4:].map(get_observatory).values
 
     # select half of the gcn alerts
-    random_obs = np.random.choice(all_obs, int((len(all_obs) + 1) / 2))
+    random_obs = np.random.choice(first_obs, int((len(first_obs) + 1) / 2))
+    random_obs = np.concatenate([random_obs, last_obs])
 
     # get the trigger time and the coordinates for each selected gcn
     jd_gcn = [obs.get_trigger_time()[1] for obs in random_obs]
