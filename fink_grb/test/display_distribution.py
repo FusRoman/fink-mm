@@ -1,6 +1,7 @@
 from fink_client.consumer import AlertConsumer
 import tabulate
 
+# used by the integration test to display distributed alerts
 if __name__ == "__main__":
     maxtimeout = 10
     myconfig = {
