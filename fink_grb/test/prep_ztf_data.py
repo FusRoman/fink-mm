@@ -76,7 +76,6 @@ def spatial_time_align(ztf_raw_data, gcn_pdf):
 
 if __name__ == "__main__":
     import pandas as pd
-    import os
     import glob
     from datetime import datetime
     from pathlib import Path
