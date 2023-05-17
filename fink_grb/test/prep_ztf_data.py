@@ -16,6 +16,7 @@ def spatial_time_align(ztf_raw_data, gcn_pdf):
         DataFrame: the ztf test alerts same as the input but with additionnal alerts which are fake gcn counterparts.
     """
     ztf_raw_data = ztf_raw_data.copy()
+    gcn_pdf = gcn_pdf.sort_values("triggerTimejd")
 
     first_obs = gcn_pdf["raw_event"].iloc[:-4].map(get_observatory).values
     last_obs = gcn_pdf["raw_event"].iloc[-4:].map(get_observatory).values
