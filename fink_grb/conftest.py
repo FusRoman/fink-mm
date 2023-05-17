@@ -22,7 +22,6 @@ def init_test(doctest_namespace):
 
 @pytest.fixture(autouse=True)
 def init_fermi(doctest_namespace):
-
     doctest_namespace[
         "fermi_gbm_voevent_path"
     ] = "fink_grb/test/test_data/VODB/fermi/voevent_number=193.xml"
@@ -43,7 +42,6 @@ def init_fermi(doctest_namespace):
 
 @pytest.fixture(autouse=True)
 def init_swift(doctest_namespace):
-
     doctest_namespace[
         "swift_bat_voevent_path"
     ] = "fink_grb/test/test_data/VODB/swift/voevent_number=392.xml"
@@ -71,7 +69,6 @@ def init_swift(doctest_namespace):
 
 @pytest.fixture(autouse=True)
 def init_integral(doctest_namespace):
-
     doctest_namespace[
         "integral_weak_voevent_path"
     ] = "fink_grb/test/test_data/VODB/integral/voevent_number=737.xml"
@@ -99,7 +96,6 @@ def init_integral(doctest_namespace):
 
 @pytest.fixture(autouse=True)
 def init_icecube(doctest_namespace):
-
     doctest_namespace[
         "icecube_cascade_voevent_path"
     ] = "fink_grb/test/test_data/VODB/icecube/voevent_number=825.xml"
@@ -127,7 +123,6 @@ def init_icecube(doctest_namespace):
 
 @pytest.fixture(autouse=True, scope="session")
 def init_spark(doctest_namespace):
-
     from astropy.time import Time
 
     online_output_tempdir = tempfile.TemporaryDirectory()
@@ -180,7 +175,7 @@ def init_spark(doctest_namespace):
 
     doctest_namespace["AlertConsumer"] = AlertConsumer
     doctest_namespace["tabulate"] = tabulate
-    doctest_namespace["ztfxgcn_test"] = "fink_grb/test/test_data/ztfxgcn_test/"
+    doctest_namespace["ztfxgcn_test"] = "fink_grb/test/test_data/online"
     doctest_namespace["headers"] = headers
     doctest_namespace["maxtimeout"] = maxtimeout
     doctest_namespace["myconfig"] = myconfig
