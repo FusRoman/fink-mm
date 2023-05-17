@@ -60,7 +60,7 @@ def grb_distribution(
     --------
     >>> grb_distribution(
     ... ztfxgcn_test,
-    ... "20230101",
+    ... "20190903",
     ... 30, 40,
     ... "localhost:9092",
     ... "toto", "tata"
@@ -165,7 +165,6 @@ def grb_distribution(
         (df_silver, "fink_grb_silver"),
         (df_gold, "fink_grb_gold"),
     ]:
-
         df_filter = df_filter.selectExpr(cnames)
         checkpointpath_topic = checkpointpath_grb + "/{}_checkpoint".format(topicname)
         grb_stream_distribute = write_to_kafka(
@@ -206,7 +205,7 @@ def launch_distribution(arguments):
     --------
     >>> launch_distribution({
     ... "--config" : "fink_grb/conf/distribute_for_test.conf",
-    ... "--night" : "20230101",
+    ... "--night" : "20190903",
     ... "--exit_after" : 30
     ... })
 
@@ -300,7 +299,5 @@ def launch_distribution(arguments):
 
 
 if __name__ == "__main__":
-
     if sys.argv[1] == "prod":  # pragma: no cover
-
         apps.Application.DISTRIBUTION.run_application()

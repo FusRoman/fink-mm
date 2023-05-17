@@ -175,7 +175,7 @@ def init_spark(doctest_namespace):
 
     doctest_namespace["AlertConsumer"] = AlertConsumer
     doctest_namespace["tabulate"] = tabulate
-    doctest_namespace["ztfxgcn_test"] = "fink_grb/test/test_data/online"
+    doctest_namespace["ztfxgcn_test"] = "fink_grb/test/test_data"
     doctest_namespace["headers"] = headers
     doctest_namespace["maxtimeout"] = maxtimeout
     doctest_namespace["myconfig"] = myconfig
