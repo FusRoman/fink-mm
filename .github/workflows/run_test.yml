@@ -169,7 +169,7 @@ jobs:
 
     - name: Check GCN data
       run: |
-        ls -lth fink_grb/ci_gcn_test/*/*/*
+        ls -dlth fink_grb/ci_gcn_test/*/*/*/*
 
     - name: Start services
       run: |
@@ -181,7 +181,7 @@ jobs:
       run: |
         python fink_grb/test/prep_ztf_data.py
         mv fink_grb/test/test_data/ztf_test/online/raw/year=2019 fink_grb
-        ls -lth fink_grb/test/test_data/ztf_test/online/raw/*/*/*
+        ls -dlth fink_grb/test/test_data/ztf_test/online/raw/*/*/*/*
 
     - name: Call raw2science
       run: |
