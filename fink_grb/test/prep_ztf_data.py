@@ -39,7 +39,10 @@ def spatial_time_align(ztf_raw_data, gcn_pdf):
     ):
         # set their jd and jdstarthist after the trigger time of the gcn
         rows_ztf_cand["jdstarthist"] = new_jd + np.random.uniform(1, 5)
-        rows_ztf_prv[0]["jd"] = rows_ztf_cand["jdstarthist"] + np.random.uniform(0.1, 2)
+        rows_ztf_prv[-1]["jd"] = rows_ztf_cand["jdstarthist"] + np.random.uniform(
+            0.1, 1
+        )
+        rows_ztf_cand["jd"] = rows_ztf_prv[-1]["jd"] + np.random.uniform(0.1, 1)
 
         rows_ztf_cand["ra"] = new_coord.ra
         rows_ztf_cand["dec"] = new_coord.dec
