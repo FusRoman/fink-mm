@@ -9,6 +9,7 @@ from lxml.objectify import ObjectifiedElement
 from pandera import check_output
 import numpy as np
 import healpy as hp
+from abc import ABC, abstractmethod
 
 import astropy.units as u
 from astropy.time import Time
@@ -20,15 +21,11 @@ from fink_grb.test.hypothesis.observatory_schema import voevent_df_schema
 from fink_grb.utils.grb_prob import p_ser_grb_vect
 
 
-class AbstractClassException(Exception):
-    pass
-
-
 class BadInstrument(Exception):
     pass
 
 
-class Observatory:
+class Observatory(ABC):
     """
     Main class for the instrument.
     """
@@ -148,19 +145,13 @@ class Observatory:
 
         return self.voevent.attrib["ivorn"].split("#")[1].split("_")[0]
 
+    @abstractmethod
     def get_trigger_id(self):
-        raise AbstractClassException(
-            """
-            Call get_trigger_id from Observatory.
-            Observatory is an abstract class, cannot be instanciate"""
-        )
+        pass
 
+    @abstractmethod
     def err_to_arcminute(self):
-        raise AbstractClassException(
-            """
-            Call err_to_arcminute from Observatory.
-            Observatory is an abstract class, cannot be instanciate"""
-        )
+        pass
 
     def get_trigger_time(self):
         time_utc = vp.get_event_time_as_utc(self.voevent)
@@ -336,7 +327,6 @@ class Observatory:
         )  # 63.5 * grb_error
 
         if time_condition and spatial_condition:
-
             # convert the delay in year
             delay_year = delay / 365.25
 
