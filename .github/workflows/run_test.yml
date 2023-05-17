@@ -83,7 +83,7 @@ jobs:
 
     - name: Call raw2science
       run: |
-        fink start raw2science -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT --exit_after 40
+        fink start raw2science -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT --exit_after 90
 
     - name: Merge data
       run: |
@@ -167,10 +167,6 @@ jobs:
         fink_grb gcn_stream start --config $CONFIGFILE_PATH --test > fink_grb_gcnstream_${NIGHT}.log 2>&1 &
         sleep 20s
 
-    - name: Check GCN data
-      run: |
-        ls -dlth fink_grb/ci_gcn_test/*/*/*/*
-
     - name: Start services
       run: |
         cd $USRLIBS
@@ -181,11 +177,18 @@ jobs:
       run: |
         python fink_grb/test/prep_ztf_data.py
         mv fink_grb/test/test_data/ztf_test/online/raw/year=2019 fink_grb
-        ls -dlth fink_grb/test/test_data/ztf_test/online/raw/*/*/*/*
+
+    - name: Check data
+      run: |
+          echo "GCN ALERTS"
+          ls -dlth fink_grb/ci_gcn_test/*/*/*/*
+          echo ""
+          echo "ZTF ALERTS"
+          ls -dlth fink_grb/test/test_data/ztf_test/online/raw/*/*/*/*
 
     - name: Call raw2science
       run: |
-        fink start raw2science -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT --exit_after 60
+        fink start raw2science -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT --exit_after 90
 
     - name: Merge data
       run: |
