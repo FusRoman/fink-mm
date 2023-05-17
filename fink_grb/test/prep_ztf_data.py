@@ -74,6 +74,10 @@ if __name__ == "__main__":
     if not os.path.isdir(gcn_data_path):
         path_gcn = glob.glob("fink_grb/ci_gcn_test/*/*/*/*")
 
+        # create directories with the current date
+        new_path_gcn_today = Path(gcn_data_path)
+        new_path_gcn_today.mkdir(parents=True, exist_ok=True)
+
         random_gcn = np.random.choice(path_gcn, int((len(path_gcn) + 1) / 2))
 
         for gcn_p in random_gcn:
@@ -87,7 +91,7 @@ if __name__ == "__main__":
 
             obs_pdf = obs.voevent_to_df()
             obs_pdf.to_parquet(
-                gcn_data_path + "{}_0".format(obs_pdf["triggerId"].iloc[0])
+                new_path_gcn_today.joinpath("{}_0".format(obs_pdf["triggerId"].iloc[0]))
             )
 
     # create fake ztf counterparts for the gcn of the current date
