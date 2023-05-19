@@ -26,4 +26,5 @@ if __name__ == "__main__":
         [alert["jd"], topic, alert["objectId"], alert["fink_class"], alert["rate"]]
     ]
 
+    # display the distributed alerts
     print(tabulate.tabulate(table, headers, tablefmt="pretty"))
