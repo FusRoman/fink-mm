@@ -1,3 +1,4 @@
+from copy import deepcopy
 import numpy as np
 import voeventparse as vp
 
@@ -73,9 +74,10 @@ def spatial_time_align(ztf_raw_data, gcn_pdf):
         ztf_raw_data.loc[len(ztf_raw_data)] = ztf_row
 
     # create fake ztf alerts for previous night (for the offline mode)
-    for _ in range(50):
-        ztf_row = ztf_raw_data.loc[0]
-        ztf_row["candidate"]["jdstarthist"] = today_time.jd - np.random.uniform(1, 5)
+    for _ in range(100):
+        # deepcopy of the dict to avoid the copy of pointer
+        ztf_row = deepcopy(ztf_raw_data.loc[0].to_dict())
+        ztf_row["candidate"]["jdstarthist"] = today_time.jd - np.random.uniform(1, 8)
 
         ztf_row["prv_candidates"][-1]["jd"] = ztf_row["candidate"][
             "jdstarthist"
@@ -151,14 +153,14 @@ if __name__ == "__main__":
         obs_pdf.to_parquet(new_path_gcn_today.joinpath("{}_0".format(i)))
 
     # crate fake gcn in the previous night with ra,dec = (0, 0) (for offline mode)
-    for i in range(11, 60):
+    for i in range(11, 100):
         today_time = Time(today)
 
         obs = gcn_pdf["raw_event"].map(get_observatory).values[0]
         obs.voevent.WhereWhen.ObsDataLocation[
             0
         ].ObservationLocation.AstroCoords.Time.TimeInstant.ISOTime = Time(
-            today_time.jd - np.random.uniform(1, 5), format="jd"
+            today_time.jd - np.random.uniform(1, 8), format="jd"
         ).iso
 
         obs.voevent.WhereWhen.ObsDataLocation[
