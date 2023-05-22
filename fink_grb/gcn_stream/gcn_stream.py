@@ -13,6 +13,8 @@ from fink_grb.init import get_config, init_logging
 from fink_grb.utils.fun_utils import return_verbose_level, get_hdfs_connector
 from fink_grb.observatory import voevent_to_class, TOPICS
 
+from lxml.etree import XMLSyntaxError
+
 
 def signal_handler(signal, frame):  # pragma: no cover
     """
@@ -63,41 +65,49 @@ def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False, gcn_fs=None):
     ...     assert_frame_equal(base_gcn, test_gcn)
     """
     try:
-        voevent = gr.load_voevent_from_file(io.BytesIO(gcn))
+        voevent = gr.load_voevent_from_file(io.BytesIO(gcn), logger)
+        observatory = voevent_to_class(voevent)
+
+        if observatory.is_observation() and observatory.is_listened_packets_types():
+            if logs:  # pragma: no cover
+                logger.info("the voevent is a new obervation.")
+
+            df = observatory.voevent_to_df()
+
+            table = pa.Table.from_pandas(df)
+
+            pq.write_to_dataset(
+                table,
+                root_path=gcn_rawdatapath,
+                partition_cols=["year", "month", "day"],
+                basename_template="{}_{}".format(str(df["triggerId"].values[0]), "{i}"),
+                existing_data_behavior="overwrite_or_ignore",
+                filesystem=gcn_fs,
+            )
+
+            if logs:  # pragma: no cover
+                logger.info(
+                    "writing of the new voevent successfull at the location {}".format(
+                        gcn_rawdatapath
+                    )
+                )
+            return
+
+    except XMLSyntaxError as xml_exception:
+        logger.info(
+            "error while loading the notice, try for gw notice\n\t:cause: {}".format(
+                xml_exception
+            )
+        )
+        df = gr.parse_gw_alert(gcn)
+
     except Exception as e:  # pragma: no cover
         logger.error(
-            "Error while reading the following voevent: \n\t {}\n\n\tcause: {}".format(
+            "Error while reading the following gcn notice: \n\t {}\n\n\tcause: {}".format(
                 gcn, e
             )
         )
         print()
-        return
-
-    observatory = voevent_to_class(voevent)
-    if observatory.is_observation() and observatory.is_listened_packets_types():
-
-        if logs:  # pragma: no cover
-            logger.info("the voevent is a new obervation.")
-
-        df = observatory.voevent_to_df()
-
-        table = pa.Table.from_pandas(df)
-
-        pq.write_to_dataset(
-            table,
-            root_path=gcn_rawdatapath,
-            partition_cols=["year", "month", "day"],
-            basename_template="{}_{}".format(str(df["triggerId"].values[0]), "{i}"),
-            existing_data_behavior="overwrite_or_ignore",
-            filesystem=gcn_fs,
-        )
-
-        if logs:  # pragma: no cover
-            logger.info(
-                "writing of the new voevent successfull at the location {}".format(
-                    gcn_rawdatapath
-                )
-            )
         return
 
     return  # pragma: no cover

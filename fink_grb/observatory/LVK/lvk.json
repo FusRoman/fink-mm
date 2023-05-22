@@ -1,0 +1,14 @@
+{
+    "name": "LVK",
+    "//gcn_description": "https://emfollow.docs.ligo.org/userguide/content.html",
+    "packet_type": [
+        "PRELIMINARY",
+        "INITIAL",
+        "UPDATE",
+        "RETRACTION"
+    ],
+    "kafka_topics": [
+        "igwn.gwalert"
+    ],
+    "grb_detection_rate": -1.0
+}

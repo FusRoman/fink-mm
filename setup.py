@@ -25,8 +25,12 @@ setup(
             "conf/fink_grb_schema_version_{}.avsc".format(
                 fink_grb.__distribution_schema_version__
             ),
-            "observatory/observatory_schema_version_1.0.json"
-        ] + [path.relpath(el, start="fink_grb") for el in glob("fink_grb/observatory/*/*.json")]
+            "observatory/observatory_schema_version_1.0.json",
+        ]
+        + [
+            path.relpath(el, start="fink_grb")
+            for el in glob("fink_grb/observatory/*/*.json")
+        ]
     },
     install_requires=[
         "fink-utils>=0.8.0",
@@ -48,7 +52,8 @@ setup(
         "tabulate==0.9.0",
         "jsonschema==4.6.0",
         "pytest==7.2.2",
-        "pandera==0.14.5"
+        "pandera==0.14.5",
+        "astropy_healpix==0.7",
     ],
     entry_points={"console_scripts": ["fink_grb=fink_grb.fink_grb_cli:main"]},
     license="Apache-2.0 License",

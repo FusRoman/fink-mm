@@ -68,6 +68,5 @@ class Fermi(Observatory):
 
 
 if __name__ == "__main__":
-
     fermi = Fermi()
     print(fermi)

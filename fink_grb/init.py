@@ -130,7 +130,7 @@ class EnvInterpolation(configparser.BasicInterpolation):
         return os.path.expandvars(value)
 
 
-def init_logging():
+def init_logging() -> logging.Logger:
     """
     Initialise a logger for the gcn stream
 
