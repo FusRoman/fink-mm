@@ -121,6 +121,8 @@ def grb_assoc(
     grb_error: pd.Series,
 ) -> pd.Series:
     """
+    @DEPRECATED
+
     Find the ztf alerts falling in the error box of the notices and emits after the trigger time.
     Then, Compute an association serendipitous probability for each of them and return it.
 
@@ -238,18 +240,3 @@ def grb_assoc(
     grb_proba[time_condition & spatial_condition] = p_ser[0]
 
     return pd.Series(grb_proba)
-
-
-if __name__ == "__main__":  # pragma: no cover
-    import pandas as pd  # noqa: F401
-    from math import sqrt  # noqa: F401
-    from scipy import special  # noqa: F401
-    from fink_utils.test.tester import spark_unit_tests_science
-    from pandas.testing import assert_frame_equal  # noqa: F401
-
-    globs = globals()
-
-    join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
-
-    # Run the test suite
-    spark_unit_tests_science(globs)

@@ -11,7 +11,7 @@ import shutil
 # The schema will be pushed into fink_grb/conf/ and its name will be 'fink_grb_schema_version_*SCHEMA_VERSION*.avro'
 #   where *SCHEMA_VERSION* is the schema version
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.1"
 
 
 def readschemadata(bytes_io: io._io.BytesIO) -> fastavro._read.reader:
@@ -75,9 +75,7 @@ for k, v in confdic.items():
 
 spark = SparkSession.builder.appName("fink_test").config(conf=conf).getOrCreate()
 
-df = spark.read.format("parquet").load(
-    "fink_grb/test/test_data/grb_join_output.parquet"
-)
+df = spark.read.format("parquet").load("fink_grb/test/test_data/online/")
 
 df = df.drop("year").drop("month").drop("day").drop("timestamp")
 

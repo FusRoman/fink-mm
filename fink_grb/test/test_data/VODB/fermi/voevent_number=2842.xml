@@ -1,0 +1,104 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<voe:VOEvent
+      ivorn="ivo://nasa.gsfc.gcn/Fermi#LAT_Monitor_2022-08-06T12:00:00.00_1659883590-0-102"
+      role="observation" version="2.0"
+      xmlns:voe="http://www.ivoa.net/xml/VOEvent/v2.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.ivoa.net/xml/VOEvent/v2.0  http://www.ivoa.net/xml/VOEvent/VOEvent-v2.0.xsd" >
+  <Who>
+    <AuthorIVORN>ivo://nasa.gsfc.tan/gcn</AuthorIVORN>
+    <Author>
+      <shortName>Fermi (via VO-GCN)</shortName>
+      <contactName>David Thompson</contactName>
+      <contactPhone>+1-301-286-8168</contactPhone>
+      <contactEmail>David.J.Thompson@nasa.gov</contactEmail>
+    </Author>
+    <Date>2022-08-07T14:46:30</Date>
+    <Description>This VOEvent message was created with GCN VOE version: 15.08 17jun22</Description>
+  </Who>
+  <What>
+    <Param name="Packet_Type"   value="125" />
+    <Param name="Pkt_Ser_Num"   value="4" />
+    <Param name="SourceName"    value="0FGLJ1641.4+3939_86400.png" ucd="meta.id" />
+    <Param name="TrigID"        value="1659883590" ucd="meta.id" />
+    <Param name="Record_Num"    value="0" ucd="meta.id.part" />
+    <Param name="Trans_TJD"     value="19797" unit="days" ucd="time" />
+    <Param name="Trans_SOD"     value="43200.00" unit="sec" ucd="time" />
+    <Param name="Curr_Flux"     value="9.990e-07" unit="cts" ucd="phot.count" />
+    <Param name="Base_Flux"     value="4.000e-07" unit="cts" ucd="phot.count" />
+    <Param name="Curr_Flux_Err" value="1.100e-08" unit="cts" ucd="phot.count" />
+    <Param name="Base_Flux_Err" value="1.100e-07" unit="cts" ucd="phot.count" />
+    <Param name="Time_Scale"    value="0" unit="dn" ucd="time.interval" />
+    <Param name="E_Band_Lo"     value="300.0" />
+    <Param name="E_Band_Hi"     value="0.1" />
+    <Param name="Signif"        value="56900.00" />
+    <Param name="Trigger_ID"    value="0x0" />
+    <Param name="Misc_flags"    value="0x40000000" />
+    <Group name="Trigger_ID" >
+      <Param name="Retraction"             value="false" />
+      <Param name="Spatial_Prox_Match"     value="false" />
+      <Param name="Temporal_Prox_Match"    value="false" />
+    </Group>
+    <Group name="Misc_Flags" >
+      <Param name="Values_Out_of_Range"    value="false" />
+      <Param name="Near_Bright_Star"       value="false" />
+      <Param name="Err_Circle_in_Galaxy"   value="false" />
+      <Param name="Galaxy_in_Err_Circle"   value="false" />
+    </Group>
+    <Param name="Coords_Type"   value="1" unit="dn" />
+    <Param name="Coords_String" value="source_object" />
+    <Param name="LC_URL" value="http://fermi.gsfc.nasa.gov/FTP/glast/data/lat/catalogs/asp/current/lightcurves/0FGLJ1641.4+3939_86400.png" ucd="meta.ref.url" />
+    <Group name="Obs_Support_Info" >
+      <Description>The Sun and Moon values are valid at the time the VOEvent XML message was created.</Description>
+      <Param name="Sun_RA"        value="137.55" unit="deg" ucd="pos.eq.ra" />
+      <Param name="Sun_Dec"       value="16.31" unit="deg" ucd="pos.eq.dec" />
+      <Param name="Sun_Distance"  value="96.30" unit="deg" ucd="pos.angDistance" />
+      <Param name="Sun_Hr_Angle"  value="-7.53" unit="hr" />
+      <Param name="Moon_RA"       value="251.41" unit="deg" ucd="pos.eq.ra" />
+      <Param name="Moon_Dec"      value="-24.62" unit="deg" ucd="pos.eq.dec" />
+      <Param name="MOON_Distance" value="64.24" unit="deg" ucd="pos.angDistance" />
+      <Param name="Moon_Illum"    value="73.66" unit="%" ucd="arith.ratio" />
+      <Param name="Galactic_Long" value="63.24" unit="deg" ucd="pos.galactic.lon" />
+      <Param name="Galactic_Lat"  value="41.24" unit="deg" ucd="pos.galactic.lat" />
+      <Param name="Ecliptic_Long" value="237.82" unit="deg" ucd="pos.ecliptic.lon" />
+      <Param name="Ecliptic_Lat"  value="60.93" unit="deg" ucd="pos.ecliptic.lat" />
+    </Group>
+    <Description>The Fermi-LAT detection of a flare from a known source.</Description>
+  </What>
+  <WhereWhen>
+    <ObsDataLocation>
+      <ObservatoryLocation id="GEOLUN" />
+      <ObservationLocation>
+        <AstroCoordSystem id="UTC-FK5-GEO" />
+        <AstroCoords coord_system_id="UTC-FK5-GEO">
+          <Time unit="s">
+            <TimeInstant>
+              <ISOTime>2022-08-06T12:00:00.00</ISOTime>
+            </TimeInstant>
+          </Time>
+          <Position2D unit="deg">
+            <Name1>RA</Name1>
+            <Name2>Dec</Name2>
+            <Value2>
+              <C1>250.3549</C1>
+              <C2>39.6659</C2>
+            </Value2>
+            <Error2Radius>0.0000</Error2Radius>
+          </Position2D>
+        </AstroCoords>
+      </ObservationLocation>
+    </ObsDataLocation>
+  <Description>The RA,Dec coordinates are of the type: source_object.</Description>
+  </WhereWhen>
+  <How>
+    <Description>Fermi Satellite, LAT Instrument</Description>
+    <Reference uri="http://gcn.gsfc.nasa.gov/fermi.html" type="url" />
+  </How>
+  <Why importance="0.5">
+    <Inference probability="0.9">
+      <Concept>process.variation.burst;em.gamma</Concept>
+    </Inference>
+  </Why>
+  <Description>
+  </Description>
+</voe:VOEvent>

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from glob import glob
+import os.path as path
 from setuptools import setup, find_packages
 import fink_grb
 
@@ -17,9 +19,19 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=find_packages(),
-    package_data={"fink_grb": ["conf/fink_grb.conf", "conf/fink_grb_schema_version_{}.avsc".format(fink_grb.__distribution_schema_version__)]},
+    package_data={
+        "fink_grb": [
+            "conf/fink_grb.conf",
+            "conf/fink_grb_schema_version_{}.avsc".format(
+                fink_grb.__distribution_schema_version__
+            ),
+            "observatory/observatory_schema_version_1.0.json"
+        ] + [path.relpath(el, start="fink_grb") for el in glob("fink_grb/observatory/*/*.json")]
+    },
     install_requires=[
         "fink-utils>=0.8.0",
+        "fink-client>=4.4",
+        "fink-filters>=3.8",
         "docopt>=0.6.2",
         "terminaltables>=3.1.10",
         "numpy==1.21.6",
@@ -27,12 +39,16 @@ setup(
         "astropy==4.3.1",
         "gcn-kafka>=0.1.2",
         "importlib-resources==5.9.0",
-        "pyarrow==9.0.0",  # WARNING: Version upper than the fink-broker version (pyarrow==4.0.1)
+        "pyarrow==11.0.0",  # WARNING: Version upper than the fink-broker version (pyarrow==9.0.0)
         "pyspark==3.3.0",
         "scipy==1.7.3",
         "voevent-parse==1.0.3",
-        "fastavro==1.5.1",
+        "fastavro==1.6.0",
         "healpy==1.16.1",
+        "tabulate==0.9.0",
+        "jsonschema==4.6.0",
+        "pytest==7.2.2",
+        "pandera==0.14.5"
     ],
     entry_points={"console_scripts": ["fink_grb=fink_grb.fink_grb_cli:main"]},
     license="Apache-2.0 License",

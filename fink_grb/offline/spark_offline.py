@@ -22,7 +22,7 @@ from fink_grb.utils.fun_utils import (
 )
 import fink_grb.utils.application as apps
 from fink_grb.init import get_config, init_logging
-import fink_grb.online.ztf_join_gcn as ztf_online
+from fink_grb.utils.fun_utils import get_pixels
 
 
 def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist):
@@ -154,33 +154,27 @@ def spark_offline(
 
     Examples
     --------
-    >>> fink_home = os.environ["FINK_HOME"]
-    >>> hbase_catalog = fink_home + "/catalogs_hbase/ztf.jd.json"
-    >>> gcn_datatest = "fink_grb/test/test_data/gcn_test"
-    >>> grb_dataoutput = "fink_grb/test/test_output"
-    >>> from astropy.time import Time
+    >>> grb_dataoutput_dir = tempfile.TemporaryDirectory()
+    >>> grb_dataoutput = grb_dataoutput_dir.name
 
     >>> spark_offline(
-    ... hbase_catalog,
-    ... gcn_datatest,
-    ... grb_dataoutput,
-    ... "20190903",
-    ... 4,
-    ... Time("2019-09-04").jd,
-    ... 7, 5, 2, 0, 5,
-    ... False
+    ...    hbase_catalog,
+    ...    gcn_datatest,
+    ...    grb_dataoutput,
+    ...    "20190903",
+    ...    4,
+    ...    Time("2019-09-04").jd,
+    ...    7, 5, 2, 0, 5,
+    ...    False
     ... )
 
-    >>> datajoin = pd.read_parquet(grb_dataoutput + "/offline/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datajoin = pd.read_parquet(grb_dataoutput + "/offline").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
     >>> datajoin = datajoin.drop("grb_proba", axis=1)
 
-    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
     >>> datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime", "grb_proba"], axis=1)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
-
-    >>> shutil.rmtree(grb_dataoutput + "/offline/year=2019")
-    >>> os.remove(grb_dataoutput + "/offline/_SUCCESS")
     """
     with open(hbase_catalog) as f:
         catalog = json.load(f)
@@ -195,7 +189,7 @@ def spark_offline(
         .option("hbase.spark.use.hbasecontext", False)
         .option("hbase.spark.pushdown.columnfilter", with_columns_filter)
         .load()
-        .filter(~col("jd_objectId").startswith("schema_"))
+        .filter(~col("jd_objectId").startswith("schema_"))  # remove key column
     )
 
     ztf_alert = ztf_alert.select(
@@ -258,10 +252,9 @@ def spark_offline(
         ang2pix(ztf_alert.ra, ztf_alert.dec, F.lit(NSIDE)),
     )
 
-    grb_alert = grb_alert.withColumn("err_degree", grb_alert["err_arcmin"] / 60)
     grb_alert = grb_alert.withColumn(
         "hpix_circle",
-        ztf_online.box2pixs(grb_alert.ra, grb_alert.dec, grb_alert.err_degree, F.lit(NSIDE)),
+        get_pixels(grb_alert.raw_event, F.lit(NSIDE)),
     )
     grb_alert = grb_alert.withColumn("hpix", explode("hpix_circle"))
 
@@ -303,7 +296,7 @@ def spark_offline(
     )
 
 
-def launch_offline_mode(arguments, is_test=False):
+def launch_offline_mode(arguments):
     """
     Launch the offline grb module, used by the command line interface.
 
@@ -318,26 +311,21 @@ def launch_offline_mode(arguments, is_test=False):
 
     Examples
     --------
-    >>> gcn_datatest = "fink_grb/test/test_data/gcn_test"
-    >>> grb_dataoutput = "fink_grb/test/test_output/offline"
     >>> launch_offline_mode({
-    ... "--config" : None,
-    ... "--night" : "20190903",
-    ... "--exit_after" : 90
-    ... },
-    ... is_test=True
+    ...         "--config" : None,
+    ...         "--night" : "20190903",
+    ...         "--exit_after" : 100,
+    ...         "--test" : True
+    ...     }
     ... )
 
-    >>> datajoin = pd.read_parquet(grb_dataoutput + "/year=2019").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datajoin = pd.read_parquet("fink_grb/test/test_output/offline").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
     >>> datajoin = datajoin.drop("grb_proba", axis=1)
 
-    >>> datatest = pd.read_parquet("fink_grb/test/test_data/grb_join_output.parquet").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
     >>> datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime", "grb_proba"], axis=1)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
-
-    >>> shutil.rmtree(grb_dataoutput + "/year=2019")
-    >>> os.remove(grb_dataoutput + "/_SUCCESS")
     """
     config = get_config(arguments)
     logger = init_logging()
@@ -355,7 +343,9 @@ def launch_offline_mode(arguments, is_test=False):
         spark_jars,
         packages,
         external_files,
-    ) = read_additional_spark_options(arguments, config, logger, verbose, is_test)
+    ) = read_additional_spark_options(
+        arguments, config, logger, verbose, arguments["--test"]
+    )
 
     (
         night,
@@ -370,7 +360,7 @@ def launch_offline_mode(arguments, is_test=False):
         _,
         _,
         _,
-    ) = read_grb_admin_options(arguments, config, logger, is_test=is_test)
+    ) = read_grb_admin_options(arguments, config, logger, is_test=arguments["--test"])
 
     application = apps.Application.OFFLINE.build_application(
         logger,
@@ -384,7 +374,7 @@ def launch_offline_mode(arguments, is_test=False):
         pansstar_dist=pansstar_dist,
         pansstar_star_score=pansstar_star_score,
         gaia_dist=gaia_dist,
-        is_test=is_test,
+        is_test=arguments["--test"],
     )
 
     spark_submit = build_spark_submit(
@@ -419,25 +409,6 @@ def launch_offline_mode(arguments, is_test=False):
 
 
 if __name__ == "__main__":
-
-    if sys.argv[1] == "test":
-        from fink_utils.test.tester import spark_unit_tests_broker
-        from pandas.testing import assert_frame_equal  # noqa: F401
-        import shutil  # noqa: F401
-        import pandas as pd  # noqa: F401
-        import os  # noqa: F401
-
-        globs = globals()
-
-        join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
-        alert_data = (
-            "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/"
-        )
-        globs["join_data"] = join_data
-        globs["alert_data"] = alert_data
-
-        # Run the test suite
-        spark_unit_tests_broker(globs)
 
     if sys.argv[1] == "prod":  # pragma: no cover
 

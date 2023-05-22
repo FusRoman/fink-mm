@@ -4,14 +4,14 @@ import pyarrow.parquet as pq
 import os
 
 from gcn_kafka import Consumer
-from fink_grb.online.instruments import LISTEN_PACKS, INSTR_SUBSCRIBES
 
 import io
 import logging
 
-import fink_grb.online.gcn_reader as gr
+import fink_grb.gcn_stream.gcn_reader as gr
 from fink_grb.init import get_config, init_logging
 from fink_grb.utils.fun_utils import return_verbose_level, get_hdfs_connector
+from fink_grb.observatory import voevent_to_class, TOPICS
 
 
 def signal_handler(signal, frame):  # pragma: no cover
@@ -55,16 +55,15 @@ def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False, gcn_fs=None):
 
     >>> f = open('fink_grb/test/test_data/voevent_number=9897.xml').read().encode("UTF-8")
     >>> logger = init_logging()
-    >>> gcn_test_path = 'fink_grb/test/test_output'
-    >>> load_and_parse_gcn(f, gcn_test_path, logger)
-    >>> base_gcn = pd.read_parquet(gcn_test_path + "/year=2022/month=08/day=30/683571622_0")
-    >>> base_gcn = base_gcn.drop(columns="ackTime")
-    >>> test_gcn = pd.read_parquet("fink_grb/test/test_data/683571622_0_test")
-    >>> assert_frame_equal(base_gcn, test_gcn)
-    >>> shutil.rmtree(gcn_test_path + "/year=2022")
+    >>> with tempfile.TemporaryDirectory() as tmp_dir_gcn:
+    ...     load_and_parse_gcn(f, tmp_dir_gcn, logger)
+    ...     base_gcn = pd.read_parquet(tmp_dir_gcn + "/year=2022/month=08/day=30/683571622_0")
+    ...     base_gcn = base_gcn.drop(columns="ackTime")
+    ...     test_gcn = pd.read_parquet("fink_grb/test/test_data/683571622_0_test")
+    ...     assert_frame_equal(base_gcn, test_gcn)
     """
     try:
-        voevent = gr.load_voevent(io.BytesIO(gcn))
+        voevent = gr.load_voevent_from_file(io.BytesIO(gcn))
     except Exception as e:  # pragma: no cover
         logger.error(
             "Error while reading the following voevent: \n\t {}\n\n\tcause: {}".format(
@@ -74,18 +73,13 @@ def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False, gcn_fs=None):
         print()
         return
 
-    if gr.is_observation(voevent) and gr.is_listened_packets_types(
-        voevent, LISTEN_PACKS
-    ):
+    observatory = voevent_to_class(voevent)
+    if observatory.is_observation() and observatory.is_listened_packets_types():
 
         if logs:  # pragma: no cover
             logger.info("the voevent is a new obervation.")
 
-        df = gr.voevent_to_df(voevent)
-
-        df["year"] = df["triggerTimeUTC"].dt.strftime("%Y")
-        df["month"] = df["triggerTimeUTC"].dt.strftime("%m")
-        df["day"] = df["triggerTimeUTC"].dt.strftime("%d")
+        df = observatory.voevent_to_df()
 
         table = pa.Table.from_pandas(df)
 
@@ -131,11 +125,28 @@ def start_gcn_stream(arguments):
     logs = return_verbose_level(config, logger)
 
     try:
-        # Connect as a consumer.
-        # Warning: don't share the client secret with others.
+        consumer_config = {
+            "group.id": "fink_mm",
+            "auto.offset.reset": "earliest",
+            "enable.auto.commit": False,
+        }
+
         consumer = Consumer(
-            client_id=config["CLIENT"]["id"], client_secret=config["CLIENT"]["secret"]
+            config=consumer_config,
+            client_id=config["CLIENT"]["id"],
+            client_secret=config["CLIENT"]["secret"],
         )
+
+        if arguments["--test"]:
+            consumer_config = {"group.id": "", "auto.offset.reset": "earliest"}
+
+            consumer = Consumer(
+                config=consumer_config,
+                client_id=config["CLIENT"]["id"],
+                client_secret=config["CLIENT"]["secret"],
+                domain="test.gcn.nasa.gov",
+            )
+
     except Exception as e:
         logger.error("Config entry not found \n\t {}".format(e))
         exit(1)
@@ -152,13 +163,13 @@ def start_gcn_stream(arguments):
         gcn_fs = None
 
     # Subscribe to topics and receive alerts
-    consumer.subscribe(INSTR_SUBSCRIBES)
+    consumer.subscribe(TOPICS)
 
     signal.signal(signal.SIGINT, signal_handler)
 
     try:
         gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
-        gcn_rawdatapath = gcn_datapath_prefix + "/raw"
+        gcn_rawdatapath = gcn_datapath_prefix
     except Exception as e:
         logger.error("Config entry not found \n\t {}".format(e))
         exit(1)
@@ -170,6 +181,7 @@ def start_gcn_stream(arguments):
                     gcn_rawdatapath
                 )
             )
+            exit(1)
 
     if logs:
         logger.info(
@@ -181,23 +193,9 @@ def start_gcn_stream(arguments):
 
         if len(message) != 0:
             for gcn in message:
-
                 if logs:
                     logger.info("A new voevent is coming")
                 value = gcn.value()
 
                 load_and_parse_gcn(value, gcn_rawdatapath, logger, logs, gcn_fs=gcn_fs)
-
-
-if __name__ == "__main__":  # pragma: no cover
-    import sys
-    import doctest
-    from pandas.testing import assert_frame_equal  # noqa: F401
-    import pandas as pd  # noqa: F401
-    import shutil  # noqa: F401
-
-    if "unittest.util" in __import__("sys").modules:
-        # Show full diff in self.assertEqual.
-        __import__("sys").modules["unittest.util"]._MAX_LENGTH = 999999999
-
-    sys.exit(doctest.testmod()[0])
+                consumer.commit(gcn)

@@ -17,7 +17,7 @@ ZTF_ONLINE= # online_ztf_data_prefix
 GCN_ONLINE= # online_gcn_data_prefix
 ZTFXGRB_OUTPUT= # online_grb_data_prefix
 
-# pth of the hdfs installation
+# path of the hdfs installation
 HDFS_HOME="/opt/hadoop-2/bin/"
 
 while true; do
@@ -30,10 +30,10 @@ while true; do
         $(hdfs dfs -test -d ${GCN_ONLINE}/raw/year=${YEAR}/month=${MONTH}/day=${DAY})
         if [[ $? == 0 ]]; then
             echo "Launching science2grb"
-    
+
             # LEASETIME must be computed by taking the difference between now and max end 
             LEASETIME=$(( `date +'%s' -d '17:00 today'` - `date +'%s' -d 'now'` ))
-    
+
             nohup fink_grb join_stream online --config ${FINK_GRB_CONFIG} --night ${NIGHT} --exit_after ${LEASETIME} > ${FINK_GRB_LOG}/fink_grb_online_${YEAR}${MONTH}${DAY}.log 2>&1
             break
         fi

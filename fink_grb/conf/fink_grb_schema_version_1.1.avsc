@@ -1,0 +1,167 @@
+{
+  "type": "record",
+  "name": "topLevelRecord",
+  "fields": [
+    {
+      "name": "objectId",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "candid",
+      "type": [
+        "long",
+        "null"
+      ]
+    },
+    {
+      "name": "ztf_ra",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "ztf_dec",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "fid",
+      "type": [
+        "long",
+        "null"
+      ]
+    },
+    {
+      "name": "jdstarthist",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "rb",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "jd",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "instrument",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "event",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "observatory",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "triggerId",
+      "type": [
+        "long",
+        "null"
+      ]
+    },
+    {
+      "name": "grb_ra",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "grb_dec",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "grb_loc_error",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "triggerTimeUTC",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "grb_proba",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "fink_class",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "delta_mag",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "rate",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "from_upper",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "start_vartime",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "diff_vartime",
+      "type": [
+        "double",
+        "null"
+      ]
+    }
+  ]
+}

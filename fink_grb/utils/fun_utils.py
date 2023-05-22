@@ -1,17 +1,20 @@
 import numpy as np
 import pandas as pd
 import os
+import io
 from pyarrow import fs
 
 import pyspark.sql.functions as F
 
 from pyspark.sql.functions import pandas_udf, col
-from pyspark.sql.types import DoubleType, ArrayType
+from pyspark.sql.types import DoubleType, ArrayType, IntegerType
 
 from fink_filters.classification import extract_fink_classification
 from fink_utils.spark.utils import concat_col
 
-from fink_grb.utils.grb_prob import grb_assoc
+from fink_grb.observatory import voevent_to_class
+from fink_grb.observatory.observatory import Observatory
+from fink_grb.gcn_stream.gcn_reader import load_voevent_from_file
 
 # from fink_broker.tracklet_identification import add_tracklet_information
 
@@ -289,6 +292,146 @@ def sub_compute_rate(
         norm_rate = abs_rate / (curr_jd - last_jd_curr_band)
         from_upper = False
         return abs_rate, norm_rate, first_variation_time, diff_start_hist, from_upper
+
+
+def get_observatory(rawEvent: str) -> Observatory:
+    """
+    Get the observatory class from a raw voevent
+
+    Parameters
+    ----------
+    rawEvent: string
+        the raw voevent
+
+    Return
+    ------
+        an observatory class
+
+    Example
+    -------
+    >>> pdf = pd.read_parquet(grb_data)
+    >>> type(get_observatory(pdf["raw_event"].iloc[0]))
+    <class 'Fermi.Fermi'>
+    """
+    return voevent_to_class(load_voevent_from_file(io.StringIO(rawEvent)))
+
+
+@pandas_udf(ArrayType(IntegerType()))
+def get_pixels(rawEvent: pd.Series, NSIDE: pd.Series) -> pd.Series:
+    """
+    Compute the pixels within the error box for each voevent in the rawEvent parameters
+
+    Parameters
+    ----------
+    rawEvent: pd.Series containing string
+        the raw voevents
+    NSIDE: pd.Series containing integer
+        Healpix map resolution, better if a power of 2
+
+    Return
+    ------
+    pixels_list : pd.Series containing integer list
+        each sublist contains the pixel numbers whithin the error box of the voevent.
+
+    Examples
+    --------
+    >>> spark_grb = spark.read.format('parquet').load(grb_data)
+    >>> NSIDE = 4
+
+    >>> grb_pixs = spark_grb.withColumn("hpix_circle", get_pixels(spark_grb.raw_event, F.lit(8)))
+
+    >>> grb_pixs.withColumn("hpix", explode("hpix_circle"))\
+          .orderBy("hpix")\
+               .select(["triggerId", "hpix"]).head(5)
+    [Row(triggerId=683499781, hpix=10), Row(triggerId=683499781, hpix=10), Row(triggerId=683499781, hpix=20), Row(triggerId=683499781, hpix=20), Row(triggerId=683499781, hpix=21)]
+    """
+    return pd.Series(
+        [
+            get_observatory(event).get_pixels(nside)
+            for event, nside in zip(rawEvent, NSIDE)
+        ]
+    )
+
+
+@pandas_udf(DoubleType())
+def get_association_proba(
+    rawEvent: pd.Series, ztf_ra: pd.Series, ztf_dec: pd.Series, jdstarthist: pd.Series
+) -> pd.Series:
+    """
+    Compute the association probability between the ztf alerts and the gcn events.
+
+    Parameters
+    ----------
+    rawEvent: pd.Series containing string
+        the raw voevents
+    ztf_ra : double spark column
+        right ascension coordinates of the ztf alerts
+    ztf_dec : double spark column
+        declination coordinates of the ztf alerts
+    jdstarthist : double spark column
+        Earliest Julian date of epoch corresponding to ndethist [days]
+        ndethist : Number of spatially-coincident detections falling within 1.5 arcsec
+            going back to beginning of survey;
+            only detections that fell on the same field and readout-channel ID
+            where the input candidate was observed are counted.
+            All raw detections down to a photometric S/N of ~ 3 are included.
+
+    Return
+    ------
+    association_proba: double spark column
+        association probability
+        0 <= proba <= 1 where closer to 0 implies higher likelihood of being associated with the events
+
+    Examples
+    --------
+    >>> sparkDF = spark.read.format('parquet').load(join_data)
+
+    >>> df_proba = sparkDF.withColumn(
+    ...     "grb_proba",
+    ...     get_association_proba(
+    ...         sparkDF["raw_event"],
+    ...         sparkDF["ra"],
+    ...         sparkDF["dec"],
+    ...         sparkDF["candidate.jdstarthist"],
+    ...     ),
+    ... )
+
+    >>> df_proba.select(["objectId", "trigger_id", "grb_proba"]).show()
+    +------------+----------+---------+
+    |    objectId|trigger_id|grb_proba|
+    +------------+----------+---------+
+    |ZTF19abvxqrw| 683482851|     -1.0|
+    |ZTF19aarcrtb| 683482851|     -1.0|
+    |ZTF18abrhuke| 683482851|     -1.0|
+    |ZTF19aarcsqv| 683482851|     -1.0|
+    |ZTF18abrfzni| 683482851|     -1.0|
+    |ZTF18abthehu| 683482851|     -1.0|
+    |ZTF18abrhqed| 683482851|     -1.0|
+    |ZTF18abcjaer| 683482851|     -1.0|
+    |ZTF19aarcsra| 683482851|     -1.0|
+    |ZTF18abdlhrp| 683482851|     -1.0|
+    |ZTF18abrgwwe| 683482851|     -1.0|
+    |ZTF19abvxscp| 683482851|     -1.0|
+    |ZTF18abthswi| 683482851|     -1.0|
+    |ZTF19abvxvpj| 683482851|     -1.0|
+    |ZTF19abvxscg| 683482851|     -1.0|
+    |ZTF19abrvetd| 683482851|     -1.0|
+    |ZTF19abvxwnh| 683482851|     -1.0|
+    |ZTF19abvxwnw| 683482851|     -1.0|
+    |ZTF19abvxwyv| 683482851|     -1.0|
+    |ZTF19abagehm| 683482851|     -1.0|
+    +------------+----------+---------+
+    only showing top 20 rows
+    <BLANKLINE>
+    """
+    return pd.Series(
+        [
+            get_observatory(event).association_proba(z_ra, z_dec, z_trigger_time)
+            for event, z_ra, z_dec, z_trigger_time in zip(
+                rawEvent, ztf_ra, ztf_dec, jdstarthist
+            )
+        ]
+    )
 
 
 @pandas_udf(ArrayType(DoubleType()))
@@ -649,15 +792,11 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
     # refine the association and compute the serendipitous probability
     df_grb = df_grb.withColumn(
         "grb_proba",
-        grb_assoc(
+        get_association_proba(
+            df_grb["raw_event"],
             df_grb["ztf_ra"],
             df_grb["ztf_dec"],
             df_grb["{}".format("start_vartime" if with_rate else "jdstarthist")],
-            df_grb["platform"],
-            df_grb["triggerTimeUTC"],
-            df_grb["grb_ra"],
-            df_grb["grb_dec"],
-            df_grb["err_arcmin"],
         ),
     )
 
@@ -670,8 +809,9 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
         "{}jdstarthist".format("" if from_hbase else "candidate."),
         "{}rb".format("" if from_hbase else "candidate."),
         "{}jd".format("" if from_hbase else "candidate."),
-        "instrument_or_event",
-        "platform",
+        "instrument",
+        "event",
+        "observatory",
         "triggerId",
         "grb_ra",
         "grb_dec",
@@ -951,7 +1091,7 @@ def read_grb_admin_options(arguments, config, logger, is_test=False):
     >>> logger = init_logging()
 
     >>> read_grb_admin_options(arguments, config, logger, False)
-    ('20221014', '120', 'fink_grb/test/test_data/ztf_test/online', 'fink_grb/test/test_data/gcn_test', 'fink_grb/test/test_output', '30', '4', '/home/roman.le-montagner/fink-broker/catalogs_hbase/ztf.jd.json', 7, 'localhost:9092', 'toto', 'tata')
+    ('20221014', '120', 'fink_grb/test/test_data/ztf_test/online', 'fink_grb/test/test_data/gcn_test/raw', 'fink_grb/test/test_output', '30', '4', '/home/roman.le-montagner/fink-broker/catalogs_hbase/ztf.jd.json', 7, 'localhost:9092', 'toto', 'tata')
 
     >>> res = read_grb_admin_options(arguments, config, logger, True)
 
@@ -1014,24 +1154,3 @@ def read_grb_admin_options(arguments, config, logger, is_test=False):
         username_writer,
         password_writer,
     )
-
-
-if __name__ == "__main__":  # pragma: no cover
-    import doctest  # noqa: F401
-    from pandas.testing import assert_frame_equal  # noqa: F401
-    import pandas as pd  # noqa: F401
-    import shutil  # noqa: F401
-    from fink_grb.init import get_config, init_logging  # noqa: F401
-    from fink_utils.spark.utils import concat_col  # noqa: F401
-
-    from fink_utils.test.tester import spark_unit_tests_science
-
-    globs = globals()
-
-    path_data_fid_1 = "fink_grb/test/test_data/ztf_alert_samples_fid_1.parquet"
-    path_data_fid_2 = "fink_grb/test/test_data/ztf_alert_samples_fid_2.parquet"
-    globs["data_fid_1"] = path_data_fid_1
-    globs["data_fid_2"] = path_data_fid_2
-
-    # Run the test suite
-    spark_unit_tests_science(globs)

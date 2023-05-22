@@ -1,0 +1,30 @@
+{
+    "name": "Fermi",
+    "//gcn_description": "https://gcn.gsfc.nasa.gov/fermi.html",
+    "packet_type": [
+        111, 112, 115,
+        120, 121, 127,
+        123, 125
+    ],
+    "kafka_topics": [
+        "gcn.classic.voevent.FERMI_GBM_ALERT",
+        "gcn.classic.voevent.FERMI_GBM_FIN_POS",
+        "gcn.classic.voevent.FERMI_GBM_FLT_POS",
+        "gcn.classic.voevent.FERMI_GBM_GND_POS",
+        "gcn.classic.voevent.FERMI_GBM_LC",
+        "gcn.classic.voevent.FERMI_GBM_POS_TEST",
+        "gcn.classic.voevent.FERMI_GBM_SUBTHRESH",
+        "gcn.classic.voevent.FERMI_GBM_TRANS",
+        "gcn.classic.voevent.FERMI_LAT_GND",
+        "gcn.classic.voevent.FERMI_LAT_MONITOR",
+        "gcn.classic.voevent.FERMI_LAT_OFFLINE",
+        "gcn.classic.voevent.FERMI_LAT_POS_DIAG",
+        "gcn.classic.voevent.FERMI_LAT_POS_INI",
+        "gcn.classic.voevent.FERMI_LAT_POS_TEST",
+        "gcn.classic.voevent.FERMI_LAT_POS_UPD",
+        "gcn.classic.voevent.FERMI_LAT_TRANS",
+        "gcn.classic.voevent.FERMI_POINTDIR",
+        "gcn.classic.voevent.FERMI_SC_SLEW"
+    ],
+    "grb_detection_rate": 250
+}

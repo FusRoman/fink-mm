@@ -59,19 +59,12 @@ def grb_distribution(
     Examples
     --------
     >>> grb_distribution(
-    ... "fink_grb/test/test_data/ztfxgcn_test/",
-    ... "20230101",
+    ... ztfxgcn_test,
+    ... "20190903",
     ... 30, 40,
     ... "localhost:9092",
     ... "toto", "tata"
     ... )
-
-    >>> from fink_client.consumer import AlertConsumer
-    >>> import tabulate
-
-    >>> maxtimeout = 10
-    >>> myconfig = {"username": "rlm", "bootstrap.servers": "localhost:9092", "group_id": "rlm_fink"}
-    >>> topics = ["fink_grb_bronze"]
 
     >>> consumer = AlertConsumer(topics, myconfig)
     >>> topic, alert, key = consumer.poll(maxtimeout)
@@ -84,22 +77,12 @@ def grb_distribution(
     ... alert["rate"]
     ... ]]
 
-    >>> headers = [
-    ... "Generated at (jd)",
-    ... "Topic",
-    ... "objectId",
-    ... "Fink_Class",
-    ... "Rate",
-    ... ]
-
     >>> print(tabulate.tabulate(table, headers, tablefmt="pretty"))
     +-------------------+-----------------+--------------+------------+---------------------+
     | Generated at (jd) |      Topic      |   objectId   | Fink_Class |        Rate         |
     +-------------------+-----------------+--------------+------------+---------------------+
-    |  2458729.6881481  | fink_grb_bronze | ZTF19abvxuvu |  Unknown   | -1.6373900908205787 |
+    |  2458729.6881481  | fink_grb_bronze | ZTF19abvxqry |  Unknown   | -1.6423342663863223 |
     +-------------------+-----------------+--------------+------------+---------------------+
-
-    >>> shutil.rmtree("fink_grb/test/test_data/ztfxgcn_test/grb_distribute_checkpoint")
     """
     spark = init_sparksession(
         "science2grb_distribution_{}{}{}".format(night[0:4], night[4:6], night[6:8])
@@ -182,7 +165,6 @@ def grb_distribution(
         (df_silver, "fink_grb_silver"),
         (df_gold, "fink_grb_gold"),
     ]:
-
         df_filter = df_filter.selectExpr(cnames)
         checkpointpath_topic = checkpointpath_grb + "/{}_checkpoint".format(topicname)
         grb_stream_distribute = write_to_kafka(
@@ -222,17 +204,10 @@ def launch_distribution(arguments):
     Examples
     --------
     >>> launch_distribution({
-    ... "--config" : None,
+    ... "--config" : "fink_grb/conf/distribute_for_test.conf",
     ... "--night" : "20190903",
-    ... "--exit_after" : 40
+    ... "--exit_after" : 30
     ... })
-
-    >>> from fink_client.consumer import AlertConsumer
-    >>> import tabulate
-
-    >>> maxtimeout = 10
-    >>> myconfig = {"username": "rlm", "bootstrap.servers": "localhost:9092", "group_id": "rlm_fink"}
-    >>> topics = ["fink_grb_bronze"]
 
     >>> consumer = AlertConsumer(topics, myconfig)
     >>> topic, alert, key = consumer.poll(maxtimeout)
@@ -245,22 +220,12 @@ def launch_distribution(arguments):
     ... alert["rate"]
     ... ]]
 
-    >>> headers = [
-    ... "Generated at (jd)",
-    ... "Topic",
-    ... "objectId",
-    ... "Fink_Class",
-    ... "Rate",
-    ... ]
-
     >>> print(tabulate.tabulate(table, headers, tablefmt="pretty"))
     +-------------------+-----------------+--------------+------------+---------------------+
     | Generated at (jd) |      Topic      |   objectId   | Fink_Class |        Rate         |
     +-------------------+-----------------+--------------+------------+---------------------+
-    |  2458729.6881481  | fink_grb_bronze | ZTF19abvxuvu |  Unknown   | -1.6373900908205787 |
+    |  2458729.6881481  | fink_grb_bronze | ZTF19abvxqry |  Unknown   | -1.6423342663863223 |
     +-------------------+-----------------+--------------+------------+---------------------+
-
-    >>> shutil.rmtree("fink_grb/test/test_output/grb_distribute_checkpoint")
     """
     config = get_config(arguments)
     logger = init_logging()
@@ -334,17 +299,5 @@ def launch_distribution(arguments):
 
 
 if __name__ == "__main__":
-
-    if sys.argv[1] == "test":
-        from fink_utils.test.tester import spark_unit_tests_broker
-        from pandas.testing import assert_frame_equal  # noqa: F401
-        import shutil  # noqa: F401
-
-        globs = globals()
-
-        # Run the test suite
-        spark_unit_tests_broker(globs)
-
-    elif sys.argv[1] == "prod":  # pragma: no cover
-
+    if sys.argv[1] == "prod":  # pragma: no cover
         apps.Application.DISTRIBUTION.run_application()

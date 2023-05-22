@@ -16,6 +16,7 @@ Options:
   online                           launch the online mode
   distribute                       launch the distribution
   -h --help                        Show help and quit.
+  --test                           launch the command in test mode.
   --version                        Show version.
   --config FILE                    Specify the config file.
   --verbose                        Print information during the process.
@@ -35,7 +36,7 @@ def main():
     if arguments["gcn_stream"]:
 
         if arguments["start"]:
-            from fink_grb.online.gcn_stream import start_gcn_stream
+            from fink_grb.gcn_stream.gcn_stream import start_gcn_stream
 
             start_gcn_stream(arguments)
         elif arguments["monitor"]:

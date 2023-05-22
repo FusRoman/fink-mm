@@ -83,7 +83,7 @@ def get_config(arguments):
     ['CLIENT', 'PATH', 'HDFS', 'PRIOR_FILTER', 'STREAM', 'DISTRIBUTION', 'ADMIN', 'OFFLINE']
     """
     # read the config file
-    config = configparser.ConfigParser(os.environ)
+    config = configparser.ConfigParser(os.environ, interpolation=EnvInterpolation())
 
     if arguments["--config"]:
         if os.path.exists(arguments["--config"]):
@@ -120,6 +120,14 @@ class CustomTZFormatter(logging.Formatter):  # pragma: no cover
             except TypeError:
                 s = dt.isoformat()
         return s
+
+
+class EnvInterpolation(configparser.BasicInterpolation):
+    """Interpolation which expands environment variables in values."""
+
+    def before_get(self, parser, section, option, value, defaults):
+        value = super().before_get(parser, section, option, value, defaults)
+        return os.path.expandvars(value)
 
 
 def init_logging():
@@ -161,17 +169,3 @@ def init_logging():
     logger.addHandler(ch)
 
     return logger
-
-
-if __name__ == "__main__":  # pragma: no cover
-    import sys
-    import doctest
-    from pandas.testing import assert_frame_equal  # noqa: F401
-    import pandas as pd  # noqa: F401
-    import shutil  # noqa: F401
-
-    if "unittest.util" in __import__("sys").modules:
-        # Show full diff in self.assertEqual.
-        __import__("sys").modules["unittest.util"]._MAX_LENGTH = 999999999
-
-    sys.exit(doctest.testmod()[0])
