@@ -743,7 +743,6 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
     --------
     """
     if with_rate:
-
         df_grb = concat_col(df_grb, "magpsf")
         df_grb = concat_col(df_grb, "diffmaglim")
         df_grb = concat_col(df_grb, "jd")
@@ -822,7 +821,6 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
     ]
 
     if with_rate:
-
         column_to_return += [
             "delta_mag",
             "rate",

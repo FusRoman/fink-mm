@@ -4,10 +4,7 @@ import io
 from lxml.objectify import ObjectifiedElement
 import json
 from logging import Logger
-from astropy.table import Table
-import astropy_healpix as ah
-from base64 import b64decode
-from fink_grb.observatory.LVK import LVK
+from fink_grb.observatory.LVK.LVK import LVK
 
 
 def load_voevent_from_path(
@@ -91,13 +88,30 @@ def load_voevent_from_file(
 def parse_gw_alert(
     txt_file: str, logger: Logger, is_test: bool = False
 ) -> pd.DataFrame:
+    """
+    Load the gw event and return it as a pandas dataframe
+
+    Parameters
+    ----------
+    txt_file: str
+        the orginal gw event
+    logger: Logger
+        the logger object
+    is_test: (bool, optional)
+        if true, run this function in test mode
+        Parse gw event that are mock events
+        Defaults to False.
+
+    Returns
+    -------
+    gw_pdf: pd.DataFrame
+        the gw event as a dataframe
+    """
     logger.info("the alert is probably a new gw")
     try:
-        record = json.loads(record)
+        record = json.loads(txt_file)
     except Exception as e:
-        logger.error(
-            "failed to load the gw alert:\n\talert={}\n\tcause={}".format(txt_file, e)
-        )
+        logger.error("failed to load the gw alert:\n\tcause={}".format(e))
 
     # Only respond to mock events. Real events have GraceDB IDs like
     # S1234567, mock events have GraceDB IDs like M1234567.
@@ -109,42 +123,53 @@ def parse_gw_alert(
     if record["superevent_id"][0] != event_kind:
         return
 
+    print(type(record))
     lvk_class = LVK(record)
 
     print(lvk_class)
+    print(lvk_class.err_to_arcminute())
+    print(lvk_class.is_observation())
+    print(lvk_class.is_listened_packets_types())
+    print(lvk_class.detect_instruments())
+    print(lvk_class.get_trigger_id())
+    print(lvk_class.get_trigger_time())
 
-    if record["alert_type"] == "RETRACTION":
-        print(record["superevent_id"], "was retracted")
-        return
+    print(lvk_class.voevent_to_df())
 
-    # Respond only to 'CBC' events. Change 'CBC' to 'Burst' to respond to
-    # only unmodeled burst events.
-    if record["event"]["group"] != "CBC":
-        return
+    return lvk_class.voevent_to_df()
 
-    # Parse sky map
-    skymap_str = record.get("event", {}).pop("skymap")
-    if skymap_str:
-        # Decode, parse skymap, and print most probable sky location
-        skymap_bytes = b64decode(skymap_str)
-        skymap = Table.read(io.BytesIO(skymap_bytes))
+    # if record["alert_type"] == "RETRACTION":
+    #     print(record["superevent_id"], "was retracted")
+    #     return
 
-        # level, ipix = ah.uniq_to_level_ipix(
-        #     skymap[np.argmax(skymap["PROBDENSITY"])]["UNIQ"]
-        # )
+    # # Respond only to 'CBC' events. Change 'CBC' to 'Burst' to respond to
+    # # only unmodeled burst events.
+    # if record["event"]["group"] != "CBC":
+    #     return
 
-        level, ipix = ah.uniq_to_level_ipix(skymap["UNIQ"])
-        print(level)
-        print(ipix)
+    # # Parse sky map
+    # skymap_str = record.get("event", {}).pop("skymap")
+    # if skymap_str:
+    #     # Decode, parse skymap, and print most probable sky location
+    #     skymap_bytes = b64decode(skymap_str)
+    #     skymap = Table.read(io.BytesIO(skymap_bytes))
 
-        # print(skymap)
-        ra, dec = ah.healpix_to_lonlat(ipix, ah.level_to_nside(level), order="nested")
-        print(ra)
-        print(dec)
-        # print(f"Most probable sky location (RA, Dec) = ({ra.deg}, {dec.deg})")
+    #     # level, ipix = ah.uniq_to_level_ipix(
+    #     #     skymap[np.argmax(skymap["PROBDENSITY"])]["UNIQ"]
+    #     # )
 
-        # Print some information from FITS header
-        # print(f'Distance = {skymap.meta["DISTMEAN"]} +/- {skymap.meta["DISTSTD"]}')
+    #     level, ipix = ah.uniq_to_level_ipix(skymap["UNIQ"])
+    #     print(level)
+    #     print(ipix)
+
+    #     # print(skymap)
+    #     ra, dec = ah.healpix_to_lonlat(ipix, ah.level_to_nside(level), order="nested")
+    #     print(ra)
+    #     print(dec)
+    # print(f"Most probable sky location (RA, Dec) = ({ra.deg}, {dec.deg})")
+
+    # Print some information from FITS header
+    # print(f'Distance = {skymap.meta["DISTMEAN"]} +/- {skymap.meta["DISTSTD"]}')
 
     # Print remaining fields
     # print("Record:")

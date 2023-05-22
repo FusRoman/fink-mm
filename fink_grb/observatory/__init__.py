@@ -8,7 +8,6 @@ import json
 
 
 def __import_module(module_path):
-
     module_name = path.basename(module_path).split(".")[0]
 
     spec = importlib.util.spec_from_file_location(module_name, module_path)
@@ -44,8 +43,9 @@ def __get_topics():
 
 
 OBSERVATORY_PATH = "observatory"
+OBSERVATORY_SCHEMA_VERSION = 1.1
 OBSERVATORY_JSON_SCHEMA_PATH = files("fink_grb").joinpath(
-    "observatory/observatory_schema_version_1.0.json"
+    "observatory/observatory_schema_version_{}.json".format(OBSERVATORY_SCHEMA_VERSION)
 )
 __OBS_CLASS = __get_observatory_class()
 TOPICS = __get_topics()

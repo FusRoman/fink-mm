@@ -42,7 +42,7 @@ class Fermi(Observatory):
         """
         toplevel_params = vp.get_toplevel_params(self.voevent)
 
-        return int(toplevel_params["TrigID"]["value"])
+        return toplevel_params["TrigID"]["value"]
 
     def err_to_arcminute(self):
         """
@@ -65,8 +65,3 @@ class Fermi(Observatory):
             return err
         else:
             raise BadInstrument("{} is not a Fermi instrument".format(instrument))
-
-
-if __name__ == "__main__":
-    fermi = Fermi()
-    print(fermi)

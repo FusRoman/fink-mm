@@ -48,8 +48,8 @@ voevent_df_schema = DataFrameSchema(
             title=None,
         ),
         "triggerId": Column(
-            dtype="int64",
-            checks=[Check.greater_than_or_equal_to(0)],
+            dtype="str",
+            checks=None,
             nullable=False,
             unique=True,
             coerce=False,

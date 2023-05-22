@@ -55,7 +55,7 @@ class IceCube(Observatory):
         """
         toplevel_params = vp.get_toplevel_params(self.voevent)
 
-        return int(toplevel_params["AMON_ID"]["value"])
+        return toplevel_params["AMON_ID"]["value"]
 
     def detect_instruments(self):
         return self.voevent.attrib["ivorn"].split("#")[1].split("_")[1]

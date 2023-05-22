@@ -250,7 +250,11 @@ class Observatory(ABC):
         theta, phi = dec2theta(coords.dec), ra2phi(coords.ra)
         vec = hp.ang2vec(theta, phi)
         ipix_disc = hp.query_disc(
-            NSIDE, vec, radius=np.radians(voevent_error / 60), inclusive=True
+            NSIDE,
+            vec,
+            radius=np.radians(voevent_error / 60),
+            inclusive=True,
+            nest=False,
         )
         return ipix_disc
 

@@ -15,3 +15,4 @@ per-file-ignores =
     ../Fink_GRB/fink_grb/utils/fun_utils.py:F811
     ../Fink_GRB/fink_grb/distribution/distribution.py:W503
     ../Fink_GRB/fink_grb/observatory/__init__.py:E402
+    ../Fink_GRB/setup.py:W503
