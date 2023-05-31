@@ -4,7 +4,6 @@ import io
 from lxml.objectify import ObjectifiedElement
 import json
 from logging import Logger
-from fink_grb.observatory.LVK.LVK import LVK
 from fink_grb.observatory import voevent_to_class, json_to_class
 
 

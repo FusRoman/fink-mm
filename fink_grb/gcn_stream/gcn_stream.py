@@ -70,12 +70,19 @@ def load_and_parse_gcn(
     --------
 
     >>> f = open('fink_grb/test/test_data/voevent_number=9897.xml').read().encode("UTF-8")
-    >>> logger = init_logging()
     >>> with tempfile.TemporaryDirectory() as tmp_dir_gcn:
     ...     load_and_parse_gcn(f, "gcn.classic.voevent.FERMI_GBM_FIN_POS", tmp_dir_gcn, logger, False, False)
     ...     base_gcn = pd.read_parquet(tmp_dir_gcn + "/year=2022/month=08/day=30/683571622_0")
     ...     base_gcn = base_gcn.drop(columns="ackTime")
     ...     test_gcn = pd.read_parquet("fink_grb/test/test_data/683571622_0_test")
+    ...     assert_frame_equal(base_gcn, test_gcn)
+
+    >>> json_str = open(lvk_initial_path, 'r').read()
+    >>> with tempfile.TemporaryDirectory() as tmp_dir_gcn:
+    ...     load_and_parse_gcn(json_str, "igwn.gwalert", tmp_dir_gcn, logger, False, False)
+    ...     base_gcn = pd.read_parquet(tmp_dir_gcn + "/year=2023/month=05/day=18/S230518h_0")
+    ...     base_gcn = base_gcn.drop(columns="ackTime")
+    ...     test_gcn = pd.read_parquet("fink_grb/test/test_data/S230518h_0_test")
     ...     assert_frame_equal(base_gcn, test_gcn)
     """
 
