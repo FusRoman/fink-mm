@@ -49,10 +49,18 @@ def load_and_parse_gcn(
     ----------
     gcn : bytes
         the new gcn coming from the stream
+    topic : str
+        the emitting topic
     gcn_rawdatapath : string
         the path destination where to store the decoded gcn
     logger : logger object
         logger object for logs.
+    logs: boolean
+        if true, print logs
+    is_test: boolean
+        run the function in test mode
+    gcn_fs: FileSystem
+        the file system used to write the gcn
 
     Returns
     -------
@@ -64,7 +72,7 @@ def load_and_parse_gcn(
     >>> f = open('fink_grb/test/test_data/voevent_number=9897.xml').read().encode("UTF-8")
     >>> logger = init_logging()
     >>> with tempfile.TemporaryDirectory() as tmp_dir_gcn:
-    ...     load_and_parse_gcn(f, tmp_dir_gcn, logger)
+    ...     load_and_parse_gcn(f, "gcn.classic.voevent.FERMI_GBM_FIN_POS", tmp_dir_gcn, logger, False, False)
     ...     base_gcn = pd.read_parquet(tmp_dir_gcn + "/year=2022/month=08/day=30/683571622_0")
     ...     base_gcn = base_gcn.drop(columns="ackTime")
     ...     test_gcn = pd.read_parquet("fink_grb/test/test_data/683571622_0_test")
@@ -85,7 +93,7 @@ def load_and_parse_gcn(
 
     elif topic in TOPICS_FORMAT["json"]:
         try:
-            df = gr.parse_json_alert(gcn, logger, logs)
+            df = gr.parse_json_alert(gcn, logger, logs, is_test)
         except Exception as e:
             logger.error("error while reading the json notice\n\t:cause: {}".format(e))
             return

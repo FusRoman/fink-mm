@@ -20,7 +20,7 @@ class Swift(Observatory):
 
         Example
         -------
-        >>> voevent = load_voevent_from_path(swift_bat_voevent_path)
+        >>> voevent = load_voevent_from_path(swift_bat_voevent_path, logger)
         >>> obs = voevent_to_class(voevent)
         >>> type(obs)
         <class 'Swift.Swift'>
@@ -34,11 +34,11 @@ class Swift(Observatory):
         Example
         -------
         >>> swift_bat.get_trigger_id()
-        1118357
+        '1118357'
         >>> swift_xrt.get_trigger_id()
-        1120270
+        '1120270'
         >>> swift_uvot.get_trigger_id()
-        1121751
+        '1121751'
         """
         toplevel_params = vp.get_toplevel_params(self.voevent)
 

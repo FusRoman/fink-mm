@@ -140,6 +140,7 @@ def init_LVK(doctest_namespace):
         "lvk_initial_path"
     ] = "fink_grb/test/test_data/VODB/lvk/initial.txt"
     doctest_namespace["lvk_update_path"] = "fink_grb/test/test_data/VODB/lvk/update.txt"
+    doctest_namespace["lvk_test_path"] = "fink_grb/test/test_data/VODB/lvk/test.txt"
 
     lvk_initial = json_to_class(
         load_json_from_path(doctest_namespace["lvk_initial_path"], logger)
@@ -148,8 +149,13 @@ def init_LVK(doctest_namespace):
         load_json_from_path(doctest_namespace["lvk_update_path"], logger)
     )
 
+    lvk_test = json_to_class(
+        load_json_from_path(doctest_namespace["lvk_test_path"], logger)
+    )
+
     doctest_namespace["lvk_initial"] = lvk_initial
     doctest_namespace["lvk_update"] = lvk_update
+    doctest_namespace["lvk_test"] = lvk_test
 
 
 @pytest.fixture(autouse=True, scope="session")

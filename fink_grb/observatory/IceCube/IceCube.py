@@ -31,7 +31,7 @@ class IceCube(Observatory):
 
         Example
         -------
-        >>> voevent = load_voevent_from_path(icecube_gold_voevent_path)
+        >>> voevent = load_voevent_from_path(icecube_gold_voevent_path, logger)
         >>> obs = voevent_to_class(voevent)
         >>> type(obs)
         <class 'IceCube.IceCube'>
@@ -47,11 +47,11 @@ class IceCube(Observatory):
         Example
         -------
         >>> icecube_cascade.get_trigger_id()
-        13688925590129
+        '13688925590129'
         >>> icecube_bronze.get_trigger_id()
-        13691845252263
+        '13691845252263'
         >>> icecube_gold.get_trigger_id()
-        13746764735045
+        '13746764735045'
         """
         toplevel_params = vp.get_toplevel_params(self.voevent)
 

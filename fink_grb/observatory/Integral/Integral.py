@@ -20,7 +20,7 @@ class Integral(Observatory):
 
         Example
         -------
-        >>> voevent = load_voevent_from_path(integral_weak_voevent_path)
+        >>> voevent = load_voevent_from_path(integral_weak_voevent_path, logger)
         >>> obs = voevent_to_class(voevent)
         >>> type(obs)
         <class 'Integral.Integral'>
@@ -36,11 +36,11 @@ class Integral(Observatory):
         Example
         -------
         >>> integral_weak.get_trigger_id()
-        9998
+        '9998'
         >>> integral_wakeup.get_trigger_id()
-        10042
+        '10042'
         >>> integral_refined.get_trigger_id()
-        75578
+        '75578'
         """
         toplevel_params = vp.get_toplevel_params(self.voevent)
 

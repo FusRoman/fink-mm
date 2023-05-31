@@ -72,19 +72,19 @@ def __get_detector(voevent):
     Examples
     --------
 
-    >>> fermi_gbm_voevent = load_voevent_from_path(fermi_gbm_voevent_path)
+    >>> fermi_gbm_voevent = load_voevent_from_path(fermi_gbm_voevent_path, logger)
     >>> __get_detector(fermi_gbm_voevent)
     'fermi'
 
-    >>> swift_bat_voevent = load_voevent_from_path(swift_bat_voevent_path)
+    >>> swift_bat_voevent = load_voevent_from_path(swift_bat_voevent_path, logger)
     >>> __get_detector(swift_bat_voevent)
     'swift'
 
-    >>> icecube_gold_voevent = load_voevent_from_path(icecube_gold_voevent_path)
+    >>> icecube_gold_voevent = load_voevent_from_path(icecube_gold_voevent_path, logger)
     >>> __get_detector(icecube_gold_voevent)
     'icecube'
 
-    >>> integral_weak_voevent = load_voevent_from_path(integral_weak_voevent_path)
+    >>> integral_weak_voevent = load_voevent_from_path(integral_weak_voevent_path, logger)
     >>> __get_detector(integral_weak_voevent)
     'integral'
     """
@@ -120,19 +120,19 @@ def voevent_to_class(voevent: ObjectifiedElement) -> observatory.Observatory:
 
     Examples
     --------
-    >>> fermi_gbm_voevent = load_voevent_from_path(fermi_gbm_voevent_path)
+    >>> fermi_gbm_voevent = load_voevent_from_path(fermi_gbm_voevent_path, logger)
     >>> type(voevent_to_class(fermi_gbm_voevent))
     <class 'Fermi.Fermi'>
 
-    >>> swift_bat_voevent = load_voevent_from_path(swift_bat_voevent_path)
+    >>> swift_bat_voevent = load_voevent_from_path(swift_bat_voevent_path, logger)
     >>> type(voevent_to_class(swift_bat_voevent))
     <class 'Swift.Swift'>
 
-    >>> icecube_gold_voevent = load_voevent_from_path(icecube_gold_voevent_path)
+    >>> icecube_gold_voevent = load_voevent_from_path(icecube_gold_voevent_path, logger)
     >>> type(voevent_to_class(icecube_gold_voevent))
     <class 'IceCube.IceCube'>
 
-    >>> integral_weak_voevent = load_voevent_from_path(integral_weak_voevent_path)
+    >>> integral_weak_voevent = load_voevent_from_path(integral_weak_voevent_path, logger)
     >>> type(voevent_to_class(integral_weak_voevent))
     <class 'Integral.Integral'>
     """

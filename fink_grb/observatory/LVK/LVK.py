@@ -78,9 +78,10 @@ class LVK(Observatory):
         --------
         >>> lvk_initial.is_observation(False)
         True
-
         >>> lvk_initial.is_observation(True)
         False
+        >>> lvk_test.is_observation(True)
+        True
         """
         # Only respond to mock events. Real events have GraceDB IDs like
         # S1234567, mock events have GraceDB IDs like M1234567.

@@ -29,7 +29,7 @@ def load_voevent_from_path(
 
     Examples
     --------
-    >>> v = load_voevent_from_path(fermi_gbm_voevent_path)
+    >>> v = load_voevent_from_path(fermi_gbm_voevent_path, logger, False)
     >>> type(v)
     <class 'lxml.objectify.ObjectifiedElement'>
     >>> v.attrib['ivorn']
@@ -49,7 +49,7 @@ def load_voevent_from_path(
 
 
 def load_voevent_from_file(
-    file: io.BufferedReader, logger: Logger, logs: bool
+    file: io.BufferedReader, logger: Logger, logs: bool = False
 ) -> ObjectifiedElement:
     """
     Load a voevent from a file object.
@@ -70,7 +70,7 @@ def load_voevent_from_file(
     Examples
     --------
     >>> f = open(fermi_gbm_voevent_path, 'rb')
-    >>> v = load_voevent_from_file(f)
+    >>> v = load_voevent_from_file(f, logger, False)
     >>> type(v)
     <class 'lxml.objectify.ObjectifiedElement'>
     >>> v.attrib['ivorn']
@@ -106,6 +106,12 @@ def parse_xml_alert(gcn: bytes, logger: Logger, logs: bool) -> pd.DataFrame:
 
     Examples
     --------
+    >>> f = open('fink_grb/test/test_data/voevent_number=9897.xml').read().encode("UTF-8")
+    >>> parse_xml_alert(f, logger, False)
+      observatory instrument event  ...  year month  day
+    0       Fermi        GBM        ...  2022    08   30
+    <BLANKLINE>
+    [1 rows x 15 columns]
     """
     voevent = load_voevent_from_file(io.BytesIO(gcn), logger)
     observatory = voevent_to_class(voevent)
@@ -118,6 +124,29 @@ def parse_xml_alert(gcn: bytes, logger: Logger, logs: bool) -> pd.DataFrame:
 
 
 def load_json_from_path(file_path: str, logger: Logger, logs: bool = False) -> dict:
+    """
+    Load the json from a path.
+    Raise an exception if unable to load the json
+
+    Parameters
+    ----------
+    file_path: str
+        the file path
+    logger: Logger
+        the logger object used to print the logs
+    logs: bool
+        if true, print the logs
+
+    Returns
+    -------
+    json_dict: dict
+        the json return as a python dict
+
+    Example
+    -------
+    >>> load_json_from_path(lvk_update_path, logger)["superevent_id"]
+    'S230518h'
+    """
     try:
         with open(file_path, "r") as f:
             return json.loads(f.read())
@@ -132,6 +161,29 @@ def load_json_from_path(file_path: str, logger: Logger, logs: bool = False) -> d
 
 
 def load_json_from_file(gcn: str, logger: Logger, logs: bool) -> dict:
+    """
+    Load a json from a string
+    Raise an exception if unable to load the json.
+
+    Parameters
+    gcn: str
+        the gcn as a string
+    logger: Logger
+        the logger object
+    logs: bool
+        if true, print the logs
+
+    Returns
+    -------
+    json_dict: dict
+        the json return as a python dict
+
+    Examples
+    --------
+    >>> json_str = open(lvk_update_path, 'r').read()
+    >>> load_json_from_file(json_str, logger, False)["superevent_id"]
+    'S230518h'
+    """
     try:
         return json.loads(gcn)
     except Exception as e:
@@ -165,6 +217,15 @@ def parse_json_alert(
     -------
     gw_pdf: pd.DataFrame
         the gw event as a dataframe
+
+    Example
+    -------
+    >>> json_str = open(lvk_update_path, 'r').read()
+    >>> parse_json_alert(json_str, logger, False, False)
+      observatory instrument event  ...  year month  day
+    0         LVK      H1_L1    gw  ...  2023    05   18
+    <BLANKLINE>
+    [1 rows x 15 columns]
     """
     if logs:
         logger.info("the alert is a new json gcn")

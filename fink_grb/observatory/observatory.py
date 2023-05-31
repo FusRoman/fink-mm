@@ -43,7 +43,7 @@ class Observatory(ABC):
 
         Example
         -------
-        >>> voevent = load_voevent_from_path(fermi_gbm_voevent_path)
+        >>> voevent = load_voevent_from_path(fermi_gbm_voevent_path, logger)
         >>> obs = voevent_to_class(voevent)
         >>> type(obs)
         <class 'Fermi.Fermi'>
@@ -166,6 +166,8 @@ class Observatory(ABC):
 
         Example
         -------
+        >>> icecube_gold.get_trigger_time()
+        (datetime.datetime(2022, 12, 23, 7, 43, 0, 520000, tzinfo=datetime.timezone.utc), 2459936.8215337964)
         """
         time_utc = vp.get_event_time_as_utc(self.voevent)
         time_jd = Time(time_utc, format="datetime").jd
