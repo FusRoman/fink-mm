@@ -5,10 +5,11 @@ from lxml.objectify import ObjectifiedElement
 import json
 from logging import Logger
 from fink_grb.observatory.LVK.LVK import LVK
+from fink_grb.observatory import voevent_to_class, json_to_class
 
 
 def load_voevent_from_path(
-    file_path: str, logger: Logger, verbose: bool = False
+    file_path: str, logger: Logger, logs: bool = False
 ) -> ObjectifiedElement:
     """
     Load a voevent from a file object.
@@ -18,7 +19,7 @@ def load_voevent_from_path(
     ----------
     file : string
         the path of the xml voevent file.
-    verbose : boolean
+    logs : boolean
         print additional information if an exception is raised.
 
     Returns
@@ -38,7 +39,7 @@ def load_voevent_from_path(
         with open(file_path, "rb") as f:
             return vp.load(f)
     except Exception as e:  # pragma: no cover
-        if verbose:
+        if logs:
             logger.error(
                 "failed to load the voevent:\n\tlocation={}\n\tcause={}".format(
                     file_path, e
@@ -48,7 +49,7 @@ def load_voevent_from_path(
 
 
 def load_voevent_from_file(
-    file: io.BufferedReader, logger: Logger, verbose: bool = False
+    file: io.BufferedReader, logger: Logger, logs: bool
 ) -> ObjectifiedElement:
     """
     Load a voevent from a file object.
@@ -58,7 +59,7 @@ def load_voevent_from_file(
     ----------
     file : string
         the path of the xml voevent file.
-    verbose : boolean
+    logs : boolean
         print additional information if an exception is raised.
 
     Returns
@@ -78,25 +79,83 @@ def load_voevent_from_file(
     try:
         return vp.load(file)
     except Exception as e:  # pragma: no cover
-        if verbose:
+        if logs:
             logger.error(
                 "failed to load the voevent:\n\tlocation={}\n\tcause={}".format(file, e)
             )
         raise e
 
 
-def parse_gw_alert(
-    txt_file: str, logger: Logger, is_test: bool = False
-) -> pd.DataFrame:
+def parse_xml_alert(gcn: bytes, logger: Logger, logs: bool) -> pd.DataFrame:
     """
-    Load the gw event and return it as a pandas dataframe
+    parse the gcn as an xml and return a dataframe
 
     Parameters
     ----------
-    txt_file: str
-        the orginal gw event
+    gcn: bytes
+        the incoming gcn
+    logger: Logger
+        logger object for logs.
+    logs: bool
+        if true, print logs
+
+    Returns
+    -------
+    voevent_df: pd.DataFrame
+        a dataframe containing the voevent data
+
+    Examples
+    --------
+    """
+    voevent = load_voevent_from_file(io.BytesIO(gcn), logger)
+    observatory = voevent_to_class(voevent)
+
+    if observatory.is_observation() and observatory.is_listened_packets_types():
+        if logs:  # pragma: no cover
+            logger.info("the voevent is a new obervation.")
+
+        return observatory.voevent_to_df()
+
+
+def load_json_from_path(file_path: str, logger: Logger, logs: bool = False) -> dict:
+    try:
+        with open(file_path, "r") as f:
+            return json.loads(f.read())
+    except Exception as e:  # pragma: no cover
+        if logs:
+            logger.error(
+                "failed to load the voevent:\n\tlocation={}\n\tcause={}".format(
+                    file_path, e
+                )
+            )
+        raise e
+
+
+def load_json_from_file(gcn: str, logger: Logger, logs: bool) -> dict:
+    try:
+        return json.loads(gcn)
+    except Exception as e:
+        if logs:
+            logger.error(
+                "failed to load the voevent:\n\tgcn={}\n\tcause={}".format(gcn, e)
+            )
+        raise e
+
+
+def parse_json_alert(
+    gcn: str, logger: Logger, logs: bool, is_test: bool
+) -> pd.DataFrame:
+    """
+    Parse the gcn as a string describing a json and return it as a pandas dataframe
+
+    Parameters
+    ----------
+    gcn: str
+        the gcn event
     logger: Logger
         the logger object
+    logs: boolean
+        if true, print logs
     is_test: (bool, optional)
         if true, run this function in test mode
         Parse gw event that are mock events
@@ -107,70 +166,13 @@ def parse_gw_alert(
     gw_pdf: pd.DataFrame
         the gw event as a dataframe
     """
-    logger.info("the alert is probably a new gw")
-    try:
-        record = json.loads(txt_file)
-    except Exception as e:
-        logger.error("failed to load the gw alert:\n\tcause={}".format(e))
+    if logs:
+        logger.info("the alert is a new json gcn")
 
-    # Only respond to mock events. Real events have GraceDB IDs like
-    # S1234567, mock events have GraceDB IDs like M1234567.
-    # NOTE NOTE NOTE replace the conditional below with this commented out
-    # conditional to only parse real events.
-    # if record['superevent_id'][0] != 'S':
-    #    return
-    event_kind = "S" if not is_test else "M"
-    if record["superevent_id"][0] != event_kind:
-        return
+    record = load_json_from_file(gcn, logger, logs)
+    obs_class = json_to_class(record)
 
-    print(type(record))
-    lvk_class = LVK(record)
-
-    print(lvk_class)
-    print(lvk_class.err_to_arcminute())
-    print(lvk_class.is_observation())
-    print(lvk_class.is_listened_packets_types())
-    print(lvk_class.detect_instruments())
-    print(lvk_class.get_trigger_id())
-    print(lvk_class.get_trigger_time())
-
-    print(lvk_class.voevent_to_df())
-
-    return lvk_class.voevent_to_df()
-
-    # if record["alert_type"] == "RETRACTION":
-    #     print(record["superevent_id"], "was retracted")
-    #     return
-
-    # # Respond only to 'CBC' events. Change 'CBC' to 'Burst' to respond to
-    # # only unmodeled burst events.
-    # if record["event"]["group"] != "CBC":
-    #     return
-
-    # # Parse sky map
-    # skymap_str = record.get("event", {}).pop("skymap")
-    # if skymap_str:
-    #     # Decode, parse skymap, and print most probable sky location
-    #     skymap_bytes = b64decode(skymap_str)
-    #     skymap = Table.read(io.BytesIO(skymap_bytes))
-
-    #     # level, ipix = ah.uniq_to_level_ipix(
-    #     #     skymap[np.argmax(skymap["PROBDENSITY"])]["UNIQ"]
-    #     # )
-
-    #     level, ipix = ah.uniq_to_level_ipix(skymap["UNIQ"])
-    #     print(level)
-    #     print(ipix)
-
-    #     # print(skymap)
-    #     ra, dec = ah.healpix_to_lonlat(ipix, ah.level_to_nside(level), order="nested")
-    #     print(ra)
-    #     print(dec)
-    # print(f"Most probable sky location (RA, Dec) = ({ra.deg}, {dec.deg})")
-
-    # Print some information from FITS header
-    # print(f'Distance = {skymap.meta["DISTMEAN"]} +/- {skymap.meta["DISTSTD"]}')
-
-    # Print remaining fields
-    # print("Record:")
-    # pprint(record)
+    if obs_class.is_observation(is_test) and obs_class.is_listened_packets_types():
+        if logs:  # pragma: no cover
+            logger.info("the voevent is a new obervation.")
+        return obs_class.voevent_to_df()

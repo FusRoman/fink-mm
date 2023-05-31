@@ -4,12 +4,13 @@ import numpy as np
 import pandas as pd
 import astropy.units as u
 from astropy.time import Time
-from astropy.table import Table
+from astropy.table import QTable
 import astropy_healpix as ah
 from base64 import b64decode
 from pandera import check_output
 import datetime as dt
 import json
+from healpy.pixelfunc import pix2ang, ang2pix
 
 from fink_grb.observatory import OBSERVATORY_PATH
 from fink_grb.observatory.observatory import Observatory
@@ -24,7 +25,7 @@ class LVK(Observatory):
 
     def __init__(self, notice: str):
         """
-        Initialise a Fermi class
+        Initialise a LVK class
 
         Parameters
         ----------
@@ -32,14 +33,14 @@ class LVK(Observatory):
 
         Example
         -------
-        >>> voevent = load_voevent_from_path(fermi_gbm_voevent_path)
-        >>> obs = voevent_to_class(voevent)
-        >>> type(obs)
-        <class 'Fermi.Fermi'>
+        >>> lvk_event = load_json_from_path(lvk_initial_path, logger)
+        >>> lvk_obs = json_to_class(lvk_event)
+        >>> type(lvk_obs)
+        <class 'LVK.LVK'>
         """
         super().__init__(path.join(OBSERVATORY_PATH, "LVK", "lvk.json"), notice)
 
-    def get_skymap(self) -> Table:
+    def get_skymap(self) -> QTable:
         """
         Decode and return the skymap
 
@@ -47,14 +48,19 @@ class LVK(Observatory):
         -------
         skymap: astropy.Table
             the sky localization error of the gw event as a skymap
+
+        Examples
+        --------
+        >>> np.array(lvk_initial.get_skymap()["UNIQ"])
+        array([  1285,   1287,   1296, ..., 162369, 162370, 162371])
         """
         skymap_str = self.voevent["event"]["skymap"]
         # Decode and parse skymap
         skymap_bytes = b64decode(skymap_str)
-        skymap = Table.read(io.BytesIO(skymap_bytes))
+        skymap = QTable.read(io.BytesIO(skymap_bytes))
         return skymap
 
-    def is_observation(self, is_test: bool = False) -> bool:
+    def is_observation(self, is_test: bool) -> bool:
         """
         Test if the event is a real gw alert.
 
@@ -70,11 +76,18 @@ class LVK(Observatory):
 
         Examples
         --------
-        >>> fermi_gbm.is_observation()
+        >>> lvk_initial.is_observation(False)
         True
+
+        >>> lvk_initial.is_observation(True)
+        False
         """
+        # Only respond to mock events. Real events have GraceDB IDs like
+        # S1234567, mock events have GraceDB IDs like M1234567.
+        # NOTE NOTE NOTE replace the conditional below with this commented out
+        # conditional to only parse real events.
         event_kind = "S" if not is_test else "M"
-        return self.voevent["superevent_id"][0] != event_kind
+        return self.voevent["superevent_id"][0] == event_kind
 
     def is_listened_packets_types(self) -> bool:
         """
@@ -94,10 +107,10 @@ class LVK(Observatory):
 
         Examples
         --------
-        >>> fermi_gbm.is_listened_packets_types()
+        >>> lvk_initial.is_listened_packets_types()
         True
-        >>> fermi_gbm.packet_type = [0, 1, 2]
-        >>> fermi_gbm.is_listened_packets_types()
+        >>> lvk_initial.packet_type = [0, 1, 2]
+        >>> lvk_initial.is_listened_packets_types()
         False
         """
         return self.voevent["alert_type"] in self.packet_type
@@ -116,8 +129,8 @@ class LVK(Observatory):
 
         Examples
         --------
-        >>> fermi_gbm.detect_instruments()
-        'GBM'
+        >>> lvk_initial.detect_instruments()
+        'H1_L1'
         """
         return "_".join(self.voevent["event"]["instruments"])
 
@@ -127,14 +140,27 @@ class LVK(Observatory):
 
         Example
         -------
-        >>> fermi_gbm.get_trigger_id()
-        680782656
-        >>> fermi_lat.get_trigger_id()
-        1659883590
+        >>> lvk_initial.get_trigger_id()
+        'S230518h'
         """
         return self.voevent["superevent_id"]
 
     def get_trigger_time(self):
+        """
+        Return the trigger time in UTC and julian date
+
+        Returns
+        -------
+        time_utc: str
+            utc trigger time
+        time_jd: float
+            julian date trigger time
+
+        Example
+        -------
+        >>> lvk_initial.get_trigger_time()
+        ('2023-05-18T12:59:08.167Z', 2460083.0410667476)
+        """
         time_utc = self.voevent["event"]["time"]
         time_jd = Time(time_utc, format="isot").jd
         return time_utc, time_jd
@@ -145,10 +171,8 @@ class LVK(Observatory):
 
         Example
         -------
-        >>> fermi_gbm.err_to_arcminute()
-        680.4
-        >>> print(round(fermi_lat.err_to_arcminute(), 4))
-        0.0167
+        >>> lvk_initial.err_to_arcminute()
+        148510660.49790943
         """
         skymap = self.get_skymap()
         skymap.sort("PROBDENSITY", reverse=True)
@@ -164,11 +188,28 @@ class LVK(Observatory):
         return area.to_value(u.arcmin**2)
 
     def get_most_probable_position(self):
+        """
+        Return the equatorial coordinates of the most probable sky localization of this gw alert
+
+        Returns
+        -------
+        ra: float
+            right ascension
+        dec: float
+            declination
+
+        Example
+        -------
+        >>> lvk_initial.get_most_probable_position()
+        (95.712890625, -10.958863307027668)
+        """
         skymap = self.get_skymap()
         level, ipix = ah.uniq_to_level_ipix(
             skymap[np.argmax(skymap["PROBDENSITY"])]["UNIQ"]
         )
-        ra, dec = ah.healpix_to_lonlat(ipix, ah.level_to_nside(level), order="nested")
+        lon, lat = ah.healpix_to_lonlat(ipix, ah.level_to_nside(level), order="nested")
+        ra = lon.deg
+        dec = lat.deg
         return ra, dec
 
     @check_output(voevent_df_schema)
@@ -200,9 +241,9 @@ class LVK(Observatory):
 
         Examples
         --------
-        >>> fermi_gbm.voevent_to_df()[["triggerId", "observatory", "instrument", "event", "ra", "dec", "err_arcmin"]]
-           triggerId observatory instrument event      ra     dec  err_arcmin
-        0  680782656       Fermi        GBM        316.69 -4.1699       680.4
+        >>> lvk_initial.voevent_to_df()[["triggerId", "observatory", "instrument", "event", "ra", "dec", "err_arcmin"]]
+          triggerId observatory instrument event         ra        dec    err_arcmin
+        0  S230518h         LVK      H1_L1    gw  95.712891 -10.958863  1.485107e+08
         """
 
         ack_time = dt.datetime.now()
@@ -221,8 +262,8 @@ class LVK(Observatory):
                 "event": ["gw"],
                 "ivorn": [""],
                 "triggerId": [trigger_id],
-                "ra": [gw_ra.deg],
-                "dec": [gw_dec.deg],
+                "ra": [gw_ra],
+                "dec": [gw_dec],
                 "err_arcmin": [voevent_error],
                 "ackTime": [ack_time],
                 "triggerTimejd": [time_jd],
@@ -237,24 +278,63 @@ class LVK(Observatory):
 
         return df
 
-    def get_pixels(self, NSIDE: int) -> list:
+    def find_probability_region(self, prob: float):
         """
-        Get the healpix pixels from the skymap
+        Return the region of a given probability
+
+        Parameters
+        ----------
+        prob: float
+            the probability of the region
+
+        Return
+        ------
+        skymap_region_prob: Astropy Table
+            the skymap containing the pixel within the probability region
+
+        Example
+        -------
+        >>> map_70 = lvk_initial.find_probability_region(0.7)
+        >>> len(map_70["UNIQ"])
+        8074
+
+        >>> map_90 = lvk_initial.find_probability_region(0.9)
+        >>> len(map_90["UNIQ"])
+        9704
+        """
+        skymap = self.get_skymap()
+        skymap.sort("PROBDENSITY", reverse=True)
+        level, _ = ah.uniq_to_level_ipix(skymap["UNIQ"])
+        pixel_area = ah.nside_to_pixel_area(ah.level_to_nside(level))
+        prob_area = pixel_area * skymap["PROBDENSITY"]
+        cumprob = np.cumsum(prob_area)
+        i = cumprob.searchsorted(prob)
+        return skymap[:i]
+
+    def get_pixels(self, NSIDE: int) -> np.ndarray:
+        """
+        Get the flat healpix pixels from a MOC skymap
 
         Parameters
         ----------
         NSIDE: integer
-            Healpix map resolution, better if a power of 2
+            Healpix flat map resolution, better if a power of 2
 
         Return
         ------
-        ipix_disc: integer list
-            all the pixels within the error area of the voevent
+        ipix: integer list
+            all the pixels within the 90% probability region of the skymap
 
         Examples
         --------
-        >>> icecube_bronze.get_pixels(32)
-        array([10349])
+        >>> pix = lvk_initial.get_pixels(32)
+        >>> pix
+        array([  221,   254,   256, ..., 11348, 11418, 11419])
+        >>> len(pix)
+        1473
         """
-        skymap = self.get_skymap()
-        level, ipix = ah.uniq_to_level_ipix(skymap["UNIQ"])
+        skymap_90 = self.find_probability_region(0.9)
+        level, ipix = ah.uniq_to_level_ipix(skymap_90["UNIQ"])
+        nside = ah.level_to_nside(level)
+        theta, phi = pix2ang(nside, ipix)
+        return np.unique(ang2pix(NSIDE, theta, phi))

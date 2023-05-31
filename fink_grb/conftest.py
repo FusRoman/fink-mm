@@ -6,8 +6,12 @@ import tempfile
 from pandas.testing import assert_frame_equal
 from astropy.time import Time
 
-from fink_grb.gcn_stream.gcn_reader import load_voevent_from_path
-from fink_grb.observatory import voevent_to_class
+from fink_grb.gcn_stream.gcn_reader import load_voevent_from_path, load_json_from_path
+from fink_grb.observatory import voevent_to_class, json_to_class
+from fink_grb.init import init_logging
+
+# logger for the test session
+logger = init_logging()
 
 
 @pytest.fixture(autouse=True)
@@ -16,8 +20,11 @@ def init_test(doctest_namespace):
     doctest_namespace["tempfile"] = tempfile
     doctest_namespace["assert_frame_equal"] = assert_frame_equal
     doctest_namespace["load_voevent_from_path"] = load_voevent_from_path
+    doctest_namespace["load_json_from_path"] = load_json_from_path
     doctest_namespace["voevent_to_class"] = voevent_to_class
+    doctest_namespace["json_to_class"] = json_to_class
     doctest_namespace["Time"] = Time
+    doctest_namespace["logger"] = logger
 
 
 @pytest.fixture(autouse=True)
@@ -30,10 +37,10 @@ def init_fermi(doctest_namespace):
     ] = "fink_grb/test/test_data/VODB/fermi/voevent_number=2842.xml"
 
     fermi_gbm = voevent_to_class(
-        load_voevent_from_path(doctest_namespace["fermi_gbm_voevent_path"])
+        load_voevent_from_path(doctest_namespace["fermi_gbm_voevent_path"], logger)
     )
     fermi_lat = voevent_to_class(
-        load_voevent_from_path(doctest_namespace["fermi_lat_voevent_path"])
+        load_voevent_from_path(doctest_namespace["fermi_lat_voevent_path"], logger)
     )
 
     doctest_namespace["fermi_gbm"] = fermi_gbm
@@ -53,13 +60,13 @@ def init_swift(doctest_namespace):
     ] = "fink_grb/test/test_data/VODB/swift/voevent_number=8582.xml"
 
     swift_bat = voevent_to_class(
-        load_voevent_from_path(doctest_namespace["swift_bat_voevent_path"])
+        load_voevent_from_path(doctest_namespace["swift_bat_voevent_path"], logger)
     )
     swift_xrt = voevent_to_class(
-        load_voevent_from_path(doctest_namespace["swift_xrt_voevent_path"])
+        load_voevent_from_path(doctest_namespace["swift_xrt_voevent_path"], logger)
     )
     swift_uvot = voevent_to_class(
-        load_voevent_from_path(doctest_namespace["swift_uvot_voevent_path"])
+        load_voevent_from_path(doctest_namespace["swift_uvot_voevent_path"], logger)
     )
 
     doctest_namespace["swift_bat"] = swift_bat
@@ -80,13 +87,17 @@ def init_integral(doctest_namespace):
     ] = "fink_grb/test/test_data/VODB/integral/voevent_number=18791.xml"
 
     integral_weak = voevent_to_class(
-        load_voevent_from_path(doctest_namespace["integral_weak_voevent_path"])
+        load_voevent_from_path(doctest_namespace["integral_weak_voevent_path"], logger)
     )
     integral_wakeup = voevent_to_class(
-        load_voevent_from_path(doctest_namespace["integral_wakeup_voevent_path"])
+        load_voevent_from_path(
+            doctest_namespace["integral_wakeup_voevent_path"], logger
+        )
     )
     integral_refined = voevent_to_class(
-        load_voevent_from_path(doctest_namespace["integral_refined_voevent_path"])
+        load_voevent_from_path(
+            doctest_namespace["integral_refined_voevent_path"], logger
+        )
     )
 
     doctest_namespace["integral_weak"] = integral_weak
@@ -107,18 +118,38 @@ def init_icecube(doctest_namespace):
     ] = "fink_grb/test/test_data/VODB/icecube/voevent_number=45412.xml"
 
     icecube_cascade = voevent_to_class(
-        load_voevent_from_path(doctest_namespace["icecube_cascade_voevent_path"])
+        load_voevent_from_path(
+            doctest_namespace["icecube_cascade_voevent_path"], logger
+        )
     )
     icecube_bronze = voevent_to_class(
-        load_voevent_from_path(doctest_namespace["icecube_bronze_voevent_path"])
+        load_voevent_from_path(doctest_namespace["icecube_bronze_voevent_path"], logger)
     )
     icecube_gold = voevent_to_class(
-        load_voevent_from_path(doctest_namespace["icecube_gold_voevent_path"])
+        load_voevent_from_path(doctest_namespace["icecube_gold_voevent_path"], logger)
     )
 
     doctest_namespace["icecube_cascade"] = icecube_cascade
     doctest_namespace["icecube_bronze"] = icecube_bronze
     doctest_namespace["icecube_gold"] = icecube_gold
+
+
+@pytest.fixture(autouse=True)
+def init_LVK(doctest_namespace):
+    doctest_namespace[
+        "lvk_initial_path"
+    ] = "fink_grb/test/test_data/VODB/lvk/initial.txt"
+    doctest_namespace["lvk_update_path"] = "fink_grb/test/test_data/VODB/lvk/update.txt"
+
+    lvk_initial = json_to_class(
+        load_json_from_path(doctest_namespace["lvk_initial_path"], logger)
+    )
+    lvk_update = json_to_class(
+        load_json_from_path(doctest_namespace["lvk_update_path"], logger)
+    )
+
+    doctest_namespace["lvk_initial"] = lvk_initial
+    doctest_namespace["lvk_update"] = lvk_update
 
 
 @pytest.fixture(autouse=True, scope="session")

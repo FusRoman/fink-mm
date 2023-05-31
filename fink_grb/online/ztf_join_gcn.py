@@ -428,7 +428,5 @@ def launch_joining_stream(arguments):
 
 
 if __name__ == "__main__":
-
     if sys.argv[1] == "prod":  # pragma: no cover
-
         apps.Application.ONLINE.run_application()

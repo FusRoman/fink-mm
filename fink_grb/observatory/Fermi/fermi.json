@@ -1,10 +1,16 @@
 {
     "name": "Fermi",
     "//gcn_description": "https://gcn.gsfc.nasa.gov/fermi.html",
+    "gcn_file_format": "xml",
     "packet_type": [
-        111, 112, 115,
-        120, 121, 127,
-        123, 125
+        111,
+        112,
+        115,
+        120,
+        121,
+        127,
+        123,
+        125
     ],
     "kafka_topics": [
         "gcn.classic.voevent.FERMI_GBM_ALERT",

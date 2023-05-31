@@ -1,6 +1,7 @@
 {
     "name": "LVK",
     "//gcn_description": "https://emfollow.docs.ligo.org/userguide/content.html",
+    "gcn_file_format": "json",
     "packet_type": [
         "PRELIMINARY",
         "INITIAL",

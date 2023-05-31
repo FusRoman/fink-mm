@@ -154,6 +154,19 @@ class Observatory(ABC):
         pass
 
     def get_trigger_time(self):
+        """
+        Return the trigger time in UTC and julian date
+
+        Returns
+        -------
+        time_utc: str
+            utc trigger time
+        time_jd: float
+            julian date trigger time
+
+        Example
+        -------
+        """
         time_utc = vp.get_event_time_as_utc(self.voevent)
         time_jd = Time(time_utc, format="datetime").jd
 

@@ -35,11 +35,15 @@ def __get_observatory_class():
 def __get_topics():
     p = files("fink_grb").__str__() + "/observatory/*/*.json"
     res = []
+    topic_format = {}
     for p_json in glob(p):
         with open(p_json, "r") as f:
             instr_data = json.loads(f.read())
             res += instr_data["kafka_topics"]
-    return res
+            topic_list = topic_format.setdefault(instr_data["gcn_file_format"], [])
+            topic_list += instr_data["kafka_topics"]
+            topic_format[instr_data["gcn_file_format"]] = topic_list
+    return res, topic_format
 
 
 OBSERVATORY_PATH = "observatory"
@@ -48,7 +52,7 @@ OBSERVATORY_JSON_SCHEMA_PATH = files("fink_grb").joinpath(
     "observatory/observatory_schema_version_{}.json".format(OBSERVATORY_SCHEMA_VERSION)
 )
 __OBS_CLASS = __get_observatory_class()
-TOPICS = __get_topics()
+TOPICS, TOPICS_FORMAT = __get_topics()
 
 
 def __get_detector(voevent):
@@ -134,3 +138,10 @@ def voevent_to_class(voevent: ObjectifiedElement) -> observatory.Observatory:
     """
     observatory_name = __get_detector(voevent)
     return __OBS_CLASS[observatory_name.lower()](voevent)
+
+
+def json_to_class(gcn: dict) -> observatory.Observatory:
+    if "superevent_id" in gcn:
+        return __OBS_CLASS["lvk"](gcn)
+    else:
+        raise Exception("unknown json format")

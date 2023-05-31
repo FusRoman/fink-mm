@@ -1,8 +1,11 @@
 {
     "name": "INTEGRAL",
     "//gcn_description": "https://gcn.gsfc.nasa.gov/integral.html",
+    "gcn_file_format": "xml",
     "packet_type": [
-        53, 54, 56
+        53,
+        54,
+        56
     ],
     "kafka_topics": [
         "gcn.classic.voevent.INTEGRAL_OFFLINE",

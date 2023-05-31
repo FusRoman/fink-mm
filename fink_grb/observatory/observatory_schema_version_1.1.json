@@ -13,6 +13,10 @@
       "description": "URL where to find the GCN description for this instrument",
       "type": "string"
     },
+    "gcn_file_format": {
+      "description": "gcn file format get from the gcn kafka stream",
+      "type": "string"
+    },
     "packet_type": {
       "description": "packet type to listen by the GCN stream service",
       "type": "array",

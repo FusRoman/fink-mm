@@ -4,16 +4,14 @@ import pyarrow.parquet as pq
 import os
 
 from gcn_kafka import Consumer
-
-import io
 import logging
+
+from pyarrow.fs import FileSystem
 
 import fink_grb.gcn_stream.gcn_reader as gr
 from fink_grb.init import get_config, init_logging
 from fink_grb.utils.fun_utils import return_verbose_level, get_hdfs_connector
-from fink_grb.observatory import voevent_to_class, TOPICS
-
-from lxml.etree import XMLSyntaxError
+from fink_grb.observatory import TOPICS, TOPICS_FORMAT
 
 
 def signal_handler(signal, frame):  # pragma: no cover
@@ -35,7 +33,15 @@ def signal_handler(signal, frame):  # pragma: no cover
     exit(0)
 
 
-def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False, gcn_fs=None):
+def load_and_parse_gcn(
+    gcn: bytes,
+    topic: str,
+    gcn_rawdatapath: str,
+    logger: logging.Logger,
+    logs: bool,
+    is_test: bool,
+    gcn_fs: FileSystem = None,
+):
     """
     Load and parse a gcn coming from the gcn kafka stream.
 
@@ -64,53 +70,53 @@ def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False, gcn_fs=None):
     ...     test_gcn = pd.read_parquet("fink_grb/test/test_data/683571622_0_test")
     ...     assert_frame_equal(base_gcn, test_gcn)
     """
-    try:
-        voevent = gr.load_voevent_from_file(io.BytesIO(gcn), logger)
-        observatory = voevent_to_class(voevent)
 
-        if observatory.is_observation() and observatory.is_listened_packets_types():
-            if logs:  # pragma: no cover
-                logger.info("the voevent is a new obervation.")
-
-            df = observatory.voevent_to_df()
-
-            table = pa.Table.from_pandas(df)
-
-            pq.write_to_dataset(
-                table,
-                root_path=gcn_rawdatapath,
-                partition_cols=["year", "month", "day"],
-                basename_template="{}_{}".format(str(df["triggerId"].values[0]), "{i}"),
-                existing_data_behavior="overwrite_or_ignore",
-                filesystem=gcn_fs,
-            )
-
-            if logs:  # pragma: no cover
-                logger.info(
-                    "writing of the new voevent successfull at the location {}".format(
-                        gcn_rawdatapath
-                    )
+    if topic in TOPICS_FORMAT["xml"]:
+        try:
+            df = gr.parse_xml_alert(gcn, logger, logs)
+        except Exception as e:  # pragma: no cover
+            logger.error(
+                "Error while reading the xml gcn notice: \n\t {}\n\n\tcause: {}".format(
+                    gcn, e
                 )
+            )
+            print()
             return
 
-    except XMLSyntaxError as xml_exception:
-        logger.info(
-            "error while loading the notice, try for gw notice\n\t:cause: {}".format(
-                xml_exception
-            )
-        )
-        df = gr.parse_gw_alert(gcn)
+    elif topic in TOPICS_FORMAT["json"]:
+        try:
+            df = gr.parse_json_alert(gcn, logger, logs)
+        except Exception as e:
+            logger.error("error while reading the json notice\n\t:cause: {}".format(e))
+            return
 
-    except Exception as e:  # pragma: no cover
+    else:
         logger.error(
-            "Error while reading the following gcn notice: \n\t {}\n\n\tcause: {}".format(
-                gcn, e
+            "error while parsing the gcn file:\n\ttopic: {}\n\tgcn: {}".format(
+                topic, gcn
             )
         )
-        print()
-        return
+        raise Exception("bad gcn file format")
 
-    return  # pragma: no cover
+    table = pa.Table.from_pandas(df)
+
+    pq.write_to_dataset(
+        table,
+        root_path=gcn_rawdatapath,
+        partition_cols=["year", "month", "day"],
+        basename_template="{}_{}".format(str(df["triggerId"].values[0]), "{i}"),
+        existing_data_behavior="overwrite_or_ignore",
+        filesystem=gcn_fs,
+    )
+
+    if logs:  # pragma: no cover
+        logger.info(
+            "writing of the new voevent successfull at the location {}".format(
+                gcn_rawdatapath
+            )
+        )
+
+    return
 
 
 def start_gcn_stream(arguments):
@@ -122,8 +128,6 @@ def start_gcn_stream(arguments):
     ----------
     arguments : dictionnary
         arguments parse by docopt from the command line
-    logs : boolean
-        activate the logs messages
 
     Returns
     -------
@@ -206,6 +210,15 @@ def start_gcn_stream(arguments):
                 if logs:
                     logger.info("A new voevent is coming")
                 value = gcn.value()
+                topic = gcn.topic()
 
-                load_and_parse_gcn(value, gcn_rawdatapath, logger, logs, gcn_fs=gcn_fs)
+                load_and_parse_gcn(
+                    value,
+                    topic,
+                    gcn_rawdatapath,
+                    logger,
+                    logs,
+                    is_test=arguments["--test"],
+                    gcn_fs=gcn_fs,
+                )
                 consumer.commit(gcn)
