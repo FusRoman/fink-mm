@@ -10,6 +10,10 @@ from typing import Union
 
 
 def __import_module(module_path):
+    """
+    import a module from a path
+
+    """
     module_name = path.basename(module_path).split(".")[0]
 
     spec = importlib.util.spec_from_file_location(module_name, module_path)
@@ -21,6 +25,9 @@ def __import_module(module_path):
 
 
 def __get_observatory_class():
+    """
+    get all the observatory class into a dictionnary with the observatory name as key
+    """
     all_obs = glob(path.join(path.dirname(fink_grb.__file__), "observatory/*/*.py"))
 
     # remove the multiple __init__.py

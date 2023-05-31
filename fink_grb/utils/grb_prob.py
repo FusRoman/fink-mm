@@ -166,7 +166,7 @@ def grb_assoc(
     ...    sparkDF.candidate.ra,
     ...     sparkDF.candidate.dec,
     ...     sparkDF.candidate.jdstarthist,
-    ...     sparkDF.platform,
+    ...     sparkDF.observatory,
     ...     sparkDF.timeUTC,
     ...     sparkDF.ra,
     ...     sparkDF.dec,
@@ -180,9 +180,9 @@ def grb_assoc(
     ... col("candidate.ra").alias("ztf_ra"),
     ... col("candidate.dec").alias("ztf_dec"),
     ... "candidate.jd",
-    ... "platform",
+    ... "observatory",
     ... "instrument",
-    ... "trigger_id",
+    ... "triggerId",
     ... col("ra").alias("grb_ra"),
     ... col("dec").alias("grb_dec"),
     ... col("err_arcmin").alias("grb_loc_error"),
@@ -191,6 +191,7 @@ def grb_assoc(
     ... ])
 
     >>> grb_prob = df_grb.toPandas()
+    >>> grb_prob.to_parquet("fink_grb/test/test_data/grb_prob_test.parquet")
     >>> grb_test = pd.read_parquet("fink_grb/test/test_data/grb_prob_test.parquet")
     >>> assert_frame_equal(grb_prob, grb_test)
     """
