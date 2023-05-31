@@ -1,5 +1,4 @@
 import fink_grb
-import io
 import importlib.util
 from importlib_resources import files
 import sys
