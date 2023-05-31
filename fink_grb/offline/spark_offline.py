@@ -12,7 +12,6 @@ import subprocess
 from fink_utils.spark.partitioning import convert_to_datetime
 
 from fink_grb.utils.fun_utils import (
-    return_verbose_level,
     build_spark_submit,
     join_post_process,
     read_and_build_spark_submit,
@@ -21,7 +20,7 @@ from fink_grb.utils.fun_utils import (
     read_additional_spark_options,
 )
 import fink_grb.utils.application as apps
-from fink_grb.init import get_config, init_logging
+from fink_grb.init import get_config, init_logging, return_verbose_level
 from fink_grb.utils.fun_utils import get_pixels
 
 
@@ -254,7 +253,7 @@ def spark_offline(
 
     grb_alert = grb_alert.withColumn(
         "hpix_circle",
-        get_pixels(grb_alert.raw_event, F.lit(NSIDE)),
+        get_pixels(grb_alert.observatory, grb_alert.raw_event, F.lit(NSIDE)),
     )
     grb_alert = grb_alert.withColumn("hpix", explode("hpix_circle"))
 
@@ -409,7 +408,5 @@ def launch_offline_mode(arguments):
 
 
 if __name__ == "__main__":
-
     if sys.argv[1] == "prod":  # pragma: no cover
-
         apps.Application.OFFLINE.run_application()

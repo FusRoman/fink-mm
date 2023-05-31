@@ -9,8 +9,8 @@ import logging
 from pyarrow.fs import FileSystem
 
 import fink_grb.gcn_stream.gcn_reader as gr
-from fink_grb.init import get_config, init_logging
-from fink_grb.utils.fun_utils import return_verbose_level, get_hdfs_connector
+from fink_grb.init import get_config, init_logging, return_verbose_level
+from fink_grb.utils.fun_utils import get_hdfs_connector
 from fink_grb.observatory import TOPICS, TOPICS_FORMAT
 
 

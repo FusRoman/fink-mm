@@ -1,5 +1,4 @@
 import warnings
-from fink_grb.utils.fun_utils import return_verbose_level
 
 warnings.filterwarnings("ignore")
 
@@ -23,7 +22,7 @@ from fink_grb.utils.fun_utils import (
     read_grb_admin_options,
 )
 import fink_grb.utils.application as apps
-from fink_grb.init import get_config, init_logging
+from fink_grb.init import get_config, init_logging, return_verbose_level
 from fink_grb.utils.fun_utils import get_pixels
 
 
@@ -249,7 +248,7 @@ def ztf_join_gcn_stream(
     # compute pixels for gcn alerts
     df_grb_stream = df_grb_stream.withColumn(
         "hpix_circle",
-        get_pixels(df_grb_stream.raw_event, F.lit(NSIDE)),
+        get_pixels(df_grb_stream.observatory, df_grb_stream.raw_event, F.lit(NSIDE)),
     )
     df_grb_stream = df_grb_stream.withColumn("hpix", explode("hpix_circle"))
 

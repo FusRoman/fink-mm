@@ -1,10 +1,12 @@
 import fink_grb
+import io
 import importlib.util
 from importlib_resources import files
 import sys
 import os.path as path
 from glob import glob
 import json
+from typing import Union
 
 
 def __import_module(module_path):
@@ -36,14 +38,22 @@ def __get_topics():
     p = files("fink_grb").__str__() + "/observatory/*/*.json"
     res = []
     topic_format = {}
+    instr_format = {}
     for p_json in glob(p):
         with open(p_json, "r") as f:
             instr_data = json.loads(f.read())
+
             res += instr_data["kafka_topics"]
+
             topic_list = topic_format.setdefault(instr_data["gcn_file_format"], [])
             topic_list += instr_data["kafka_topics"]
             topic_format[instr_data["gcn_file_format"]] = topic_list
-    return res, topic_format
+
+            instr_format[instr_data["name"].lower()] = instr_data[
+                "gcn_file_format"
+            ].lower()
+
+    return res, topic_format, instr_format
 
 
 OBSERVATORY_PATH = "observatory"
@@ -52,7 +62,7 @@ OBSERVATORY_JSON_SCHEMA_PATH = files("fink_grb").joinpath(
     "observatory/observatory_schema_version_{}.json".format(OBSERVATORY_SCHEMA_VERSION)
 )
 __OBS_CLASS = __get_observatory_class()
-TOPICS, TOPICS_FORMAT = __get_topics()
+TOPICS, TOPICS_FORMAT, INSTR_FORMAT = __get_topics()
 
 
 def __get_detector(voevent):
@@ -145,3 +155,9 @@ def json_to_class(gcn: dict) -> observatory.Observatory:
         return __OBS_CLASS["lvk"](gcn)
     else:
         raise Exception("unknown json format")
+
+
+def obsname_to_class(
+    obsname: str, raw_event: Union[ObjectifiedElement, dict]
+) -> observatory.Observatory:
+    return __OBS_CLASS[obsname.lower()](raw_event)

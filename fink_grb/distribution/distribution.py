@@ -16,13 +16,12 @@ from fink_filters.filter_on_axis_grb.filter import (
 import fink_grb
 
 from fink_grb.utils.fun_utils import (
-    return_verbose_level,
     read_and_build_spark_submit,
     read_grb_admin_options,
     read_additional_spark_options,
 )
 import fink_grb.utils.application as apps
-from fink_grb.init import get_config, init_logging
+from fink_grb.init import get_config, init_logging, return_verbose_level
 from fink_grb.utils.fun_utils import build_spark_submit
 
 from pyspark.sql import functions as F
