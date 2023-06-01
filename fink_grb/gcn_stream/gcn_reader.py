@@ -214,7 +214,7 @@ def parse_json_alert(gcn: str, logger: Logger, logs: bool) -> pd.DataFrame:
     Example
     -------
     >>> json_str = open(lvk_update_path, 'r').read()
-    >>> parse_json_alert(json_str, logger, False, False)
+    >>> parse_json_alert(json_str, logger, False)
       observatory instrument event  ...  year month  day
     0         LVK      H1_L1    gw  ...  2023    05   18
     <BLANKLINE>
