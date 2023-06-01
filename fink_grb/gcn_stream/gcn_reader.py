@@ -193,9 +193,7 @@ def load_json_from_file(gcn: str, logger: Logger, logs: bool = False) -> dict:
         raise e
 
 
-def parse_json_alert(
-    gcn: str, logger: Logger, logs: bool, is_test: bool
-) -> pd.DataFrame:
+def parse_json_alert(gcn: str, logger: Logger, logs: bool) -> pd.DataFrame:
     """
     Parse the gcn as a string describing a json and return it as a pandas dataframe
 
@@ -207,10 +205,6 @@ def parse_json_alert(
         the logger object
     logs: boolean
         if true, print logs
-    is_test: (bool, optional)
-        if true, run this function in test mode
-        Parse gw event that are mock events
-        Defaults to False.
 
     Returns
     -------
@@ -232,7 +226,7 @@ def parse_json_alert(
     record = load_json_from_file(gcn, logger, logs)
     obs_class = json_to_class(record)
 
-    if obs_class.is_observation(is_test) and obs_class.is_listened_packets_types():
+    if obs_class.is_observation() and obs_class.is_listened_packets_types():
         if logs:  # pragma: no cover
             logger.info("the voevent is a new obervation.")
         return obs_class.voevent_to_df()

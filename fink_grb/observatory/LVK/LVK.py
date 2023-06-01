@@ -60,7 +60,7 @@ class LVK(Observatory):
         skymap = QTable.read(io.BytesIO(skymap_bytes))
         return skymap
 
-    def is_observation(self, is_test: bool) -> bool:
+    def is_observation(self) -> bool:
         """
         Test if the event is a real gw alert.
 
@@ -76,26 +76,16 @@ class LVK(Observatory):
 
         Examples
         --------
-        >>> lvk_initial.is_observation(False)
+        >>> lvk_initial.is_observation()
         True
-        >>> lvk_initial.is_observation(True)
-        True
-        >>> lvk_test.is_observation(True)
-        True
-        >>> lvk_test.is_observation(False)
+        >>> lvk_test.is_observation()
         False
         """
         # Only respond to mock events. Real events have GraceDB IDs like
         # S1234567, mock events have GraceDB IDs like M1234567.
         # NOTE NOTE NOTE replace the conditional below with this commented out
         # conditional to only parse real events.
-        if is_test:
-            return (
-                self.voevent["superevent_id"][0] == "S"
-                or self.voevent["superevent_id"][0] == "M"
-            )
-        else:
-            return self.voevent["superevent_id"][0] == "S"
+        return self.voevent["superevent_id"][0] == "S"
 
     def is_listened_packets_types(self) -> bool:
         """
