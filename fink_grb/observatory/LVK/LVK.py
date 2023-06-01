@@ -79,16 +79,23 @@ class LVK(Observatory):
         >>> lvk_initial.is_observation(False)
         True
         >>> lvk_initial.is_observation(True)
-        False
+        True
         >>> lvk_test.is_observation(True)
         True
+        >>> lvk_test.is_observation(False)
+        False
         """
         # Only respond to mock events. Real events have GraceDB IDs like
         # S1234567, mock events have GraceDB IDs like M1234567.
         # NOTE NOTE NOTE replace the conditional below with this commented out
         # conditional to only parse real events.
-        event_kind = "S" if not is_test else "M"
-        return self.voevent["superevent_id"][0] == event_kind
+        if is_test:
+            return (
+                self.voevent["superevent_id"][0] == "S"
+                or self.voevent["superevent_id"][0] == "M"
+            )
+        else:
+            return self.voevent["superevent_id"][0] == "S"
 
     def is_listened_packets_types(self) -> bool:
         """
