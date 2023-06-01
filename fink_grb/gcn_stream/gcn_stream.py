@@ -114,6 +114,10 @@ def load_and_parse_gcn(
         raise Exception("bad gcn file format")
 
     try:
+        if df is None:
+            if logs:  # pragma: no cover
+                logger.info("The gcn is not a real observation")
+            return
         table = pa.Table.from_pandas(df)
 
         pq.write_to_dataset(
