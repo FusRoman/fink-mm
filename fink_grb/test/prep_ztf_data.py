@@ -6,6 +6,9 @@ import voeventparse as vp
 from fink_grb.utils.fun_utils import get_observatory
 
 
+past_shift_date = np.random.uniform(1, 20, 200)
+
+
 def spatial_time_align(
     ztf_raw_data: pd.DataFrame, gcn_pdf: pd.DataFrame
 ) -> pd.DataFrame:
@@ -92,10 +95,10 @@ def spatial_time_align(
         ztf_raw_data.loc[len(ztf_raw_data)] = ztf_row
 
     # create fake ztf alerts for previous night (for the offline mode)
-    for _ in range(100):
+    for i in range(200):
         # deepcopy of the dict to avoid the copy of pointer
         ztf_row = deepcopy(ztf_raw_data.loc[0].to_dict())
-        ztf_row["candidate"]["jdstarthist"] = today_time.jd - np.random.uniform(1, 8)
+        ztf_row["candidate"]["jdstarthist"] = today_time.jd - past_shift_date[i]
 
         ztf_row["prv_candidates"][-1]["jd"] = ztf_row["candidate"][
             "jdstarthist"
@@ -148,7 +151,7 @@ if __name__ == "__main__":
             new_path_gcn_today.joinpath("{}_0".format(obs_pdf["triggerId"].iloc[0]))
         )
 
-    # create other fake gcn today with ra,dec = (0, 0)
+    # create other fake gcn today with ra,dec = (0, 1)
     gcn_pdf = pd.read_parquet(path_gcn[0])
     for i in range(10):
         today_time = Time(today)
@@ -162,15 +165,21 @@ if __name__ == "__main__":
             0
         ].ObservationLocation.AstroCoords.Time.TimeInstant.ISOTime = today_time.iso
 
+        # ra
         obs.voevent.WhereWhen.ObsDataLocation[
             0
         ].ObservationLocation.AstroCoords.Position2D.Value2.C1 = 0
+
+        # dec
         obs.voevent.WhereWhen.ObsDataLocation[
             0
         ].ObservationLocation.AstroCoords.Position2D.Value2.C2 = 1
+
+        # error radius
         obs.voevent.WhereWhen.ObsDataLocation[
             0
         ].ObservationLocation.AstroCoords.Position2D.Error2Radius = 10
+
         obs.voevent.WhereWhen.ObsDataLocation[
             0
         ].ObservationLocation.AstroCoords.Position2D.attrib["unit"] = "deg"
@@ -179,7 +188,7 @@ if __name__ == "__main__":
         obs_pdf.to_parquet(new_path_gcn_today.joinpath("{}_0".format(i)))
 
     # crate fake gcn in the previous night with ra,dec = (0, 0) (for offline mode)
-    for i in range(11, 100):
+    for i in range(11, 200):
         today_time = Time(today)
 
         obs = (
@@ -190,18 +199,24 @@ if __name__ == "__main__":
         obs.voevent.WhereWhen.ObsDataLocation[
             0
         ].ObservationLocation.AstroCoords.Time.TimeInstant.ISOTime = Time(
-            today_time.jd - np.random.uniform(1, 8), format="jd"
+            today_time.jd - past_shift_date[i], format="jd"
         ).iso
 
+        # ra
         obs.voevent.WhereWhen.ObsDataLocation[
             0
         ].ObservationLocation.AstroCoords.Position2D.Value2.C1 = 0
+
+        # dec
         obs.voevent.WhereWhen.ObsDataLocation[
             0
         ].ObservationLocation.AstroCoords.Position2D.Value2.C2 = 1
+
+        # error radius
         obs.voevent.WhereWhen.ObsDataLocation[
             0
         ].ObservationLocation.AstroCoords.Position2D.Error2Radius = 10
+
         obs.voevent.WhereWhen.ObsDataLocation[
             0
         ].ObservationLocation.AstroCoords.Position2D.attrib["unit"] = "deg"

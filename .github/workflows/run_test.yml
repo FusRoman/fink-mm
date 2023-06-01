@@ -11,8 +11,8 @@ on:
 env:
   NIGHT: 20190903
   CONFIGFILE_PATH: fink_grb/conf/integration.conf
-  SECRET_ID: ${{ secrets.GCN_TEST_ID }}
-  SECRET_SECRET: ${{ secrets.GCN_TEST_SECRET }}
+  SECRET_ID: ${{ secrets.GCN_ID }}
+  SECRET_SECRET: ${{ secrets.GCN_SECRET }}
 
 
 jobs:
@@ -162,9 +162,10 @@ jobs:
         mkdir fink_grb/ci_join_test
 
     - name: Launch GCN stream
+      # don't put --test for the gcn_stream command otherwise it will miss the gw alerts
       shell: bash
       run: |
-        fink_grb gcn_stream start --config $CONFIGFILE_PATH --test > fink_grb_gcnstream_${NIGHT}.log 2>&1 &
+        fink_grb gcn_stream start --config $CONFIGFILE_PATH > fink_grb_gcnstream_${NIGHT}.log 2>&1 &
         sleep 30s
 
     - name: Start services
