@@ -113,25 +113,32 @@ def load_and_parse_gcn(
         )
         raise Exception("bad gcn file format")
 
-    table = pa.Table.from_pandas(df)
+    try:
+        table = pa.Table.from_pandas(df)
 
-    pq.write_to_dataset(
-        table,
-        root_path=gcn_rawdatapath,
-        partition_cols=["year", "month", "day"],
-        basename_template="{}_{}".format(str(df["triggerId"].values[0]), "{i}"),
-        existing_data_behavior="overwrite_or_ignore",
-        filesystem=gcn_fs,
-    )
-
-    if logs:  # pragma: no cover
-        logger.info(
-            "writing of the new voevent successfull at the location {}".format(
-                gcn_rawdatapath
-            )
+        pq.write_to_dataset(
+            table,
+            root_path=gcn_rawdatapath,
+            partition_cols=["year", "month", "day"],
+            basename_template="{}_{}".format(str(df["triggerId"].values[0]), "{i}"),
+            existing_data_behavior="overwrite_or_ignore",
+            filesystem=gcn_fs,
         )
 
-    return
+        if logs:  # pragma: no cover
+            logger.info(
+                "writing of the new voevent successfull at the location {}".format(
+                    gcn_rawdatapath
+                )
+            )
+
+        return
+    except Exception as e:
+        logger.error(
+            "writing of the new voevent failed\n\tcause:{}\n\t{}".format(e, gcn)
+        )
+
+        return
 
 
 def start_gcn_stream(arguments):
