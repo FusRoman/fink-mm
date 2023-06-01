@@ -159,7 +159,7 @@ def load_json_from_path(file_path: str, logger: Logger, logs: bool = False) -> d
         raise e
 
 
-def load_json_from_file(gcn: str, logger: Logger, logs: bool) -> dict:
+def load_json_from_file(gcn: str, logger: Logger, logs: bool = False) -> dict:
     """
     Load a json from a string
     Raise an exception if unable to load the json.

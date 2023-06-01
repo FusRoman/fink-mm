@@ -157,6 +157,20 @@ def voevent_to_class(voevent: ObjectifiedElement) -> observatory.Observatory:
 
 
 def json_to_class(gcn: dict) -> observatory.Observatory:
+    """
+    Return an observatory class based on the given json.
+    Raise an exception if not an allowed json.
+
+    Parameters
+    ----------
+    gcn: dict
+        a gcn in json format
+
+    Returns
+    -------
+    observatory.Observatory
+        an observatory class
+    """
     if "superevent_id" in gcn:
         return __OBS_CLASS["lvk"](gcn)
     else:
@@ -166,4 +180,19 @@ def json_to_class(gcn: dict) -> observatory.Observatory:
 def obsname_to_class(
     obsname: str, raw_event: Union[ObjectifiedElement, dict]
 ) -> observatory.Observatory:
+    """
+    Return the observatory class corresponding to the given obsname and raw_event
+
+    Parameters
+    ----------
+    obsname: str
+        an observatory name
+    raw_event: Union[ObjectifiedElement, dict]
+        the gcn event
+
+    Returns
+    -------
+    observatory.Observatory
+        the observatory class
+    """
     return __OBS_CLASS[obsname.lower()](raw_event)

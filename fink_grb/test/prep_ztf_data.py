@@ -1,26 +1,44 @@
 from copy import deepcopy
+import pandas as pd
 import numpy as np
 import voeventparse as vp
 
 from fink_grb.utils.fun_utils import get_observatory
 
 
-def spatial_time_align(ztf_raw_data, gcn_pdf):
+def spatial_time_align(
+    ztf_raw_data: pd.DataFrame, gcn_pdf: pd.DataFrame
+) -> pd.DataFrame:
     """Change data in the ztf test alerts to have some fake counterparts of gcn alerts.
     Used by the integration test
 
-    Args:
-        ztf_raw_data (DataFrame): ztf test alerts
-        gcn_pdf (DataFrame): gnc get from the gcn stream
+    Parameters
+    ----------
+    ztf_raw_data: DataFrame
+            ztf test alerts
+    gcn_pdf: DataFrame
+            gnc get from the gcn stream
 
-    Returns:
-        DataFrame: the ztf test alerts same as the input but with additionnal alerts which are fake gcn counterparts.
+    Returns
+    -------
+    DataFrame
+        the ztf test alerts same as the input but with additionnal alerts which are fake gcn counterparts.
     """
     ztf_raw_data = ztf_raw_data.copy()
     gcn_pdf = gcn_pdf.sort_values("triggerTimejd")
 
-    first_obs = gcn_pdf["raw_event"].iloc[:-4].map(get_observatory).values
-    last_obs = gcn_pdf["raw_event"].iloc[-4:].map(get_observatory).values
+    first_obs = (
+        gcn_pdf[["observatory", "raw_event"]]
+        .iloc[:-4]
+        .apply(lambda x: get_observatory(x[0], x[1]), axis=1)
+        .values
+    )
+    last_obs = (
+        gcn_pdf[["observatory", "raw_event"]]
+        .iloc[-4:]
+        .apply(lambda x: get_observatory(x[0], x[1]), axis=1)
+        .values
+    )
 
     # select half of the gcn alerts
     random_obs = np.random.choice(first_obs, int((len(first_obs) + 1) / 2))
@@ -116,7 +134,11 @@ if __name__ == "__main__":
         gcn_pdf = pd.read_parquet(gcn_p)
         today_time = Time(today)
 
-        obs = gcn_pdf["raw_event"].map(get_observatory).values[0]
+        obs = (
+            gcn_pdf[["observatory", "raw_event"]]
+            .apply(lambda x: get_observatory(x[0], x[1]), axis=1)
+            .values[0]
+        )
         obs.voevent.WhereWhen.ObsDataLocation[
             0
         ].ObservationLocation.AstroCoords.Time.TimeInstant.ISOTime = today_time.iso
@@ -131,7 +153,11 @@ if __name__ == "__main__":
     for i in range(10):
         today_time = Time(today)
 
-        obs = gcn_pdf["raw_event"].map(get_observatory).values[0]
+        obs = (
+            gcn_pdf[["observatory", "raw_event"]]
+            .apply(lambda x: get_observatory(x[0], x[1]), axis=1)
+            .values[0]
+        )
         obs.voevent.WhereWhen.ObsDataLocation[
             0
         ].ObservationLocation.AstroCoords.Time.TimeInstant.ISOTime = today_time.iso
@@ -156,7 +182,11 @@ if __name__ == "__main__":
     for i in range(11, 100):
         today_time = Time(today)
 
-        obs = gcn_pdf["raw_event"].map(get_observatory).values[0]
+        obs = (
+            gcn_pdf[["observatory", "raw_event"]]
+            .apply(lambda x: get_observatory(x[0], x[1]), axis=1)
+            .values[0]
+        )
         obs.voevent.WhereWhen.ObsDataLocation[
             0
         ].ObservationLocation.AstroCoords.Time.TimeInstant.ISOTime = Time(
