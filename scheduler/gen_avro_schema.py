@@ -11,7 +11,7 @@ import shutil
 # The schema will be pushed into fink_grb/conf/ and its name will be 'fink_grb_schema_version_*SCHEMA_VERSION*.avro'
 #   where *SCHEMA_VERSION* is the schema version
 
-SCHEMA_VERSION = "1.1"
+SCHEMA_VERSION = "1.2"
 
 
 def readschemadata(bytes_io: io._io.BytesIO) -> fastavro._read.reader:

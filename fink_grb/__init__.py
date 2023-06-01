@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 __version__ = "0.8"
-__distribution_schema_version__ = "1.1"
+__distribution_schema_version__ = "1.2"
