@@ -100,7 +100,7 @@ def load_and_parse_gcn(
 
     elif topic in TOPICS_FORMAT["json"]:
         try:
-            df = gr.parse_json_alert(gcn, logger, logs, is_test)
+            df = gr.parse_json_alert(gcn, logger, logs)
         except Exception as e:
             logger.error(
                 "error while reading the json notice\n\t:cause: {}\n\tgcn: {}".format(
