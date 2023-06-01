@@ -165,7 +165,7 @@ jobs:
       # don't put --test for the gcn_stream command otherwise it will miss the gw alerts
       shell: bash
       run: |
-        fink_grb gcn_stream start --config $CONFIGFILE_PATH > fink_grb_gcnstream_${NIGHT}.log 2>&1 &
+        fink_grb gcn_stream start --config $CONFIGFILE_PATH --test > fink_grb_gcnstream_${NIGHT}.log 2>&1 &
         sleep 30s
 
     - name: Start services

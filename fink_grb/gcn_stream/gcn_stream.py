@@ -170,6 +170,8 @@ def start_gcn_stream(arguments):
             "auto.offset.reset": "earliest",
             "enable.auto.commit": False,
         }
+        if arguments["--test"]:
+            consumer_config = {"group.id": "", "auto.offset.reset": "earliest"}
 
         consumer = Consumer(
             config=consumer_config,
@@ -177,15 +179,12 @@ def start_gcn_stream(arguments):
             client_secret=config["CLIENT"]["secret"],
         )
 
-        if arguments["--test"]:
-            consumer_config = {"group.id": "", "auto.offset.reset": "earliest"}
-
-            consumer = Consumer(
-                config=consumer_config,
-                client_id=config["CLIENT"]["id"],
-                client_secret=config["CLIENT"]["secret"],
-                domain="test.gcn.nasa.gov",
-            )
+        # consumer = Consumer(
+        #     config=consumer_config,
+        #     client_id=config["CLIENT"]["id"],
+        #     client_secret=config["CLIENT"]["secret"],
+        #     domain="test.gcn.nasa.gov",
+        # )
 
     except Exception as e:
         logger.error("Config entry not found \n\t {}".format(e))
