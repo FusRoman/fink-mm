@@ -274,6 +274,11 @@ def ztf_join_gcn_stream(
 
     df_grb = join_post_process(df_grb)
 
+    print("-----")
+    print("after join post process")
+    df_grb.writeStream.format("console").start()
+    print("-----")
+
     # re-create partitioning columns if needed.
     timecol = "jd"
     converter = lambda x: convert_to_datetime(x)  # noqa: E731
