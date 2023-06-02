@@ -169,9 +169,18 @@ if __name__ == "__main__":
         )
 
     # create other fake gcn today with ra,dec = (0, 1)
-    gcn_pdf = pd.read_parquet(path_gcn[0])
-    gcn_pdf["format"] = gcn_pdf["observatory"].str.lower().map(INSTR_FORMAT)
-    gcn_pdf = gcn_pdf[gcn_pdf["format"] == "xml"]
+
+    # take a gcn event in xml format
+    take = False
+    i = 0
+    while not take:
+        gcn_pdf = pd.read_parquet(path_gcn[i])
+        gcn_pdf["format"] = gcn_pdf["observatory"].str.lower().map(INSTR_FORMAT)
+        gcn_pdf = gcn_pdf[gcn_pdf["format"] == "xml"]
+        if len(gcn_pdf) == 0:
+            i += 1
+        else:
+            take = True
 
     for i in range(10):
         today_time = Time(today)
