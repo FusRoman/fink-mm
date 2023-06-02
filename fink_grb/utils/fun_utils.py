@@ -276,6 +276,9 @@ def get_observatory(obsname: str, rawEvent: str) -> Observatory:
     >>> pdf = pd.read_parquet(grb_data)
     >>> type(get_observatory(pdf["observatory"].iloc[0], pdf["raw_event"].iloc[0]))
     <class 'Fermi.Fermi'>
+    >>> pdf = pd.read_parquet(gw_data)
+    >>> type(get_observatory(pdf["observatory"].iloc[0], pdf["raw_event"].iloc[0]))
+    <class 'LVK.LVK'>
     """
     logger = init_logging()
     format_instr = INSTR_FORMAT[obsname.lower()]

@@ -168,12 +168,14 @@ def init_spark(doctest_namespace):
     doctest_namespace["Time"] = Time
 
     grb_data = "fink_grb/test/test_data/gcn_test/raw/year=2019/month=09/day=03"
+    gw_data = "fink_grb/test/test_data/S230518h_0_test"
     join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
     alert_data = (
         "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/"
     )
 
     doctest_namespace["grb_data"] = grb_data
+    doctest_namespace["gw_data"] = gw_data
     doctest_namespace["join_data"] = join_data
     doctest_namespace["alert_data"] = alert_data
 
