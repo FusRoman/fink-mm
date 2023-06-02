@@ -141,8 +141,16 @@ if __name__ == "__main__":
 
     for gcn_p in random_gcn:
         gcn_pdf = pd.read_parquet(gcn_p)
+        print(gcn_pdf)
+        print()
         gcn_pdf["format"] = gcn_pdf["observatory"].str.lower().map(INSTR_FORMAT)
         gcn_pdf = gcn_pdf[gcn_pdf["format"] == "json"]
+
+        if len(gcn_pdf) == 0:
+            continue
+
+        print(gcn_pdf)
+        print("----")
 
         today_time = Time(today)
 
