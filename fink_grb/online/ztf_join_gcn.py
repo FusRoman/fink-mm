@@ -263,22 +263,32 @@ def ztf_join_gcn_stream(
         "dec", "grb_dec"
     )
 
+    print("-----")
+    df_ztf_stream.writeStream.format("console").start()
+    print()
+    print()
+    df_grb_stream.writeStream.format("console").start()
+    print("-----")
+
     # join the two streams according to the healpix columns.
     # A pixel id will be assign to each alerts / gcn according to their position in the sky.
     # Each alerts / gcn with the same pixel id are in the same area of the sky.
-    # The NSIDE correspond to a resolution of ~15 degree/pixel.
-
-    # WARNING  !
-    # the join condition with healpix column doesn't work properly
-    # have to take into account the nearby pixels in case the error box of a GRB
-    # overlap many pixels.
     join_condition = [
         df_ztf_stream.hpix == df_grb_stream.hpix,
         df_ztf_stream.candidate.jdstarthist > df_grb_stream.triggerTimejd,
     ]
     df_grb = df_ztf_stream.join(df_grb_stream, join_condition, "inner")
 
+    print()
+    print("after join")
+    df_grb.writeStream.format("console").start()
+
     df_grb = join_post_process(df_grb)
+
+    print("-----")
+    print("after join post process")
+    df_grb.writeStream.format("console").start()
+    print("-----")
 
     # re-create partitioning columns if needed.
     timecol = "jd"
