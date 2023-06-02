@@ -60,7 +60,7 @@ class LVK(Observatory):
         skymap = QTable.read(io.BytesIO(skymap_bytes))
         return skymap
 
-    def is_observation(self) -> bool:
+    def is_observation(self, is_test: bool) -> bool:
         """
         Test if the event is a real gw alert.
 
@@ -73,18 +73,27 @@ class LVK(Observatory):
         -------
         is_observation : boolean
             Return True if the voevent is of observation type, otherwise return False
+        is_test: boolean
+            if is_test is true, accept the event starting with a M (test event)
 
         Examples
         --------
-        >>> lvk_initial.is_observation()
+        >>> lvk_initial.is_observation(False)
         True
-        >>> lvk_test.is_observation()
+        >>> lvk_test.is_observation(False)
         False
+        >>> lvk_test.is_observation(True)
+        True
         """
         # Only respond to mock events. Real events have GraceDB IDs like
         # S1234567, mock events have GraceDB IDs like M1234567.
         # NOTE NOTE NOTE replace the conditional below with this commented out
         # conditional to only parse real events.
+        if is_test:
+            return (
+                self.voevent["superevent_id"][0] == "S"
+                and self.voevent["superevent_id"][0] == "M"
+            )
         return self.voevent["superevent_id"][0] == "S"
 
     def is_listened_packets_types(self) -> bool:
@@ -132,7 +141,7 @@ class LVK(Observatory):
         """
         return "_".join(self.voevent["event"]["instruments"])
 
-    def get_trigger_id(self):
+    def get_trigger_id(self) -> str:
         """
         Get the triggerId of the voevent
 
@@ -163,7 +172,7 @@ class LVK(Observatory):
         time_jd = Time(time_utc, format="isot").jd
         return time_utc, time_jd
 
-    def err_to_arcminute(self):
+    def err_to_arcminute(self) -> float:
         """
         Return the 100% error area of the gw event in arcminute
 

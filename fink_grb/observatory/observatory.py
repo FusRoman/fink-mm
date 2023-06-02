@@ -174,6 +174,25 @@ class Observatory(ABC):
 
         return time_utc, time_jd
 
+    def get_most_probable_position(self):
+        """
+        Return the equatorial coordinates of the most probable sky localization of this gw alert
+
+        Returns
+        -------
+        ra: float
+            right ascension
+        dec: float
+            declination
+
+        Example
+        -------
+        >>> lvk_initial.get_most_probable_position()
+        (95.712890625, -10.958863307027668)
+        """
+        coords = vp.get_event_position(self.voevent)
+        return coords.ra, coords.dec
+
     @check_output(voevent_df_schema)
     def voevent_to_df(self) -> pd.DataFrame:
         """
@@ -211,7 +230,7 @@ class Observatory(ABC):
         ack_time = dt.datetime.now()
         trigger_id = self.get_trigger_id()
 
-        coords = vp.get_event_position(self.voevent)
+        ra, dec = self.get_most_probable_position()
 
         time_utc, time_jd = self.get_trigger_time()
 
@@ -224,8 +243,8 @@ class Observatory(ABC):
                 "event": [""],
                 "ivorn": [self.voevent.attrib["ivorn"]],
                 "triggerId": [trigger_id],
-                "ra": [coords.ra],
-                "dec": [coords.dec],
+                "ra": [ra],
+                "dec": [dec],
                 "err_arcmin": [voevent_error],
                 "ackTime": [ack_time],
                 "triggerTimejd": [time_jd],

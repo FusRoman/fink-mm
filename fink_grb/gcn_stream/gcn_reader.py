@@ -193,7 +193,9 @@ def load_json_from_file(gcn: str, logger: Logger, logs: bool = False) -> dict:
         raise e
 
 
-def parse_json_alert(gcn: str, logger: Logger, logs: bool) -> pd.DataFrame:
+def parse_json_alert(
+    gcn: str, logger: Logger, logs: bool, is_test: bool
+) -> pd.DataFrame:
     """
     Parse the gcn as a string describing a json and return it as a pandas dataframe
 
@@ -205,6 +207,8 @@ def parse_json_alert(gcn: str, logger: Logger, logs: bool) -> pd.DataFrame:
         the logger object
     logs: boolean
         if true, print logs
+    is_test: boolean
+        if is_test is true, accept the test event
 
     Returns
     -------
@@ -214,7 +218,7 @@ def parse_json_alert(gcn: str, logger: Logger, logs: bool) -> pd.DataFrame:
     Example
     -------
     >>> json_str = open(lvk_update_path, 'r').read()
-    >>> parse_json_alert(json_str, logger, False)
+    >>> parse_json_alert(json_str, logger, False, True)
       observatory instrument event  ...  year month  day
     0         LVK      H1_L1    gw  ...  2023    05   18
     <BLANKLINE>
@@ -226,7 +230,7 @@ def parse_json_alert(gcn: str, logger: Logger, logs: bool) -> pd.DataFrame:
     record = load_json_from_file(gcn, logger, logs)
     obs_class = json_to_class(record)
 
-    if obs_class.is_observation() and obs_class.is_listened_packets_types():
+    if obs_class.is_observation(is_test) and obs_class.is_listened_packets_types():
         if logs:  # pragma: no cover
             logger.info("the voevent is a new obervation.")
         return obs_class.voevent_to_df()

@@ -49,7 +49,7 @@ def spatial_time_align(
 
     # get the trigger time and the coordinates for each selected gcn
     jd_gcn = [obs.get_trigger_time()[1] for obs in random_obs]
-    coord_gcn = [vp.get_event_position(obs.voevent) for obs in random_obs]
+    coord_gcn = [obs.get_most_probable_position() for obs in random_obs]
 
     # select the same number of ztf alerts than the number of selected gcn alerts
     rand_ztf_index = np.random.choice(ztf_raw_data.index, len(random_obs))
@@ -71,8 +71,8 @@ def spatial_time_align(
             rows_idx, "prv_candidates"
         ][-1]["jd"] + np.random.uniform(0.01, 0.2)
 
-        ztf_raw_data.loc[rows_idx, "candidate"]["ra"] = new_coord.ra
-        ztf_raw_data.loc[rows_idx, "candidate"]["dec"] = new_coord.dec
+        ztf_raw_data.loc[rows_idx, "candidate"]["ra"] = new_coord[0]
+        ztf_raw_data.loc[rows_idx, "candidate"]["dec"] = new_coord[1]
 
     # create another fake ztf alerts with ra,dec = (0, 0)
     today_time = Time(today)
@@ -122,6 +122,8 @@ if __name__ == "__main__":
     from pathlib import Path
     from astropy.time import Time
 
+    from fink_grb.observatory import INSTR_FORMAT
+
     # If no gcn exist today, create some with the current date
     today = datetime.today()
     gcn_data_path = "fink_grb/ci_gcn_test/year={:04d}/month={:02d}/day={:02d}/".format(
@@ -135,6 +137,9 @@ if __name__ == "__main__":
 
     for gcn_p in random_gcn:
         gcn_pdf = pd.read_parquet(gcn_p)
+        gcn_pdf["format"] = gcn_pdf["observatory"].str.lower().map(INSTR_FORMAT)
+        gcn_pdf = gcn_pdf[gcn_pdf["format"] == "json"]
+
         today_time = Time(today)
 
         obs = (
@@ -153,6 +158,9 @@ if __name__ == "__main__":
 
     # create other fake gcn today with ra,dec = (0, 1)
     gcn_pdf = pd.read_parquet(path_gcn[0])
+    gcn_pdf["format"] = gcn_pdf["observatory"].str.lower().map(INSTR_FORMAT)
+    gcn_pdf = gcn_pdf[gcn_pdf["format"] == "json"]
+
     for i in range(10):
         today_time = Time(today)
 

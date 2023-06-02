@@ -41,6 +41,20 @@ def __get_observatory_class():
 
 
 def __get_topics():
+    """
+    Return the list of all topics from the observatory json description
+    and, for each topics, the file format received from kafka
+    and, for each file format, the corresponding observatory sending in this format
+
+    Returns
+    -------
+    res: string list
+        the list of topics
+    topic_format: dict
+        a key value map (topics => file format)
+    instr_format: dict
+        a key value map (observatory name => file format)
+    """
     p = files("fink_grb").__str__() + "/observatory/*/*.json"
     res = []
     topic_format = {}
