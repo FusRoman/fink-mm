@@ -74,7 +74,7 @@ class LVK(Observatory):
         is_observation : boolean
             Return True if the voevent is of observation type, otherwise return False
         is_test: boolean
-            if is_test is true, accept the event starting with a M (test event)
+            if is_test is true, accept the gw events starting with a M (test event)
 
         Examples
         --------
@@ -92,7 +92,7 @@ class LVK(Observatory):
         if is_test:
             return (
                 self.voevent["superevent_id"][0] == "S"
-                and self.voevent["superevent_id"][0] == "M"
+                or self.voevent["superevent_id"][0] == "M"
             )
         return self.voevent["superevent_id"][0] == "S"
 

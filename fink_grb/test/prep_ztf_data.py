@@ -134,6 +134,11 @@ if __name__ == "__main__":
     path_gcn = glob.glob("fink_grb/ci_gcn_test/*/*/*/*")
     random_gcn = np.random.choice(path_gcn, int((len(path_gcn) + 1) / 2))
 
+    print()
+    print("nb gcn: {}".format(len(path_gcn)))
+    print("nb random gcn: {}".format(len(random_gcn)))
+    print()
+
     for gcn_p in random_gcn:
         gcn_pdf = pd.read_parquet(gcn_p)
         gcn_pdf["format"] = gcn_pdf["observatory"].str.lower().map(INSTR_FORMAT)
