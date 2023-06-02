@@ -1,7 +1,6 @@
 from copy import deepcopy
 import pandas as pd
 import numpy as np
-import voeventparse as vp
 
 from fink_grb.utils.fun_utils import get_observatory
 
