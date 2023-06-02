@@ -238,10 +238,6 @@ def spark_offline(
 
     ztf_alert.cache().count()
 
-    print()
-    ztf_alert.show()
-    print()
-
     grb_alert = spark.read.format("parquet").load(gcn_read_path)
 
     grb_alert = grb_alert.filter(grb_alert.triggerTimejd >= low_bound).filter(
