@@ -8,6 +8,12 @@ from fink_grb.utils.fun_utils import get_observatory
 past_shift_date = np.random.uniform(1, 20, 200)
 
 
+def get_xml_notices(pdf: pd.DataFrame) -> pd.DataFrame:
+    pdf["format"] = pdf["observatory"].str.lower().map(INSTR_FORMAT)
+    pdf = pdf[pdf["format"] == "xml"]
+    return pdf
+
+
 def spatial_time_align(
     ztf_raw_data: pd.DataFrame, gcn_pdf: pd.DataFrame
 ) -> pd.DataFrame:
@@ -134,23 +140,12 @@ if __name__ == "__main__":
     path_gcn = glob.glob("fink_grb/ci_gcn_test/*/*/*/*")
     random_gcn = np.random.choice(path_gcn, int((len(path_gcn) + 1) / 2))
 
-    print()
-    print("nb gcn: {}".format(len(path_gcn)))
-    print("nb random gcn: {}".format(len(random_gcn)))
-    print()
-
     for gcn_p in random_gcn:
         gcn_pdf = pd.read_parquet(gcn_p)
-        print(gcn_pdf)
-        print()
-        gcn_pdf["format"] = gcn_pdf["observatory"].str.lower().map(INSTR_FORMAT)
-        gcn_pdf = gcn_pdf[gcn_pdf["format"] == "xml"]
+        gcn_pdf = get_xml_notices(gcn_pdf)
 
         if len(gcn_pdf) == 0:
             continue
-
-        print(gcn_pdf)
-        print("----")
 
         today_time = Time(today)
 
@@ -175,8 +170,8 @@ if __name__ == "__main__":
     i = 0
     while not take:
         gcn_pdf = pd.read_parquet(path_gcn[i])
-        gcn_pdf["format"] = gcn_pdf["observatory"].str.lower().map(INSTR_FORMAT)
-        gcn_pdf = gcn_pdf[gcn_pdf["format"] == "xml"]
+        gcn_pdf = get_xml_notices(gcn_pdf)
+
         if len(gcn_pdf) == 0:
             i += 1
         else:
