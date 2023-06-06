@@ -90,6 +90,7 @@ def align_ztf(
     2458725.7316204
 
     >>> ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["jdstarthist"]
+    5.041666666666667
     >>> ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["jd"]
     >>> ztf_pdf.loc[len(ztf_pdf)-1]["prv_candidates"][-1]["jd"]
     """
@@ -258,6 +259,7 @@ def align_ztf_and_gcn_online(
     0    True
     Name: triggerTimejd, dtype: bool
 
+    >>> print(type(obs))
     >>> obs = get_observatory(new_gcn["observatory"], new_gcn["raw_event"])
     >>> ztf_ra = ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["ra"]
     >>> ztf_dec = ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["dec"]
