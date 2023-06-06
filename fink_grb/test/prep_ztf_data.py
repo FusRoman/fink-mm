@@ -23,7 +23,9 @@ def generate_data_offline(ztf_pdf, gcn_pdf):
 
         gcn_past_str = (
             "fink_grb/ci_gcn_test/year={:04d}/month={:02d}/day={:02d}/".format(
-                past_time.year, past_time.month, past_time.day
+                past_time.to_datetime().year,
+                past_time.to_datetime().month,
+                past_time.to_datetime().day,
             )
         )
         gcn_past_path = Path(gcn_past_str)
