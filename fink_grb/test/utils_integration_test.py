@@ -83,6 +83,7 @@ def align_ztf(
     10
 
     >>> ztf_pdf.loc[0]["candidate"]["jdstarthist"]
+    2458729.6881481
     >>> ztf_pdf.loc[0]["candidate"]["jd"]
     >>> ztf_pdf.loc[0]["prv_candidates"][-1]["jd"]
 
@@ -186,7 +187,7 @@ def align_xml_gcn(
     >>> gcn = pd.read_parquet(path_gcn)
 
     >>> trigger_time = '2023-06-06 07:33:30.511'
-    >>> new_gcn = it_test.align_xml_gcn(gcn, trigger_time, 10, 24)
+    >>> new_gcn = align_xml_gcn(gcn, trigger_time, 10, 24)
 
     >>> new_gcn[["ra", "dec"]]
          ra   dec
@@ -242,7 +243,8 @@ def align_ztf_and_gcn_online(
     >>> new_gcn = align_ztf_and_gcn_online(ztf_pdf, gcn, random)
 
     >>> ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["ra"] == new_gcn["ra"]
-    True
+    0    True
+    Name: ra, dtype: bool
 
     >>> ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["dec"] == new_gcn["dec"]
     True
