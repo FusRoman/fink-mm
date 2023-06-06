@@ -161,7 +161,12 @@ def set_gcn_error(voevent: ObjectifiedElement, error: float):
 
 
 def align_xml_gcn(
-    gcn_xml_pdf: pd.DataFrame, time: str, ra: float, dec: float, error: float
+    gcn_xml_pdf: pd.DataFrame,
+    time: str,
+    ra: float,
+    dec: float,
+    error: float,
+    gcn_id: int = 0,
 ) -> pd.DataFrame:
     """
     Return a new gcn alert where the emission time is time
@@ -180,6 +185,8 @@ def align_xml_gcn(
         the new declination of the alert
     error: float
         error in degree
+    gcn_id: int
+        the trigger id of the new gcn
 
     Returns
     -------
@@ -211,13 +218,16 @@ def align_xml_gcn(
     set_gcn_trigger_time(obs, time)
     set_gcn_coord(obs, ra, dec)
     set_gcn_error(obs, error)
-    return obs.voevent_to_df()
+    new_gcn_pdf = obs.voevent_to_df()
+    new_gcn_pdf["triggerId"] = gcn_id
+    return new_gcn_pdf
 
 
 def align_ztf_and_gcn(
     ztf_pdf: pd.DataFrame,
     gcn_pdf: pd.DataFrame,
     time: Time,
+    gcn_id: int = 0,
     random: np.random.Generator = np.random.default_rng(),
 ) -> pd.DataFrame:
     """
@@ -230,6 +240,8 @@ def align_ztf_and_gcn(
         ztf alerts
     gcn_pdf: pd.DataFrame
         gcn alert
+    gcn_id: int, optional, Defaults to 0.
+        the trigger id of the new gcn
     random: np.random.Generator, optional, Defaults to np.random.default_rng().
         random generator for determinism
 
@@ -276,7 +288,7 @@ def align_ztf_and_gcn(
     dec = random.uniform(-90, 90)
     error = random.uniform(1, 10)
 
-    new_gcn = align_xml_gcn(gcn_pdf, time.iso, ra, dec, error)
+    new_gcn = align_xml_gcn(gcn_pdf, time.iso, ra, dec, error, gcn_id)
     align_ztf(ztf_pdf, time.jd, ra, dec, random)
 
     return new_gcn
