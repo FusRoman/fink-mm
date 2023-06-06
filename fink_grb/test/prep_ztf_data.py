@@ -36,7 +36,7 @@ if __name__ == "__main__":
     today = Time.now()
     gcn_today_data_path = (
         "fink_grb/ci_gcn_test/year={:04d}/month={:02d}/day={:02d}/".format(
-            today.year, today.month, today.day
+            today.to_datetime().year, today.to_datetime().month, today.to_datetime().day
         )
     )
     new_path_gcn_today = Path(gcn_today_data_path)
@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
     new_path_ztf_data = Path(
         "fink_grb/test/test_data/ztf_test/online/raw/year={:04d}/month={:02d}/day={:02d}/".format(
-            today.year, today.month, today.day
+            today.to_datetime().year, today.to_datetime().month, today.to_datetime().day
         )
     )
     new_path_ztf_data.mkdir(parents=True, exist_ok=True)
