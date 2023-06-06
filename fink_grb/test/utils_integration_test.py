@@ -94,6 +94,7 @@ def align_ztf(
     >>> ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["jd"]
     5.067725085928089
     >>> ztf_pdf.loc[len(ztf_pdf)-1]["prv_candidates"][-1]["jd"]
+    5.0463421216568705
     """
     new_ztf_row = get_copy_of_row(ztf_pdf, 0)
 
@@ -265,7 +266,9 @@ def align_ztf_and_gcn_online(
     >>> ztf_dec = ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["dec"]
     >>> ztf_jdstarthist = ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["jdstarthist"]
 
-    >>> obs.association_proba(ztf_ra, ztf_dec, ztf_jdstarthist)
+    >>> grb_proba = obs.association_proba(ztf_ra, ztf_dec, ztf_jdstarthist)
+    >>> (1 - grb_proba) > special.erf(5 / sqrt(2))
+    True
     """
     today = Time.now()
     ra = random.uniform(0, 360)

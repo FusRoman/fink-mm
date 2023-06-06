@@ -10,6 +10,9 @@ from fink_grb.gcn_stream.gcn_reader import load_voevent_from_path, load_json_fro
 from fink_grb.observatory import voevent_to_class, json_to_class
 from fink_grb.init import init_logging
 
+from scipy import special
+from math import sqrt
+
 # logger for the test session
 logger = init_logging()
 
@@ -25,6 +28,8 @@ def init_test(doctest_namespace):
     doctest_namespace["json_to_class"] = json_to_class
     doctest_namespace["Time"] = Time
     doctest_namespace["logger"] = logger
+    doctest_namespace["special"] = special
+    doctest_namespace["sqrt"] = sqrt
 
 
 @pytest.fixture(autouse=True)
