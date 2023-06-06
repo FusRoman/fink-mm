@@ -11,6 +11,8 @@ from fink_grb.observatory import INSTR_FORMAT
 
 
 def get_copy_of_row(pdf: pd.DataFrame, index_row: int) -> dict:
+    print(pdf)
+    print(index_row)
     row = pdf.loc[index_row].to_dict()
     return deepcopy(row)
 
