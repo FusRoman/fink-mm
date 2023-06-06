@@ -87,6 +87,7 @@ def align_ztf(
     >>> ztf_pdf.loc[0]["candidate"]["jd"]
     2458729.6881481
     >>> ztf_pdf.loc[0]["prv_candidates"][-1]["jd"]
+    2458725.7316204
 
     >>> ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["jdstarthist"]
     >>> ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["jd"]
@@ -199,6 +200,8 @@ def align_xml_gcn(
     0 2023-06-06 07:33:30.511000+00:00   2.460102e+06
 
     >>> new_gcn["err_arcmin"]
+    0    300.0
+    Name: err_arcmin, dtype: float64
     """
     new_gcn = pd.Series(get_copy_of_row(gcn_xml_pdf, 0))
     obs = get_observatory(new_gcn["observatory"], new_gcn["raw_event"])
@@ -252,7 +255,8 @@ def align_ztf_and_gcn_online(
     Name: dec, dtype: bool
 
     >>> ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["jdstarthist"] > new_gcn["triggerTimejd"]
-    True
+    0    True
+    Name: triggerTimejd, dtype: bool
 
     >>> obs = get_observatory(new_gcn["observatory"], new_gcn["raw_event"])
     >>> ztf_ra = ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["ra"]
