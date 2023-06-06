@@ -30,7 +30,7 @@ def generate_data_offline(ztf_pdf, gcn_pdf):
         )
         gcn_past_path = Path(gcn_past_str)
         gcn_past_path.mkdir(parents=True, exist_ok=True)
-        new_gcn.to_parquet(gcn_past_path + "/{}_0.parquet".format(new_gcn_id))
+        new_gcn.to_parquet(str(gcn_past_path) + "/{}_0.parquet".format(new_gcn_id))
 
 
 if __name__ == "__main__":
