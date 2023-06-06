@@ -249,7 +249,7 @@ def align_ztf_and_gcn(
     >>> ztf_pdf = pd.read_parquet(path_ztf_raw)
 
     >>> random = np.random.default_rng(0)
-    >>> new_gcn = align_ztf_and_gcn_online(ztf_pdf, gcn, today, random)
+    >>> new_gcn = align_ztf_and_gcn(ztf_pdf, gcn, today, random)
 
     >>> ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["ra"] == new_gcn["ra"]
     0    True
