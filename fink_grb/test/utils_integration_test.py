@@ -259,7 +259,7 @@ def align_ztf_and_gcn_online(
     0    True
     Name: triggerTimejd, dtype: bool
 
-    >>> print(type(obs))
+    >>> print(type(new_gcn))
     >>> obs = get_observatory(new_gcn["observatory"], new_gcn["raw_event"])
     >>> ztf_ra = ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["ra"]
     >>> ztf_dec = ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["dec"]
