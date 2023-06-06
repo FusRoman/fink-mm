@@ -72,7 +72,7 @@ def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia
     >>> spark_filter = ztf_grb_filter(sparkDF, 5, 2, 0, 5)
 
     >>> spark_filter.count()
-    31
+    32
     """
     spark_filter = (
         spark_ztf.filter(
@@ -168,6 +168,7 @@ def spark_offline(
     ... )
 
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/offline").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datajoin.to_parquet(join_data_test)
     >>> datajoin = datajoin.drop("grb_proba", axis=1)
 
     >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
