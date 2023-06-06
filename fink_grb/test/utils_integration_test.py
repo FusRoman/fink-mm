@@ -277,7 +277,7 @@ def align_ztf_and_gcn(
     error = random.uniform(1, 10)
 
     new_gcn = align_xml_gcn(gcn_pdf, time.iso, ra, dec, error)
-    align_ztf(ztf_pdf, time.float, ra, dec, random)
+    align_ztf(ztf_pdf, time.jd, ra, dec, random)
 
     return new_gcn
 
