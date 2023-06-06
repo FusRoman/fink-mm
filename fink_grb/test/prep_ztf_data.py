@@ -60,6 +60,10 @@ if __name__ == "__main__":
     )
     ztf_pdf = pd.read_parquet(path_ztf_raw)
 
+    print("------")
+    print(ztf_pdf)
+    print(gcn_pdf)
+    print("------")
     generate_data_online(ztf_pdf, gcn_pdf, today, gcn_today_data_path)
     generate_data_offline(ztf_pdf, gcn_pdf)
 
