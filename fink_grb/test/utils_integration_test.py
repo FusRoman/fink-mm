@@ -214,9 +214,10 @@ def align_xml_gcn(
     return obs.voevent_to_df()
 
 
-def align_ztf_and_gcn_online(
+def align_ztf_and_gcn(
     ztf_pdf: pd.DataFrame,
     gcn_pdf: pd.DataFrame,
+    time: Time,
     random: np.random.Generator = np.random.default_rng(),
 ) -> pd.DataFrame:
     """
@@ -240,6 +241,7 @@ def align_ztf_and_gcn_online(
 
     Examples
     --------
+    >>> today = Time.now()
     >>> path_gcn = "fink_grb/test/test_data/683571622_0_test"
     >>> gcn = pd.read_parquet(path_gcn)
 
@@ -247,7 +249,7 @@ def align_ztf_and_gcn_online(
     >>> ztf_pdf = pd.read_parquet(path_ztf_raw)
 
     >>> random = np.random.default_rng(0)
-    >>> new_gcn = align_ztf_and_gcn_online(ztf_pdf, gcn, random)
+    >>> new_gcn = align_ztf_and_gcn_online(ztf_pdf, gcn, today, random)
 
     >>> ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["ra"] == new_gcn["ra"]
     0    True
@@ -270,13 +272,12 @@ def align_ztf_and_gcn_online(
     >>> (1 - grb_proba) > special.erf(5 / sqrt(2))
     True
     """
-    today = Time.now()
     ra = random.uniform(0, 360)
     dec = random.uniform(-90, 90)
     error = random.uniform(1, 10)
 
-    new_gcn = align_xml_gcn(gcn_pdf, today.iso, ra, dec, error)
-    align_ztf(ztf_pdf, today.jd, ra, dec, random)
+    new_gcn = align_xml_gcn(gcn_pdf, time, ra, dec, error)
+    align_ztf(ztf_pdf, time, ra, dec, random)
 
     return new_gcn
 
