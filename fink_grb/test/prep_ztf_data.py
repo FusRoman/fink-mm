@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import fink_grb.test.utils_integration_test as it
 import glob
-from datetime import datetime
+from astropy.time import Time
 from pathlib import Path
 
 
@@ -33,7 +33,7 @@ def generate_data_offline(ztf_pdf, gcn_pdf):
 
 if __name__ == "__main__":
     # If no gcn exist today, create some with the current date
-    today = datetime.today()
+    today = Time.now()
     gcn_today_data_path = (
         "fink_grb/ci_gcn_test/year={:04d}/month={:02d}/day={:02d}/".format(
             today.year, today.month, today.day
