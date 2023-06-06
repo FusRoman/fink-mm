@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 from copy import deepcopy
-from datetime import datetime
 from lxml.objectify import ObjectifiedElement
 
 
