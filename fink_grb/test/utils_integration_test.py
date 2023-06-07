@@ -42,7 +42,7 @@ def align_ztf(
     time: float,
     ra: float,
     dec: float,
-    random: np.random.Generator = np.random.default_rng(),
+    random: np.random.Generator,
 ):
     """
     Add a new alert to the ztf alert dataframe where the emission time is time
@@ -98,7 +98,7 @@ def align_ztf(
     new_ztf_row = get_copy_of_row(ztf_pdf, 0)
 
     # 1 hour after the gcn trigger time
-    set_candidate_field(new_ztf_row, "jdstarthist", time + 1 / 24)
+    set_candidate_field(new_ztf_row, "jdstarthist", time + 30 / 24 / 60)
 
     # between 1 minutes and 10 minutes after the jdstarthist
     new_jdstarthist = get_candidate_field(new_ztf_row, "jdstarthist")
@@ -226,8 +226,8 @@ def align_ztf_and_gcn(
     ztf_pdf: pd.DataFrame,
     gcn_pdf: pd.DataFrame,
     time: Time,
+    random: np.random.Generator,
     gcn_id: int = 0,
-    random: np.random.Generator = np.random.default_rng(),
 ) -> pd.DataFrame:
     """
     Create new gcn alerts and ztf alerts. The ztf_alerts start to vary 1 hour after the gcn.

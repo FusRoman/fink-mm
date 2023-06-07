@@ -7,19 +7,21 @@ from pathlib import Path
 
 
 def generate_data_online(ztf_pdf, gcn_pdf, today, gcn_today_data_path):
+    random = np.random.default_rng()
     # create ztf alerts and gcn for the online mode (time = today)
     new_gcn_trigger_id = np.random.uniform(0, 1e5, 10)
     for new_gcn_id in new_gcn_trigger_id:
-        new_gcn = it.align_ztf_and_gcn(ztf_pdf, gcn_pdf, today)
+        new_gcn = it.align_ztf_and_gcn(ztf_pdf, gcn_pdf, today, random, new_gcn_id)
         new_gcn.to_parquet(gcn_today_data_path + "/{}_0.parquet".format(new_gcn_id))
 
 
 def generate_data_offline(ztf_pdf, gcn_pdf):
+    random = np.random.default_rng()
     # create ztf alerts and gcn for the offline mode (past time)
     new_gcn_trigger_id = np.random.uniform(0, 1e5, 15)
     for id, new_gcn_id in enumerate(new_gcn_trigger_id):
         past_time = today - id
-        new_gcn = it.align_ztf_and_gcn(ztf_pdf, gcn_pdf, past_time)
+        new_gcn = it.align_ztf_and_gcn(ztf_pdf, gcn_pdf, past_time, random)
 
         gcn_past_str = (
             "fink_grb/ci_gcn_test/year={:04d}/month={:02d}/day={:02d}/".format(

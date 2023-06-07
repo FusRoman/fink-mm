@@ -319,7 +319,7 @@ def get_pixels(obsname: pd.Series, rawEvent: pd.Series, NSIDE: pd.Series) -> pd.
     >>> grb_pixs.withColumn("hpix", explode("hpix_circle"))\
           .orderBy(["triggerId", "hpix"])\
                .select(["triggerId", "hpix"]).head(5)
-    [Row(triggerId='683499781', hpix=10), Row(triggerId='683499781', hpix=10), Row(triggerId='S230518h', hpix=10), Row(triggerId='S230518h', hpix=12), Row(triggerId='683499781', hpix=20)]
+    [Row(triggerId='683476673', hpix=42), Row(triggerId='683476673', hpix=42), Row(triggerId='683476673', hpix=62), Row(triggerId='683476673', hpix=62), Row(triggerId='683476673', hpix=63)]
     """
     return pd.Series(
         [
