@@ -169,8 +169,8 @@ class LVK(Observatory):
         ('2023-05-18T12:59:08.167Z', 2460083.0410667476)
         """
         time_utc = self.voevent["event"]["time"]
-        time_jd = Time(time_utc, format="isot").jd
-        return time_utc, time_jd
+        time = Time(time_utc, format="isot")
+        return time.iso, time.jd
 
     def err_to_arcminute(self) -> float:
         """
