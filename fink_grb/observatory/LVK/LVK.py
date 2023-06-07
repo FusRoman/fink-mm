@@ -166,7 +166,7 @@ class LVK(Observatory):
         Example
         -------
         >>> lvk_initial.get_trigger_time()
-        ('2023-05-18T12:59:08.167Z', 2460083.0410667476)
+        ('2023-05-18 12:59:08.167', 2460083.0410667476)
         """
         time_utc = self.voevent["event"]["time"]
         time = Time(time_utc, format="isot")
