@@ -317,7 +317,7 @@ def get_pixels(obsname: pd.Series, rawEvent: pd.Series, NSIDE: pd.Series) -> pd.
     >>> grb_pixs = spark_grb.withColumn("hpix_circle", get_pixels(spark_grb.observatory, spark_grb.raw_event, F.lit(8)))
 
     >>> grb_pixs.withColumn("hpix", explode("hpix_circle"))\
-          .orderBy("hpix")\
+          .orderBy(["triggerId", "hpix"])\
                .select(["triggerId", "hpix"]).head(5)
     [Row(triggerId='683499781', hpix=10), Row(triggerId='683499781', hpix=10), Row(triggerId='S230518h', hpix=10), Row(triggerId='S230518h', hpix=12), Row(triggerId='683499781', hpix=20)]
     """
