@@ -89,11 +89,11 @@ def align_ztf(
     2458725.7316204
 
     >>> ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["jdstarthist"]
-    5.041666666666667
+    5.020833333333333
     >>> ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["jd"]
-    5.067725085928089
+    5.046891752594755
     >>> ztf_pdf.loc[len(ztf_pdf)-1]["prv_candidates"][-1]["jd"]
-    5.0463421216568705
+    5.0255087883235365
     """
     new_ztf_row = get_copy_of_row(ztf_pdf, 0)
 
