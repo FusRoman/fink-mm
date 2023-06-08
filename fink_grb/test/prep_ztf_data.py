@@ -48,10 +48,12 @@ if __name__ == "__main__":
 
     path_gcn = glob.glob("fink_grb/ci_gcn_test/*/*/*/*")
     for p in path_gcn:
-        gcn_pdf = pd.read_parquet(path_gcn)
+        gcn_pdf = pd.read_parquet(p)
         gcn_pdf = it.get_xml_notices(gcn_pdf).reset_index(drop=True)
         if len(gcn_pdf) == 0:
             continue
+        else:
+            break
 
     if len(gcn_pdf) == 0:
         raise Exception("no xml alerts, weird !!!")
