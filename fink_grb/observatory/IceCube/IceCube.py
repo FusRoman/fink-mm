@@ -154,9 +154,11 @@ class IceCube(Observatory):
             }
         )
 
-        df["year"] = df["triggerTimeUTC"].dt.strftime("%Y")
-        df["month"] = df["triggerTimeUTC"].dt.strftime("%m")
-        df["day"] = df["triggerTimeUTC"].dt.strftime("%d")
+        dt = Time(time_utc).to_datetime()
+
+        df["year"] = dt.strftime("%Y")
+        df["month"] = dt.strftime("%m")
+        df["day"] = dt.strftime("%d")
 
         return df
 
