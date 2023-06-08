@@ -253,11 +253,11 @@ class Observatory(ABC):
             }
         )
 
-        dt = Time(time_utc).to_datetime()
+        time_dt = Time(time_utc).to_datetime()
 
-        df["year"] = dt.strftime("%Y")
-        df["month"] = dt.strftime("%m")
-        df["day"] = dt.strftime("%d")
+        df["year"] = time_dt.strftime("%Y")
+        df["month"] = time_dt.strftime("%m")
+        df["day"] = time_dt.strftime("%d")
 
         return df
 
