@@ -274,7 +274,7 @@ class LVK(Observatory):
                 "err_arcmin": [voevent_error],
                 "ackTime": [ack_time],
                 "triggerTimejd": [time_jd],
-                "triggerTimeUTC": pd.to_datetime(pd.Series([time_utc])),
+                "triggerTimeUTC": [time_utc],
                 "raw_event": json.dumps(self.voevent),
             }
         )
