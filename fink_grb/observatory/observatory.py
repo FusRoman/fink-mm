@@ -167,7 +167,7 @@ class Observatory(ABC):
         Example
         -------
         >>> icecube_gold.get_trigger_time()
-        (datetime.datetime(2022, 12, 23, 7, 43, 0, 520000, tzinfo=datetime.timezone.utc), 2459936.8215337964)
+        ('2022-12-23 07:43:00.520', 2459936.8215337964)
         """
         time_utc = vp.get_event_time_as_utc(self.voevent)
         time = Time(time_utc, format="datetime")
