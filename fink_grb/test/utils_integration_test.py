@@ -218,7 +218,7 @@ def align_xml_gcn(
     set_gcn_coord(obs, ra, dec)
     set_gcn_error(obs, error)
     new_gcn_pdf = obs.voevent_to_df()
-    new_gcn_pdf["triggerId"] = gcn_id
+    new_gcn_pdf["triggerId"] = str(gcn_id)
     return new_gcn_pdf
 
 
