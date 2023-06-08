@@ -170,9 +170,9 @@ class Observatory(ABC):
         (datetime.datetime(2022, 12, 23, 7, 43, 0, 520000, tzinfo=datetime.timezone.utc), 2459936.8215337964)
         """
         time_utc = vp.get_event_time_as_utc(self.voevent)
-        time_jd = Time(time_utc, format="datetime").jd
+        time = Time(time_utc, format="datetime")
 
-        return time_utc, time_jd
+        return time.iso, time.jd
 
     def get_most_probable_position(self):
         """

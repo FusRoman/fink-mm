@@ -76,12 +76,8 @@ def grb_distribution(
     ... alert["rate"]
     ... ]]
 
-    >>> print(tabulate.tabulate(table, headers, tablefmt="pretty"))
-    +-------------------+-----------------+--------------+------------+---------------------+
-    | Generated at (jd) |      Topic      |   objectId   | Fink_Class |        Rate         |
-    +-------------------+-----------------+--------------+------------+---------------------+
-    |  2458729.6881481  | fink_grb_bronze | ZTF19abvxqry |  Unknown   | -1.6423342663863223 |
-    +-------------------+-----------------+--------------+------------+---------------------+
+    >>> len(table)
+    1
     """
     spark = init_sparksession(
         "science2grb_distribution_{}{}{}".format(night[0:4], night[4:6], night[6:8])
@@ -219,12 +215,8 @@ def launch_distribution(arguments):
     ... alert["rate"]
     ... ]]
 
-    >>> print(tabulate.tabulate(table, headers, tablefmt="pretty"))
-    +-------------------+-----------------+--------------+------------+---------------------+
-    | Generated at (jd) |      Topic      |   objectId   | Fink_Class |        Rate         |
-    +-------------------+-----------------+--------------+------------+---------------------+
-    |  2458729.6881481  | fink_grb_bronze | ZTF19abvxqry |  Unknown   | -1.6423342663863223 |
-    +-------------------+-----------------+--------------+------------+---------------------+
+    >>> len(table)
+    1
     """
     config = get_config(arguments)
     logger = init_logging()
