@@ -347,3 +347,43 @@ class LVK(Observatory):
         nside = ah.level_to_nside(level)
         theta, phi = pix2ang(nside, ipix)
         return np.unique(ang2pix(NSIDE, theta, phi))
+
+    def association_proba(
+        self, ztf_ra: float, ztf_dec: float, jdstarthist: float
+    ) -> float:
+        """
+        return the probability density at a known sky position for this gw event.
+
+        Parameters
+        ---------
+        ztf_ra: float
+            ztf right ascension
+        ztf_dec: float
+            ztf declination
+        jdstarthist: float
+            first time the alert varied
+
+        Returns
+        -------
+        float:
+            the probability density at this position
+
+        Examples
+        --------
+        >>> lvk_initial.association_proba(0, 0, 0)
+        4.3545487491960628e-13
+        >>> lvk_initial.association_proba(95.712890625, -10.958863307027668, 0)
+        0.0054008620296433045
+        """
+        skymap = self.get_skymap()
+        max_level = 29
+        max_nside = ah.level_to_nside(max_level)
+        level, ipix = ah.uniq_to_level_ipix(skymap["UNIQ"])
+        index = ipix * (2 ** (max_level - level)) ** 2
+
+        sorter = np.argsort(index)
+        match_ipix = ah.lonlat_to_healpix(
+            ztf_ra * u.deg, ztf_dec * u.deg, max_nside, order="nested"
+        )
+        i = sorter[np.searchsorted(index, match_ipix, side="right", sorter=sorter) - 1]
+        return skymap[i]["PROBDENSITY"].to_value(u.deg**-2)
