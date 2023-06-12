@@ -35,6 +35,13 @@ def generate_data_offline(ztf_pdf, gcn_pdf):
         new_gcn.to_parquet(str(gcn_past_path) + "/{}_0.parquet".format(new_gcn_id))
 
 
+def dictify(x):
+    res = {}
+    for el in x:
+        res[str(el[0])] = float(el[1])
+    return res
+
+
 if __name__ == "__main__":
     # If no gcn exist today, create some with the current date
     today = Time.now()
@@ -60,21 +67,27 @@ if __name__ == "__main__":
 
     # create fake ztf counterparts for the gcn of the current date
     path_ztf_raw = (
-        "fink_grb/test/test_data/ztf_test/online/raw/year=2019/month=09/day=03/"
+        "fink_grb/test/test_data/ztf_test/archive/science/year=2019/month=09/day=03/"
     )
     ztf_pdf = pd.read_parquet(path_ztf_raw)
 
-    print("------")
-    print(ztf_pdf)
-    print(gcn_pdf)
-    print("------")
     generate_data_online(ztf_pdf, gcn_pdf, today, gcn_today_data_path)
     generate_data_offline(ztf_pdf, gcn_pdf)
 
-    new_path_ztf_data = Path(
-        "fink_grb/test/test_data/ztf_test/online/raw/year={:04d}/month={:02d}/day={:02d}/".format(
+    archive_path_ztf_data = Path(
+        "fink_grb/test/test_data/ztf_test/archive/science/year={:04d}/month={:02d}/day={:02d}/".format(
             today.to_datetime().year, today.to_datetime().month, today.to_datetime().day
         )
     )
-    new_path_ztf_data.mkdir(parents=True, exist_ok=True)
-    ztf_pdf.to_parquet(new_path_ztf_data.joinpath("alert_alt.parquet"))
+    online_path_ztf_data = Path(
+        "fink_grb/test/test_data/ztf_test/online/science/year={:04d}/month={:02d}/day={:02d}/".format(
+            today.to_datetime().year, today.to_datetime().month, today.to_datetime().day
+        )
+    )
+    archive_path_ztf_data.mkdir(parents=True, exist_ok=True)
+    online_path_ztf_data.mkdir(parents=True, exist_ok=True)
+
+    ztf_pdf["t2"] = ztf_pdf["t2"].apply(dictify)
+
+    ztf_pdf.to_parquet(archive_path_ztf_data.joinpath("alert_alt.parquet"))
+    ztf_pdf.to_parquet(online_path_ztf_data.joinpath("alert_alt.parquet"))
