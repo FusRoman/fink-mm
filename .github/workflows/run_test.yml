@@ -187,7 +187,10 @@ jobs:
           ls -dlth fink_grb/ci_gcn_test/*/*/*/*
           echo ""
           echo "ZTF ALERTS"
-          ls -dlth fink_grb/test/test_data/ztf_test/online/raw/*/*/*/*
+          echo "--- ONLINE SCIENCE"
+          ls -dlth fink_grb/test/test_data/ztf_test/online/science/*/*/*/*
+          echo "--- ARCHIVE SCIENCE"
+          ls -dlth fink_grb/test/test_data/ztf_test/archive/science/*/*/*/*
 
     - name: Call raw2science
       run: |
