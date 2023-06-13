@@ -35,10 +35,10 @@ def generate_data_offline(ztf_pdf, gcn_pdf):
         new_gcn.to_parquet(str(gcn_past_path) + "/{}_0.parquet".format(new_gcn_id))
 
 
-def dictify(x):
+def dictify(x, type):
     res = {}
     for el in x:
-        res[str(el[0])] = float(el[1])
+        res[str(el[0])] = type(el[1])
     return res
 
 
@@ -87,7 +87,8 @@ if __name__ == "__main__":
     archive_path_ztf_data.mkdir(parents=True, exist_ok=True)
     online_path_ztf_data.mkdir(parents=True, exist_ok=True)
 
-    ztf_pdf["t2"] = ztf_pdf["t2"].apply(dictify)
+    ztf_pdf["t2"] = ztf_pdf["t2"].apply(dictify, args=(float,))
+    ztf_pdf["mangrove"] = ztf_pdf["mangrove"].apply(dictify, args=(str,))
 
     ztf_pdf.to_parquet(archive_path_ztf_data.joinpath("alert_alt.parquet"))
     ztf_pdf.to_parquet(online_path_ztf_data.joinpath("alert_alt.parquet"))

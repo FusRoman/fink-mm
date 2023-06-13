@@ -134,7 +134,7 @@ jobs:
       run: |
         echo "PYTHONPATH="${PYTHONPATH}:${SPARKLIB}:${FINK_GRB}"" >> $GITHUB_ENV
         echo "NIGHT=`date +"%Y%m%d" -d "now"`" >> $GITHUB_ENV
-    
+
     - name: Install fink-broker
       run: |
         cd ${HOME}
