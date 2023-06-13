@@ -118,6 +118,12 @@ def align_ztf(
     set_candidate_field(new_ztf_row, "ra", ra)
     set_candidate_field(new_ztf_row, "dec", dec)
 
+    # ztf filter
+    set_candidate_field(new_ztf_row, "ssdistnr", 30.0)
+    set_candidate_field(new_ztf_row, "distpsnr1", 30.0)
+    set_candidate_field(new_ztf_row, "neargaia", 30.0)
+    set_candidate_field(new_ztf_row, "sgscore1", 0.0)
+
     ztf_pdf.loc[len(ztf_pdf)] = new_ztf_row
 
 
