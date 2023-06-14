@@ -168,7 +168,7 @@ jobs:
       shell: bash
       run: |
         fink_grb gcn_stream start --config $CONFIGFILE_PATH --test > fink_grb_gcnstream_${NIGHT}.log 2>&1 &
-        sleep 90s
+        sleep 180s
 
     - name: Start services
       run: |
