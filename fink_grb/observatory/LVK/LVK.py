@@ -338,7 +338,7 @@ class LVK(Observatory):
         --------
         >>> pix = lvk_initial.get_pixels(32)
         >>> type(pix[0])
-        int
+        <class 'int'>
         >>> len(pix)
         1473
         """
