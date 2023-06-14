@@ -1,5 +1,4 @@
 import warnings
-from fink_grb.utils.fun_utils import return_verbose_level
 
 warnings.filterwarnings("ignore")
 
@@ -23,7 +22,7 @@ from fink_grb.utils.fun_utils import (
     read_grb_admin_options,
 )
 import fink_grb.utils.application as apps
-from fink_grb.init import get_config, init_logging
+from fink_grb.init import get_config, init_logging, return_verbose_level
 from fink_grb.utils.fun_utils import get_pixels
 
 
@@ -61,7 +60,7 @@ def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia
     >>> spark_filter = ztf_grb_filter(sparkDF, 5, 2, 0, 5)
 
     >>> spark_filter.count()
-    31
+    32
     """
     spark_filter = (
         spark_ztf.filter(
@@ -201,7 +200,6 @@ def ztf_join_gcn_stream(
 
     >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/online").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
     logger = init_logging()
@@ -249,7 +247,7 @@ def ztf_join_gcn_stream(
     # compute pixels for gcn alerts
     df_grb_stream = df_grb_stream.withColumn(
         "hpix_circle",
-        get_pixels(df_grb_stream.raw_event, F.lit(NSIDE)),
+        get_pixels(df_grb_stream.observatory, df_grb_stream.raw_event, F.lit(NSIDE)),
     )
     df_grb_stream = df_grb_stream.withColumn("hpix", explode("hpix_circle"))
 
@@ -267,12 +265,6 @@ def ztf_join_gcn_stream(
     # join the two streams according to the healpix columns.
     # A pixel id will be assign to each alerts / gcn according to their position in the sky.
     # Each alerts / gcn with the same pixel id are in the same area of the sky.
-    # The NSIDE correspond to a resolution of ~15 degree/pixel.
-
-    # WARNING  !
-    # the join condition with healpix column doesn't work properly
-    # have to take into account the nearby pixels in case the error box of a GRB
-    # overlap many pixels.
     join_condition = [
         df_ztf_stream.hpix == df_grb_stream.hpix,
         df_ztf_stream.candidate.jdstarthist > df_grb_stream.triggerTimejd,
@@ -428,7 +420,5 @@ def launch_joining_stream(arguments):
 
 
 if __name__ == "__main__":
-
     if sys.argv[1] == "prod":  # pragma: no cover
-
         apps.Application.ONLINE.run_application()

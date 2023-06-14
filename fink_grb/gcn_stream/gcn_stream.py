@@ -4,14 +4,14 @@ import pyarrow.parquet as pq
 import os
 
 from gcn_kafka import Consumer
-
-import io
 import logging
 
+from pyarrow.fs import FileSystem
+
 import fink_grb.gcn_stream.gcn_reader as gr
-from fink_grb.init import get_config, init_logging
-from fink_grb.utils.fun_utils import return_verbose_level, get_hdfs_connector
-from fink_grb.observatory import voevent_to_class, TOPICS
+from fink_grb.init import get_config, init_logging, return_verbose_level
+from fink_grb.utils.fun_utils import get_hdfs_connector
+from fink_grb.observatory import TOPICS, TOPICS_FORMAT
 
 
 def signal_handler(signal, frame):  # pragma: no cover
@@ -33,7 +33,15 @@ def signal_handler(signal, frame):  # pragma: no cover
     exit(0)
 
 
-def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False, gcn_fs=None):
+def load_and_parse_gcn(
+    gcn: bytes,
+    topic: str,
+    gcn_rawdatapath: str,
+    logger: logging.Logger,
+    logs: bool,
+    is_test: bool,
+    gcn_fs: FileSystem = None,
+):
     """
     Load and parse a gcn coming from the gcn kafka stream.
 
@@ -41,10 +49,18 @@ def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False, gcn_fs=None):
     ----------
     gcn : bytes
         the new gcn coming from the stream
+    topic : str
+        the emitting topic
     gcn_rawdatapath : string
         the path destination where to store the decoded gcn
     logger : logger object
         logger object for logs.
+    logs: boolean
+        if true, print logs
+    is_test: boolean
+        run the function in test mode
+    gcn_fs: FileSystem
+        the file system used to write the gcn
 
     Returns
     -------
@@ -54,33 +70,58 @@ def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False, gcn_fs=None):
     --------
 
     >>> f = open('fink_grb/test/test_data/voevent_number=9897.xml').read().encode("UTF-8")
-    >>> logger = init_logging()
     >>> with tempfile.TemporaryDirectory() as tmp_dir_gcn:
-    ...     load_and_parse_gcn(f, tmp_dir_gcn, logger)
+    ...     load_and_parse_gcn(f, "gcn.classic.voevent.FERMI_GBM_FIN_POS", tmp_dir_gcn, logger, False, False)
     ...     base_gcn = pd.read_parquet(tmp_dir_gcn + "/year=2022/month=08/day=30/683571622_0")
     ...     base_gcn = base_gcn.drop(columns="ackTime")
     ...     test_gcn = pd.read_parquet("fink_grb/test/test_data/683571622_0_test")
     ...     assert_frame_equal(base_gcn, test_gcn)
+
+    >>> json_str = open(lvk_initial_path, 'r').read()
+    >>> with tempfile.TemporaryDirectory() as tmp_dir_gcn:
+    ...     load_and_parse_gcn(json_str, "igwn.gwalert", tmp_dir_gcn, logger, False, False)
+    ...     base_gcn = pd.read_parquet(tmp_dir_gcn + "/year=2023/month=05/day=18/S230518h_0")
+    ...     base_gcn = base_gcn.drop(columns="ackTime")
+    ...     test_gcn = pd.read_parquet("fink_grb/test/test_data/S230518h_0_test")
+    ...     assert_frame_equal(base_gcn, test_gcn)
     """
-    try:
-        voevent = gr.load_voevent_from_file(io.BytesIO(gcn))
-    except Exception as e:  # pragma: no cover
+
+    if topic in TOPICS_FORMAT["xml"]:
+        try:
+            df = gr.parse_xml_alert(gcn, logger, logs)
+        except Exception as e:  # pragma: no cover
+            logger.error(
+                "Error while reading the xml gcn notice: \n\t {}\n\n\tcause: {}".format(
+                    gcn, e
+                )
+            )
+            print()
+            return
+
+    elif topic in TOPICS_FORMAT["json"]:
+        try:
+            df = gr.parse_json_alert(gcn, logger, logs, is_test)
+        except Exception as e:
+            logger.error(
+                "error while reading the json notice\n\t:cause: {}\n\tgcn: {}".format(
+                    e, gcn
+                )
+            )
+            return
+
+    else:
         logger.error(
-            "Error while reading the following voevent: \n\t {}\n\n\tcause: {}".format(
-                gcn, e
+            "error while parsing the gcn file:\n\ttopic: {}\n\tgcn: {}".format(
+                topic, gcn
             )
         )
-        print()
-        return
+        raise Exception("bad gcn file format")
 
-    observatory = voevent_to_class(voevent)
-    if observatory.is_observation() and observatory.is_listened_packets_types():
-
-        if logs:  # pragma: no cover
-            logger.info("the voevent is a new obervation.")
-
-        df = observatory.voevent_to_df()
-
+    try:
+        if df is None:
+            if logs:  # pragma: no cover
+                logger.info("The gcn is not a real observation")
+            return
         table = pa.Table.from_pandas(df)
 
         pq.write_to_dataset(
@@ -98,9 +139,14 @@ def load_and_parse_gcn(gcn, gcn_rawdatapath, logger, logs=False, gcn_fs=None):
                     gcn_rawdatapath
                 )
             )
-        return
 
-    return  # pragma: no cover
+        return
+    except Exception as e:
+        logger.error(
+            "writing of the new voevent failed\n\tcause:{}\n\t{}".format(e, gcn)
+        )
+
+        return
 
 
 def start_gcn_stream(arguments):
@@ -112,8 +158,6 @@ def start_gcn_stream(arguments):
     ----------
     arguments : dictionnary
         arguments parse by docopt from the command line
-    logs : boolean
-        activate the logs messages
 
     Returns
     -------
@@ -130,6 +174,8 @@ def start_gcn_stream(arguments):
             "auto.offset.reset": "earliest",
             "enable.auto.commit": False,
         }
+        if arguments["--test"]:
+            consumer_config = {"group.id": "", "auto.offset.reset": "earliest"}
 
         consumer = Consumer(
             config=consumer_config,
@@ -137,15 +183,12 @@ def start_gcn_stream(arguments):
             client_secret=config["CLIENT"]["secret"],
         )
 
-        if arguments["--test"]:
-            consumer_config = {"group.id": "", "auto.offset.reset": "earliest"}
-
-            consumer = Consumer(
-                config=consumer_config,
-                client_id=config["CLIENT"]["id"],
-                client_secret=config["CLIENT"]["secret"],
-                domain="test.gcn.nasa.gov",
-            )
+        # consumer = Consumer(
+        #     config=consumer_config,
+        #     client_id=config["CLIENT"]["id"],
+        #     client_secret=config["CLIENT"]["secret"],
+        #     domain="test.gcn.nasa.gov",
+        # )
 
     except Exception as e:
         logger.error("Config entry not found \n\t {}".format(e))
@@ -196,6 +239,15 @@ def start_gcn_stream(arguments):
                 if logs:
                     logger.info("A new voevent is coming")
                 value = gcn.value()
+                topic = gcn.topic()
 
-                load_and_parse_gcn(value, gcn_rawdatapath, logger, logs, gcn_fs=gcn_fs)
+                load_and_parse_gcn(
+                    value,
+                    topic,
+                    gcn_rawdatapath,
+                    logger,
+                    logs,
+                    is_test=arguments["--test"],
+                    gcn_fs=gcn_fs,
+                )
                 consumer.commit(gcn)

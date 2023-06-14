@@ -31,7 +31,7 @@ class IceCube(Observatory):
 
         Example
         -------
-        >>> voevent = load_voevent_from_path(icecube_gold_voevent_path)
+        >>> voevent = load_voevent_from_path(icecube_gold_voevent_path, logger)
         >>> obs = voevent_to_class(voevent)
         >>> type(obs)
         <class 'IceCube.IceCube'>
@@ -47,15 +47,15 @@ class IceCube(Observatory):
         Example
         -------
         >>> icecube_cascade.get_trigger_id()
-        13688925590129
+        '13688925590129'
         >>> icecube_bronze.get_trigger_id()
-        13691845252263
+        '13691845252263'
         >>> icecube_gold.get_trigger_id()
-        13746764735045
+        '13746764735045'
         """
         toplevel_params = vp.get_toplevel_params(self.voevent)
 
-        return int(toplevel_params["AMON_ID"]["value"])
+        return toplevel_params["AMON_ID"]["value"]
 
     def detect_instruments(self):
         return self.voevent.attrib["ivorn"].split("#")[1].split("_")[1]
@@ -154,9 +154,11 @@ class IceCube(Observatory):
             }
         )
 
-        df["year"] = df["triggerTimeUTC"].dt.strftime("%Y")
-        df["month"] = df["triggerTimeUTC"].dt.strftime("%m")
-        df["day"] = df["triggerTimeUTC"].dt.strftime("%d")
+        time_dt = Time(time_utc).to_datetime()
+
+        df["year"] = time_dt.strftime("%Y")
+        df["month"] = time_dt.strftime("%m")
+        df["day"] = time_dt.strftime("%d")
 
         return df
 

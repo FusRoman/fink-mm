@@ -22,7 +22,7 @@ class Fermi(Observatory):
 
         Example
         -------
-        >>> voevent = load_voevent_from_path(fermi_gbm_voevent_path)
+        >>> voevent = load_voevent_from_path(fermi_gbm_voevent_path, logger)
         >>> obs = voevent_to_class(voevent)
         >>> type(obs)
         <class 'Fermi.Fermi'>
@@ -36,13 +36,13 @@ class Fermi(Observatory):
         Example
         -------
         >>> fermi_gbm.get_trigger_id()
-        680782656
+        '680782656'
         >>> fermi_lat.get_trigger_id()
-        1659883590
+        '1659883590'
         """
         toplevel_params = vp.get_toplevel_params(self.voevent)
 
-        return int(toplevel_params["TrigID"]["value"])
+        return toplevel_params["TrigID"]["value"]
 
     def err_to_arcminute(self):
         """
@@ -65,9 +65,3 @@ class Fermi(Observatory):
             return err
         else:
             raise BadInstrument("{} is not a Fermi instrument".format(instrument))
-
-
-if __name__ == "__main__":
-
-    fermi = Fermi()
-    print(fermi)

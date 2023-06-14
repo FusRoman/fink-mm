@@ -9,6 +9,7 @@ Correlation of the [Fink](https://fink-broker.org/) alerts with multi-messenger 
     * X-Ray: Swift
     * Optical: Swift
     * Neutrino: [IceCube](https://icecube.wisc.edu/)
+    * Gravitational Waves: [LIGO](https://www.ligo.caltech.edu/), [VIRGO](https://www.virgo-gw.eu/), [KAGRA](https://gwcenter.icrr.u-tokyo.ac.jp/en/)
 
 ## Installation Procedure
 

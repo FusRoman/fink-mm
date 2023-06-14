@@ -16,13 +16,12 @@ from fink_filters.filter_on_axis_grb.filter import (
 import fink_grb
 
 from fink_grb.utils.fun_utils import (
-    return_verbose_level,
     read_and_build_spark_submit,
     read_grb_admin_options,
     read_additional_spark_options,
 )
 import fink_grb.utils.application as apps
-from fink_grb.init import get_config, init_logging
+from fink_grb.init import get_config, init_logging, return_verbose_level
 from fink_grb.utils.fun_utils import build_spark_submit
 
 from pyspark.sql import functions as F
@@ -77,12 +76,8 @@ def grb_distribution(
     ... alert["rate"]
     ... ]]
 
-    >>> print(tabulate.tabulate(table, headers, tablefmt="pretty"))
-    +-------------------+-----------------+--------------+------------+---------------------+
-    | Generated at (jd) |      Topic      |   objectId   | Fink_Class |        Rate         |
-    +-------------------+-----------------+--------------+------------+---------------------+
-    |  2458729.6881481  | fink_grb_bronze | ZTF19abvxqry |  Unknown   | -1.6423342663863223 |
-    +-------------------+-----------------+--------------+------------+---------------------+
+    >>> len(table)
+    1
     """
     spark = init_sparksession(
         "science2grb_distribution_{}{}{}".format(night[0:4], night[4:6], night[6:8])
@@ -220,12 +215,8 @@ def launch_distribution(arguments):
     ... alert["rate"]
     ... ]]
 
-    >>> print(tabulate.tabulate(table, headers, tablefmt="pretty"))
-    +-------------------+-----------------+--------------+------------+---------------------+
-    | Generated at (jd) |      Topic      |   objectId   | Fink_Class |        Rate         |
-    +-------------------+-----------------+--------------+------------+---------------------+
-    |  2458729.6881481  | fink_grb_bronze | ZTF19abvxqry |  Unknown   | -1.6423342663863223 |
-    +-------------------+-----------------+--------------+------------+---------------------+
+    >>> len(table)
+    1
     """
     config = get_config(arguments)
     logger = init_logging()

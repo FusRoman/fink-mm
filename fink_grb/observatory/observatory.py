@@ -43,7 +43,7 @@ class Observatory(ABC):
 
         Example
         -------
-        >>> voevent = load_voevent_from_path(fermi_gbm_voevent_path)
+        >>> voevent = load_voevent_from_path(fermi_gbm_voevent_path, logger)
         >>> obs = voevent_to_class(voevent)
         >>> type(obs)
         <class 'Fermi.Fermi'>
@@ -154,10 +154,44 @@ class Observatory(ABC):
         pass
 
     def get_trigger_time(self):
-        time_utc = vp.get_event_time_as_utc(self.voevent)
-        time_jd = Time(time_utc, format="datetime").jd
+        """
+        Return the trigger time in UTC and julian date
 
-        return time_utc, time_jd
+        Returns
+        -------
+        time_utc: str
+            utc trigger time
+        time_jd: float
+            julian date trigger time
+
+        Example
+        -------
+        >>> icecube_gold.get_trigger_time()
+        ('2022-12-23 07:43:00.520', 2459936.8215337964)
+        """
+        time_utc = vp.get_event_time_as_utc(self.voevent)
+        time = Time(time_utc, format="datetime")
+
+        return time.iso, time.jd
+
+    def get_most_probable_position(self):
+        """
+        Return the equatorial coordinates of the most probable sky localization of this gw alert
+
+        Returns
+        -------
+        ra: float
+            right ascension
+        dec: float
+            declination
+
+        Example
+        -------
+        >>> lvk_initial.get_most_probable_position()
+        (95.712890625, -10.958863307027668)
+        """
+        coords = vp.get_event_position(self.voevent)
+        return coords.ra, coords.dec
 
     @check_output(voevent_df_schema)
     def voevent_to_df(self) -> pd.DataFrame:
@@ -196,7 +230,7 @@ class Observatory(ABC):
         ack_time = dt.datetime.now()
         trigger_id = self.get_trigger_id()
 
-        coords = vp.get_event_position(self.voevent)
+        ra, dec = self.get_most_probable_position()
 
         time_utc, time_jd = self.get_trigger_time()
 
@@ -209,8 +243,8 @@ class Observatory(ABC):
                 "event": [""],
                 "ivorn": [self.voevent.attrib["ivorn"]],
                 "triggerId": [trigger_id],
-                "ra": [coords.ra],
-                "dec": [coords.dec],
+                "ra": [ra],
+                "dec": [dec],
                 "err_arcmin": [voevent_error],
                 "ackTime": [ack_time],
                 "triggerTimejd": [time_jd],
@@ -219,9 +253,11 @@ class Observatory(ABC):
             }
         )
 
-        df["year"] = df["triggerTimeUTC"].dt.strftime("%Y")
-        df["month"] = df["triggerTimeUTC"].dt.strftime("%m")
-        df["day"] = df["triggerTimeUTC"].dt.strftime("%d")
+        time_dt = Time(time_utc).to_datetime()
+
+        df["year"] = time_dt.strftime("%Y")
+        df["month"] = time_dt.strftime("%m")
+        df["day"] = time_dt.strftime("%d")
 
         return df
 
@@ -250,7 +286,11 @@ class Observatory(ABC):
         theta, phi = dec2theta(coords.dec), ra2phi(coords.ra)
         vec = hp.ang2vec(theta, phi)
         ipix_disc = hp.query_disc(
-            NSIDE, vec, radius=np.radians(voevent_error / 60), inclusive=True
+            NSIDE,
+            vec,
+            radius=np.radians(voevent_error / 60),
+            inclusive=True,
+            nest=False,
         )
         return ipix_disc
 

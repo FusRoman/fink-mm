@@ -1,8 +1,15 @@
 {
     "name": "SWIFT",
     "//gcn_description": "https://gcn.gsfc.nasa.gov/swift.html",
+    "gcn_file_format": "xml",
     "packet_type": [
-        61, 63, 65, 67, 81, 84, 97
+        61,
+        63,
+        65,
+        67,
+        81,
+        84,
+        97
     ],
     "kafka_topics": [
         "gcn.classic.voevent.SWIFT_ACTUAL_POINTDIR",

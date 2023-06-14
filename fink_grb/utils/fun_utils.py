@@ -12,48 +12,12 @@ from pyspark.sql.types import DoubleType, ArrayType, IntegerType
 from fink_filters.classification import extract_fink_classification
 from fink_utils.spark.utils import concat_col
 
-from fink_grb.observatory import voevent_to_class
+from fink_grb.observatory import obsname_to_class, INSTR_FORMAT
 from fink_grb.observatory.observatory import Observatory
-from fink_grb.gcn_stream.gcn_reader import load_voevent_from_file
+from fink_grb.gcn_stream.gcn_reader import load_voevent_from_file, load_json_from_file
+from fink_grb.init import init_logging
 
 # from fink_broker.tracklet_identification import add_tracklet_information
-
-
-def return_verbose_level(config, logger):
-    """
-    Get the verbose level from the config file and return it.
-
-    Parameters
-    ----------
-    config : dictionnary
-        dictionnary containing the key values pair from the config file
-    logger : logging object
-        the logger used to print logs
-
-    Returns
-    -------
-    logs : boolean
-        if True, print the logs
-
-    Examples
-    --------
-    >>> c = get_config({"--config" : "fink_grb/conf/fink_grb.conf"})
-    >>> logger = init_logging()
-
-    >>> return_verbose_level(c, logger)
-    False
-    """
-    try:
-        logs = config["ADMIN"]["verbose"] == "True"
-    except Exception as e:
-        logger.error(
-            "Config entry not found \n\t {}\n\tsetting verbose to True by default".format(
-                e
-            )
-        )
-        logs = True
-
-    return logs
 
 
 def get_hdfs_connector(host: str, port: int, user: str):
@@ -294,9 +258,9 @@ def sub_compute_rate(
         return abs_rate, norm_rate, first_variation_time, diff_start_hist, from_upper
 
 
-def get_observatory(rawEvent: str) -> Observatory:
+def get_observatory(obsname: str, rawEvent: str) -> Observatory:
     """
-    Get the observatory class from a raw voevent
+    Get the observatory class from an observatory name and a raw voevent
 
     Parameters
     ----------
@@ -310,19 +274,31 @@ def get_observatory(rawEvent: str) -> Observatory:
     Example
     -------
     >>> pdf = pd.read_parquet(grb_data)
-    >>> type(get_observatory(pdf["raw_event"].iloc[0]))
+    >>> type(get_observatory(pdf["observatory"].iloc[0], pdf["raw_event"].iloc[0]))
     <class 'Fermi.Fermi'>
+    >>> pdf = pd.read_parquet(gw_data)
+    >>> type(get_observatory(pdf["observatory"].iloc[0], pdf["raw_event"].iloc[0]))
+    <class 'LVK.LVK'>
     """
-    return voevent_to_class(load_voevent_from_file(io.StringIO(rawEvent)))
+    logger = init_logging()
+    format_instr = INSTR_FORMAT[obsname.lower()]
+    if format_instr == "json":
+        json = load_json_from_file(rawEvent, logger)
+        return obsname_to_class(obsname, json)
+    elif format_instr == "xml":
+        voevent = load_voevent_from_file(io.StringIO(rawEvent), logger)
+        return obsname_to_class(obsname, voevent)
 
 
 @pandas_udf(ArrayType(IntegerType()))
-def get_pixels(rawEvent: pd.Series, NSIDE: pd.Series) -> pd.Series:
+def get_pixels(obsname: pd.Series, rawEvent: pd.Series, NSIDE: pd.Series) -> pd.Series:
     """
-    Compute the pixels within the error box for each voevent in the rawEvent parameters
+    Compute the pixels within the error box for each observatory
 
     Parameters
     ----------
+    obsname: pd.Series containing string
+        the observatory name contains in the dataframe
     rawEvent: pd.Series containing string
         the raw voevents
     NSIDE: pd.Series containing integer
@@ -338,30 +314,36 @@ def get_pixels(rawEvent: pd.Series, NSIDE: pd.Series) -> pd.Series:
     >>> spark_grb = spark.read.format('parquet').load(grb_data)
     >>> NSIDE = 4
 
-    >>> grb_pixs = spark_grb.withColumn("hpix_circle", get_pixels(spark_grb.raw_event, F.lit(8)))
+    >>> grb_pixs = spark_grb.withColumn("hpix_circle", get_pixels(spark_grb.observatory, spark_grb.raw_event, F.lit(8)))
 
     >>> grb_pixs.withColumn("hpix", explode("hpix_circle"))\
-          .orderBy("hpix")\
+          .orderBy(["triggerId", "hpix"])\
                .select(["triggerId", "hpix"]).head(5)
-    [Row(triggerId=683499781, hpix=10), Row(triggerId=683499781, hpix=10), Row(triggerId=683499781, hpix=20), Row(triggerId=683499781, hpix=20), Row(triggerId=683499781, hpix=21)]
+    [Row(triggerId='683476673', hpix=42), Row(triggerId='683476673', hpix=42), Row(triggerId='683476673', hpix=62), Row(triggerId='683476673', hpix=62), Row(triggerId='683476673', hpix=63)]
     """
     return pd.Series(
         [
-            get_observatory(event).get_pixels(nside)
-            for event, nside in zip(rawEvent, NSIDE)
+            get_observatory(obs, event).get_pixels(nside)
+            for obs, event, nside in zip(obsname, rawEvent, NSIDE)
         ]
     )
 
 
 @pandas_udf(DoubleType())
 def get_association_proba(
-    rawEvent: pd.Series, ztf_ra: pd.Series, ztf_dec: pd.Series, jdstarthist: pd.Series
+    obsname: pd.Series,
+    rawEvent: pd.Series,
+    ztf_ra: pd.Series,
+    ztf_dec: pd.Series,
+    jdstarthist: pd.Series,
 ) -> pd.Series:
     """
     Compute the association probability between the ztf alerts and the gcn events.
 
     Parameters
     ----------
+    obsname: pd.Series containing string
+        the observatory name contains in the dataframe
     rawEvent: pd.Series containing string
         the raw voevents
     ztf_ra : double spark column
@@ -389,6 +371,7 @@ def get_association_proba(
     >>> df_proba = sparkDF.withColumn(
     ...     "grb_proba",
     ...     get_association_proba(
+    ...         sparkDF["observatory"],
     ...         sparkDF["raw_event"],
     ...         sparkDF["ra"],
     ...         sparkDF["dec"],
@@ -396,39 +379,39 @@ def get_association_proba(
     ...     ),
     ... )
 
-    >>> df_proba.select(["objectId", "trigger_id", "grb_proba"]).show()
-    +------------+----------+---------+
-    |    objectId|trigger_id|grb_proba|
-    +------------+----------+---------+
-    |ZTF19abvxqrw| 683482851|     -1.0|
-    |ZTF19aarcrtb| 683482851|     -1.0|
-    |ZTF18abrhuke| 683482851|     -1.0|
-    |ZTF19aarcsqv| 683482851|     -1.0|
-    |ZTF18abrfzni| 683482851|     -1.0|
-    |ZTF18abthehu| 683482851|     -1.0|
-    |ZTF18abrhqed| 683482851|     -1.0|
-    |ZTF18abcjaer| 683482851|     -1.0|
-    |ZTF19aarcsra| 683482851|     -1.0|
-    |ZTF18abdlhrp| 683482851|     -1.0|
-    |ZTF18abrgwwe| 683482851|     -1.0|
-    |ZTF19abvxscp| 683482851|     -1.0|
-    |ZTF18abthswi| 683482851|     -1.0|
-    |ZTF19abvxvpj| 683482851|     -1.0|
-    |ZTF19abvxscg| 683482851|     -1.0|
-    |ZTF19abrvetd| 683482851|     -1.0|
-    |ZTF19abvxwnh| 683482851|     -1.0|
-    |ZTF19abvxwnw| 683482851|     -1.0|
-    |ZTF19abvxwyv| 683482851|     -1.0|
-    |ZTF19abagehm| 683482851|     -1.0|
-    +------------+----------+---------+
+    >>> df_proba.select(["objectId", "triggerId", "grb_proba"]).show()
+    +------------+---------+---------+
+    |    objectId|triggerId|grb_proba|
+    +------------+---------+---------+
+    |ZTF19abvxqrw|683482851|     -1.0|
+    |ZTF19aarcrtb|683482851|     -1.0|
+    |ZTF18abrhuke|683482851|     -1.0|
+    |ZTF19aarcsqv|683482851|     -1.0|
+    |ZTF18abrfzni|683482851|     -1.0|
+    |ZTF18abthehu|683482851|     -1.0|
+    |ZTF18abrhqed|683482851|     -1.0|
+    |ZTF18abcjaer|683482851|     -1.0|
+    |ZTF19aarcsra|683482851|     -1.0|
+    |ZTF18abdlhrp|683482851|     -1.0|
+    |ZTF18abrgwwe|683482851|     -1.0|
+    |ZTF19abvxscp|683482851|     -1.0|
+    |ZTF18abthswi|683482851|     -1.0|
+    |ZTF19abvxvpj|683482851|     -1.0|
+    |ZTF19abvxscg|683482851|     -1.0|
+    |ZTF19abrvetd|683482851|     -1.0|
+    |ZTF19abvxwnh|683482851|     -1.0|
+    |ZTF19abvxwnw|683482851|     -1.0|
+    |ZTF19abvxwyv|683482851|     -1.0|
+    |ZTF19abagehm|683482851|     -1.0|
+    +------------+---------+---------+
     only showing top 20 rows
     <BLANKLINE>
     """
     return pd.Series(
         [
-            get_observatory(event).association_proba(z_ra, z_dec, z_trigger_time)
-            for event, z_ra, z_dec, z_trigger_time in zip(
-                rawEvent, ztf_ra, ztf_dec, jdstarthist
+            get_observatory(obs, event).association_proba(z_ra, z_dec, z_trigger_time)
+            for obs, event, z_ra, z_dec, z_trigger_time in zip(
+                obsname, rawEvent, ztf_ra, ztf_dec, jdstarthist
             )
         ]
     )
@@ -743,7 +726,6 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
     --------
     """
     if with_rate:
-
         df_grb = concat_col(df_grb, "magpsf")
         df_grb = concat_col(df_grb, "diffmaglim")
         df_grb = concat_col(df_grb, "jd")
@@ -793,6 +775,7 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
     df_grb = df_grb.withColumn(
         "grb_proba",
         get_association_proba(
+            df_grb["observatory"],
             df_grb["raw_event"],
             df_grb["ztf_ra"],
             df_grb["ztf_dec"],
@@ -822,7 +805,6 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
     ]
 
     if with_rate:
-
         column_to_return += [
             "delta_mag",
             "rate",

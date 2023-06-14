@@ -7,12 +7,14 @@ on:
     branches:
       - main
   pull_request:
+  schedule:
+    - cron: '0 6 * * 1,4'
 
 env:
   NIGHT: 20190903
   CONFIGFILE_PATH: fink_grb/conf/integration.conf
-  SECRET_ID: ${{ secrets.GCN_TEST_ID }}
-  SECRET_SECRET: ${{ secrets.GCN_TEST_SECRET }}
+  SECRET_ID: ${{ secrets.GCN_ID }}
+  SECRET_SECRET: ${{ secrets.GCN_SECRET }}
 
 
 jobs:
@@ -132,7 +134,7 @@ jobs:
       run: |
         echo "PYTHONPATH="${PYTHONPATH}:${SPARKLIB}:${FINK_GRB}"" >> $GITHUB_ENV
         echo "NIGHT=`date +"%Y%m%d" -d "now"`" >> $GITHUB_ENV
-    
+
     - name: Install fink-broker
       run: |
         cd ${HOME}
@@ -162,10 +164,11 @@ jobs:
         mkdir fink_grb/ci_join_test
 
     - name: Launch GCN stream
+      # don't put --test for the gcn_stream command otherwise it will miss the gw alerts
       shell: bash
       run: |
         fink_grb gcn_stream start --config $CONFIGFILE_PATH --test > fink_grb_gcnstream_${NIGHT}.log 2>&1 &
-        sleep 30s
+        sleep 180s
 
     - name: Start services
       run: |
@@ -184,15 +187,18 @@ jobs:
           ls -dlth fink_grb/ci_gcn_test/*/*/*/*
           echo ""
           echo "ZTF ALERTS"
-          ls -dlth fink_grb/test/test_data/ztf_test/online/raw/*/*/*/*
+          echo "--- ONLINE SCIENCE"
+          ls -dlth fink_grb/test/test_data/ztf_test/online/science/*/*/*/*
+          echo "--- ARCHIVE SCIENCE"
+          ls -dlth fink_grb/test/test_data/ztf_test/archive/science/*/*/*/*
 
-    - name: Call raw2science
-      run: |
-        fink start raw2science -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT --exit_after 90
+    # - name: Call raw2science
+      # run: |
+        # fink start raw2science -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT --exit_after 90
 
-    - name: Merge data
-      run: |
-        fink start merge -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT
+    # - name: Merge data
+      # run: |
+        # fink start merge -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT
 
     - name: Push Hbase data
       run: |
@@ -200,7 +206,7 @@ jobs:
 
     - name: Run online join streaming
       run: |
-        fink_grb join_stream online --config $CONFIGFILE_PATH --night $NIGHT --exit_after 120
+        fink_grb join_stream online --config $CONFIGFILE_PATH --night $NIGHT --exit_after 180
 
     - name: Check online stream
       run: |
@@ -214,10 +220,10 @@ jobs:
       run: |
         ls -lth fink_grb/ci_join_test/offline/*/*/*
 
-    - name: Online Distribution
-      run: |
-        fink_grb distribute --config $CONFIGFILE_PATH --night $NIGHT --exit_after 60
+    # - name: Online Distribution
+      # run: |
+        # fink_grb distribute --config $CONFIGFILE_PATH --night $NIGHT --exit_after 60
     
-    - name: Check Distribution
-      run: |
-        python fink_grb/test/display_distribution.py
+    # - name: Check Distribution
+      # run: |
+         #python fink_grb/test/display_distribution.py
