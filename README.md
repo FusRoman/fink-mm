@@ -80,7 +80,7 @@ Two folders are created inside; one called 'online' and one called 'offline'. In
 |jd                 |float |alert emission time                                                               | 
 |instrument_or_event|String|Triggering instruments (GBM, XRT, ...)                                            |
 |platform           |String|Triggering platform (Fermi, Swift, IceCube, ...)                                  |
-|triggerId          |int   |Unique GCN identifier ([GCN viewer](https://heasarc.gsfc.nasa.gov/wsgi-scripts/tach/gcn_v2/tach.wsgi/) to retrieve quickly the notice)|
+|triggerId          |String|Unique GCN identifier ([GCN viewer](https://heasarc.gsfc.nasa.gov/wsgi-scripts/tach/gcn_v2/tach.wsgi/) to retrieve quickly the notice)|
 |grb_ra             |float |GCN Event right ascension                                                         |
 |grb_dec            |float |GCN Event declination                                                             |
 |grb_loc_error      |float |GCN error location in arcminute                                                   |
