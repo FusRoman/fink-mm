@@ -320,7 +320,7 @@ class LVK(Observatory):
         i = cumprob.searchsorted(prob)
         return skymap[:i]
 
-    def get_pixels(self, NSIDE: int) -> np.ndarray:
+    def get_pixels(self, NSIDE: int) -> list:
         """
         Get the flat healpix pixels from a MOC skymap
 
@@ -346,7 +346,7 @@ class LVK(Observatory):
         level, ipix = ah.uniq_to_level_ipix(skymap_90["UNIQ"])
         nside = ah.level_to_nside(level)
         theta, phi = pix2ang(nside, ipix)
-        return np.unique(ang2pix(NSIDE, theta, phi))
+        return np.unique(ang2pix(NSIDE, theta, phi)).tolist()
 
     def association_proba(
         self, ztf_ra: float, ztf_dec: float, jdstarthist: float
