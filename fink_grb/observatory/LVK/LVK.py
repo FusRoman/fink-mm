@@ -181,17 +181,7 @@ class LVK(Observatory):
         >>> lvk_initial.err_to_arcminute()
         148510660.49790943
         """
-        skymap = self.get_skymap()
-        skymap.sort("PROBDENSITY", reverse=True)
-        level, _ = ah.uniq_to_level_ipix(skymap["UNIQ"])
-        pixel_area = ah.nside_to_pixel_area(ah.level_to_nside(level))
-
-        prob = pixel_area * skymap["PROBDENSITY"]
-        cumprob = np.cumsum(prob)
-
-        i = cumprob.searchsorted(1)
-
-        area = pixel_area[:i].sum()
+        area = self.find_probability_region(0.9).sum()
         return area.to_value(u.arcmin**2)
 
     def get_most_probable_position(self):
