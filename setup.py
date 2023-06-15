@@ -25,7 +25,9 @@ setup(
             "conf/fink_grb_schema_version_{}.avsc".format(
                 fink_grb.__distribution_schema_version__
             ),
-            "observatory/observatory_schema_version_1.0.json",
+            "observatory/observatory_schema_version_{}.json".format(
+                fink_grb.__observatory_schema_version__
+            ),
         ]
         + [
             path.relpath(el, start="fink_grb")

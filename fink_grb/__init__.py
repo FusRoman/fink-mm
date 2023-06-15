@@ -14,3 +14,4 @@
 # limitations under the License.
 __version__ = "0.8.1"
 __distribution_schema_version__ = "1.2"
+__observatory_schema_version__ = "1.1"
