@@ -29,7 +29,7 @@ toto@linux:~$ fink_grb gcn_stream start --config /config_path
 ```
 The above command will start a daemon that will store the GCN issued from the instruments registered in the system. The GNC will be stored at the location specified in the configuration file by the entry named 'online_gcn_data_prefix'. The path can be a local path or a hdfs path. In the latter case, the path must start with hdfs://IP:PORT///your_path where IP and PORT refer to the hdfs driver.
 
-> :warning: The GCN stream need to be restarted after each update of Fink_GRB. Use the `ps aux | grep fink_grb` command to identify the process number of the gcn stream and kill it.
+> :warning: The GCN stream need to be restarted after each update of Fink_GRB. Use the `ps aux | grep fink_grb` command to identify the process number of the gcn stream and kill it then restart the gcn stream with the same command as above.
 
 ### Schedulers
 Fink_GRB has multiples script in the scheduler folder to launch the different services.
