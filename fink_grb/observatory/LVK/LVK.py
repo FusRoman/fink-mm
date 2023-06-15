@@ -179,16 +179,20 @@ class LVK(Observatory):
         Example
         -------
         >>> lvk_initial.err_to_arcminute()
-        148510660.49790943
+        2396770.8626295296
         """
         skymap = self.get_skymap()
         skymap.sort("PROBDENSITY", reverse=True)
         level, _ = ah.uniq_to_level_ipix(skymap["UNIQ"])
         pixel_area = ah.nside_to_pixel_area(ah.level_to_nside(level))
-        prob_area = pixel_area * skymap["PROBDENSITY"]
-        cumprob = np.cumsum(prob_area)
-        i = cumprob.searchsorted(0.9)
-        return pixel_area.to_value(u.arcmin**2)
+
+        prob = pixel_area * skymap["PROBDENSITY"]
+        cumprob = np.cumsum(prob)
+
+        i = cumprob.searchsorted(0.90)
+
+        area = pixel_area[:i].sum()
+        return area.to_value(u.arcmin**2)
 
     def get_most_probable_position(self):
         """
@@ -246,7 +250,7 @@ class LVK(Observatory):
         --------
         >>> lvk_initial.voevent_to_df()[["triggerId", "observatory", "instrument", "event", "ra", "dec", "err_arcmin"]]
           triggerId observatory instrument event         ra        dec    err_arcmin
-        0  S230518h         LVK      H1_L1    gw  95.712891 -10.958863  1.485107e+08
+        0  S230518h         LVK      H1_L1    gw  95.712891 -10.958863  2.396771e+06
         """
 
         ack_time = dt.datetime.now()
