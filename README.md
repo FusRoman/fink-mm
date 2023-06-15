@@ -20,6 +20,7 @@ toto@linux:~$ pip install git+https://github.com/FusRoman/Fink_GRB@v0.6-beta
 * Download the default config file from GitHub:fink_grb/conf/fink_grb.conf and move it in a custom location
 Update your configuration file with your custom parameters.
 Please note that the configuration file's paths must not end with a '/'.
+* Once Fink_GRB has been installed via pip, the command `fink_grb` become available. Type `fink_grb --help` to see the help message and show what you can do with Fink_GRB.
 
 ### Setup the Fink_GRB daemons
 * Start listening to GCN
@@ -28,6 +29,9 @@ toto@linux:~$ fink_grb gcn_stream start --config /config_path
 ```
 The above command will start a daemon that will store the GCN issued from the instruments registered in the system. The GNC will be stored at the location specified in the configuration file by the entry named 'online_gcn_data_prefix'. The path can be a local path or a hdfs path. In the latter case, the path must start with hdfs://IP:PORT///your_path where IP and PORT refer to the hdfs driver.
 
+> :warning: The GCN stream need to be restarted after each update of Fink_GRB. Use the `ps aux | grep fink_grb` command to identify the process number of the gcn stream and kill it.
+
+### Schedulers
 Fink_GRB has multiples script in the scheduler folder to launch the different services.
 * science2grb.sh will launch the online services that will cross-match in real-time the alerts issued from the ZTF/LSST with incoming GCN. (latency: ZTF/LSST latency + 30 seconds max)
 * science2grb_offline.sh launch the offline services that will cross-match all the latest alerts from ZTF/LSST with the GCN within the time window (in days) specified in your config file. (latency: 1 day)
