@@ -77,7 +77,7 @@ def __get_topics():
 
 
 OBSERVATORY_PATH = "observatory"
-OBSERVATORY_SCHEMA_VERSION = 1.1
+OBSERVATORY_SCHEMA_VERSION = fink_grb.__observatory_schema_version__
 OBSERVATORY_JSON_SCHEMA_PATH = files("fink_grb").joinpath(
     "observatory/observatory_schema_version_{}.json".format(OBSERVATORY_SCHEMA_VERSION)
 )

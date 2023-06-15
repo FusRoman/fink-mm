@@ -12,6 +12,7 @@ import fink_grb.gcn_stream.gcn_reader as gr
 from fink_grb.init import get_config, init_logging, return_verbose_level
 from fink_grb.utils.fun_utils import get_hdfs_connector
 from fink_grb.observatory import TOPICS, TOPICS_FORMAT
+from fink_client.scripts.fink_datatransfer import my_assign
 
 
 def signal_handler(signal, frame):  # pragma: no cover
@@ -206,7 +207,10 @@ def start_gcn_stream(arguments):
         gcn_fs = None
 
     # Subscribe to topics and receive alerts
-    consumer.subscribe(TOPICS)
+    if arguments["--restart"]:
+        consumer.subscribe(TOPICS, on_assign=my_assign)
+    else:
+        consumer.subscribe(TOPICS)
 
     signal.signal(signal.SIGINT, signal_handler)
 

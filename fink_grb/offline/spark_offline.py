@@ -1,5 +1,5 @@
 import json
-from astropy.time import TimeDelta
+from astropy.time import TimeDelta, Time
 
 from fink_utils.science.utils import ang2pix
 from fink_utils.broker.sparkUtils import init_sparksession
@@ -100,18 +100,18 @@ def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia
 
 
 def spark_offline(
-    hbase_catalog,
-    gcn_read_path,
-    grbxztf_write_path,
-    night,
-    NSIDE,
-    start_window,
-    time_window,
-    ast_dist,
-    pansstar_dist,
-    pansstar_star_score,
-    gaia_dist,
-    with_columns_filter=True,
+    hbase_catalog: str,
+    gcn_read_path: str,
+    grbxztf_write_path: str,
+    night: str,
+    NSIDE: int,
+    start_window: float,
+    time_window: int,
+    ast_dist: float,
+    pansstar_dist: float,
+    pansstar_star_score: float,
+    gaia_dist: float,
+    with_columns_filter: bool = True,
 ):
     """
     Cross-match Fink and the GNC in order to find the optical alerts falling in the error box of a GCN.
@@ -127,7 +127,7 @@ def spark_offline(
         path to store the cross match ZTF/GCN results
     night : string
         launching night of the script
-    NSIDE: String
+    NSIDE: int
         Healpix map resolution, better if a power of 2
     start_window : float
         start date of the time window (in jd / julian date)
@@ -146,6 +146,9 @@ def spark_offline(
     gaia_dist: float
         Distance to closest source from Gaia DR1 catalog irrespective of magnitude; if exists within 90 arcsec [arcsec]
         neargaia field
+    with_columns_filter : boolean
+        Hbase options to optimize loading, work only in distributed mode
+        Set this option at False if in local mode. default = True
 
     Returns
     -------
@@ -175,12 +178,36 @@ def spark_offline(
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
-    with open(hbase_catalog) as f:
-        catalog = json.load(f)
-
     spark = init_sparksession(
         "science2grb_offline_{}{}{}".format(night[0:4], night[4:6], night[6:8])
     )
+    logger = init_logging()
+    low_bound = start_window - TimeDelta(time_window * 24 * 3600, format="sec").jd
+
+    if low_bound < 0 or low_bound > start_window:
+        raise ValueError(
+            "The time window is higher than the start_window : \nstart_window = {}\ntime_window = {}\nlow_bound={}".format(
+                start_window, time_window, low_bound
+            )
+        )
+
+    grb_alert = spark.read.format("parquet").load(gcn_read_path)
+
+    grb_alert = grb_alert.filter(grb_alert.triggerTimejd >= low_bound).filter(
+        grb_alert.triggerTimejd <= start_window
+    )
+
+    nb_gcn_alert = grb_alert.cache().count()
+    if nb_gcn_alert == 0:
+        logger.info(
+            "No gcn between {} and {}, exit the offline mode.".format(
+                Time(low_bound, format="jd").iso, Time(start_window, format="jd").iso
+            )
+        )
+        return
+
+    with open(hbase_catalog) as f:
+        catalog = json.load(f)
 
     ztf_alert = (
         spark.read.option("catalog", catalog)
@@ -219,15 +246,6 @@ def spark_offline(
         "tracklet",
     )
 
-    low_bound = start_window - TimeDelta(time_window * 24 * 3600, format="sec").jd
-
-    if low_bound < 0 or low_bound > start_window:
-        raise ValueError(
-            "The time window is higher than the start_window : \nstart_window = {}\ntime_window = {}\nlow_bound={}".format(
-                start_window, time_window, low_bound
-            )
-        )
-
     ztf_alert = ztf_alert.filter(
         ztf_alert["jd_objectId"] >= "{}".format(low_bound)
     ).filter(ztf_alert["jd_objectId"] < "{}".format(start_window))
@@ -237,14 +255,6 @@ def spark_offline(
     )
 
     ztf_alert.cache().count()
-
-    grb_alert = spark.read.format("parquet").load(gcn_read_path)
-
-    grb_alert = grb_alert.filter(grb_alert.triggerTimejd >= low_bound).filter(
-        grb_alert.triggerTimejd <= start_window
-    )
-
-    grb_alert.cache().count()
 
     ztf_alert = ztf_alert.withColumn(
         "hpix",
