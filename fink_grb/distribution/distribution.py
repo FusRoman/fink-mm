@@ -4,14 +4,7 @@ import sys
 import json
 
 from fink_utils.broker.sparkUtils import init_sparksession, connect_to_raw_database
-from fink_utils.broker.distributionUtils import write_to_kafka
 from importlib_resources import files
-
-from fink_filters.filter_on_axis_grb.filter import (
-    f_bronze_events,
-    f_silver_events,
-    f_gold_events,
-)
 
 import fink_grb
 
@@ -23,8 +16,7 @@ from fink_grb.utils.fun_utils import (
 import fink_grb.utils.application as apps
 from fink_grb.init import get_config, init_logging, return_verbose_level
 from fink_grb.utils.fun_utils import build_spark_submit
-
-from pyspark.sql import functions as F
+from fink_grb.distribution.apply_filters import apply_grb_filters
 
 
 def grb_distribution(
@@ -118,60 +110,17 @@ def grb_distribution(
     cnames[
         cnames.index("triggerTimeUTC")
     ] = "cast(triggerTimeUTC as string) as triggerTimeUTC"
+    df_grb_stream = df_grb_stream.selectExpr(cnames)
 
-    df_bronze = (
-        df_grb_stream.withColumn(
-            "f_bronze",
-            f_bronze_events(df_grb_stream["fink_class"], df_grb_stream["rb"]),
-        )
-        .filter("f_bronze == True")
-        .drop("f_bronze")
+    grb_stream_distribute = apply_grb_filters(
+        df_grb_stream,
+        schema,
+        tinterval,
+        checkpointpath_grb,
+        kafka_broker_server,
+        username,
+        password,
     )
-
-    df_silver = (
-        df_grb_stream.withColumn(
-            "f_silver",
-            f_silver_events(
-                df_grb_stream["fink_class"],
-                df_grb_stream["rb"],
-                df_grb_stream["grb_proba"],
-            ),
-        )
-        .filter("f_silver == True")
-        .drop("f_silver")
-    )
-
-    df_gold = (
-        df_grb_stream.withColumn(
-            "f_gold",
-            f_gold_events(
-                df_grb_stream["fink_class"],
-                df_grb_stream["rb"],
-                df_grb_stream["grb_proba"],
-                df_grb_stream["rate"],
-            ),
-        )
-        .filter("f_gold == True")
-        .drop("f_gold")
-    )
-
-    for df_filter, topicname in [
-        (df_bronze, "fink_grb_bronze"),
-        (df_silver, "fink_grb_silver"),
-        (df_gold, "fink_grb_gold"),
-    ]:
-        df_filter = df_filter.selectExpr(cnames)
-        checkpointpath_topic = checkpointpath_grb + "/{}_checkpoint".format(topicname)
-        grb_stream_distribute = write_to_kafka(
-            df_filter,
-            F.lit(schema),
-            kafka_broker_server,
-            username,
-            password,
-            topicname,
-            checkpointpath_topic,
-            tinterval,
-        )
 
     # Keep the Streaming running until something or someone ends it!
     if exit_after is not None:
