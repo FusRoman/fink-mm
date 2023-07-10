@@ -8,6 +8,19 @@ from fink_filters.filter_on_axis_grb.filter import (
 )
 
 
+def get_gold_and_silver(event_pdf):
+    bronze_mask = bronze_events(event_pdf["fink_class"], event_pdf["rb"])
+    silver_mask = silver_events(
+        event_pdf["fink_class"], event_pdf["rb"], event_pdf["grb_proba"]
+    )
+    gold_mask = gold_events(
+        event_pdf["fink_class"], event_pdf["rb"], event_pdf["grb_proba"], event_pdf["rate"]
+    )
+
+    gold_pdf = event_pdf[gold_mask]
+    silver_pdf = event_pdf[~gold_mask & silver_mask]
+    return gold_pdf, silver_pdf
+
 def plot_ztf_join_distribution(event_pdf, eventId):
     def plot_grb_scatter(df, ax, marker, size, label):
         if len(df) == 0:
@@ -68,7 +81,7 @@ def plot_ztf_join_distribution(event_pdf, eventId):
         plot_grb_scatter(gold_pdf, ax, "*", 400, "ztf gold, class={}".format(_class))
         annotate_plot(gold_pdf, ax)
 
-    ax.scatter(0, 0, s=400, alpha=0.8, label=eventId)
+    ax.scatter(0, 0, s=400, alpha=0.8, label=f"triggerId={eventId}")
 
     label_position = ax.get_rlabel_position()
     ax.text(
