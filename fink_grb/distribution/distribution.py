@@ -16,7 +16,7 @@ from fink_grb.utils.fun_utils import (
 import fink_grb.utils.application as apps
 from fink_grb.init import get_config, init_logging, return_verbose_level
 from fink_grb.utils.fun_utils import build_spark_submit
-from fink_grb.distribution.apply_filters import apply_grb_filters
+from fink_grb.distribution.apply_filters import apply_filters
 
 
 def grb_distribution(
@@ -112,7 +112,7 @@ def grb_distribution(
     ] = "cast(triggerTimeUTC as string) as triggerTimeUTC"
     df_grb_stream = df_grb_stream.selectExpr(cnames)
 
-    grb_stream_distribute = apply_grb_filters(
+    grb_stream_distribute = apply_filters(
         df_grb_stream,
         schema,
         tinterval,
