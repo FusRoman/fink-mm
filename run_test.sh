@@ -27,9 +27,9 @@ python -m pip install .
 # echo "\n"
 
 # Run the test suite
-for filename in fink_grb/online/*.py
+for filename in fink_mm/online/*.py
 do
-  if [ $filename != "fink_grb/online/ztf_join_gcn.py" ]; then
+  if [ $filename != "fink_mm/online/ztf_join_gcn.py" ]; then
     echo $filename
     # Run test suite + coverage
     coverage run \
@@ -38,7 +38,7 @@ do
   fi
 done
 
-for filename in fink_grb/utils/*.py
+for filename in fink_mm/utils/*.py
 do
   echo $filename
   # Run test suite + coverage
@@ -47,25 +47,25 @@ do
     --rcfile ${ROOTPATH}/.coveragerc $filename
 done
 
-echo "fink_grb/init.py test"
+echo "fink_mm/init.py test"
 coverage run \
     --source=${ROOTPATH} \
-    --rcfile=${ROOTPATH}/.coveragerc fink_grb/init.py
+    --rcfile=${ROOTPATH}/.coveragerc fink_mm/init.py
 
-echo "fink_grb/online/ztf_join_gcn.py test"
+echo "fink_mm/online/ztf_join_gcn.py test"
 coverage run \
     --source=${ROOTPATH} \
-    --rcfile=${ROOTPATH}/.coveragerc fink_grb/online/ztf_join_gcn.py "test"
+    --rcfile=${ROOTPATH}/.coveragerc fink_mm/online/ztf_join_gcn.py "test"
 
-echo "fink_grb/offline/spark_offline.py test"
+echo "fink_mm/offline/spark_offline.py test"
 coverage run \
     --source=${ROOTPATH} \
-    --rcfile=${ROOTPATH}/.coveragerc fink_grb/offline/spark_offline.py "test"
+    --rcfile=${ROOTPATH}/.coveragerc fink_mm/offline/spark_offline.py "test"
 
-echo "fink_grb/distribution/distribution.py test"
+echo "fink_mm/distribution/distribution.py test"
 coverage run \
     --source=${ROOTPATH} \
-    --rcfile=${ROOTPATH}/.coveragerc fink_grb/distribution/distribution.py "test"
+    --rcfile=${ROOTPATH}/.coveragerc fink_mm/distribution/distribution.py "test"
 
 coverage combine
 
