@@ -105,6 +105,10 @@ The connection to the distribution stream is made by the [fink-client](https://g
 
 |Topic Name     | Description                                                                              |
 |---------------|------------------------------------------------------------------------------------------|
-|fink_grb_bronze| Alerts with a real bogus (rb) >= 0.5, classified by Fink as SN candidate, Unknown and Ambiguous within the error location of a GCN event.                                                                  |
+| --- GRB Filter --- |
+|fink_grb_bronze| Alerts with a real bogus (rb) >= 0.7, classified by Fink as an extra galactic events within the error location of a GRB event.|
 |fink_grb_silver| Alerts satisfying the bronze filter with a grb_proba >= 5 sigma.                         |
-|fink_grb_gold  |Alerts satisfying the silver filter with a mag_rate > 0.3 mag/day.                        |
+|fink_grb_gold  | Alerts satisfying the silver filter with a mag_rate > 0.3 mag/day and a rb >= 0.9.       |
+||
+| --- GW Filter --- |
+|fink_gw_bronze | Alerts with a real bogus (rb) >= 0.7, classified by Fink as an extra galactic events within the error location of a GW event.|
