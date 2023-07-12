@@ -76,7 +76,9 @@ jobs:
         echo "FINK_PACKAGES: $FINK_PACKAGES"
         echo "FINK_JARS: $FINK_JARS"
         echo `python -V`
-        ls fink_mm
+        echo
+        echo
+        export
 
     - name: Start services
       run: |

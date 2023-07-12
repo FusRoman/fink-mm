@@ -10,7 +10,7 @@ with open("README.md", "r") as fh:
 
 
 setup(
-    name="fink-grb",
+    name="fink-mm",
     version=fink_mm.__version__,
     description="Correlation of Fink alerts with notices from the General Coordinate Network (GCN)",
     author="Roman Le Montagner",
