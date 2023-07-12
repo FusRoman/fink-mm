@@ -311,6 +311,7 @@ def get_pixels(obsname: pd.Series, rawEvent: pd.Series, NSIDE: pd.Series) -> pd.
 
     Examples
     --------
+    >>> print(grb_data)
     >>> spark_grb = spark.read.format('parquet').load(grb_data)
     >>> NSIDE = 4
 
