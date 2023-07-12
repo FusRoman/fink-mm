@@ -193,7 +193,7 @@ def ztf_join_gcn_stream(
     >>> ztf_join_gcn_stream(
     ...     ztf_datatest,
     ...     gcn_datatest,
-    ...     ".",
+    ...     grb_dataoutput,
     ...     "20190903",
     ...     4, 100, 5, 5, 2, 0, 5
     ... )
