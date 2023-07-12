@@ -207,7 +207,7 @@ def init_spark(doctest_namespace):
         "bootstrap.servers": "localhost:9092",
         "group_id": "rlm_fink",
     }
-    topics = ["fink_mm_bronze"]
+    topics = ["fink_grb_bronze"]
 
     headers = [
         "Generated at (jd)",
