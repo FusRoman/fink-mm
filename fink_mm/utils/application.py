@@ -75,7 +75,6 @@ class Application(Flag):
 
             return application
         elif self == Application.ONLINE:
-
             application = os.path.join(
                 os.path.dirname(fink_mm.__file__),
                 "online",
@@ -101,7 +100,6 @@ class Application(Flag):
             return application
 
         elif self == Application.DISTRIBUTION:
-
             application = os.path.join(
                 os.path.dirname(fink_mm.__file__),
                 "distribution",
@@ -127,7 +125,6 @@ class Application(Flag):
         Run the application
         """
         if self == Application.OFFLINE:
-
             hbase_catalog = sys.argv[2]
             gcn_datapath_prefix = sys.argv[3]
             grb_datapath_prefix = sys.argv[4]
@@ -159,7 +156,6 @@ class Application(Flag):
             )
 
         elif self == Application.ONLINE:
-
             ztf_datapath_prefix = sys.argv[2]
             gcn_datapath_prefix = sys.argv[3]
             grb_datapath_prefix = sys.argv[4]
@@ -188,7 +184,6 @@ class Application(Flag):
             )
 
         elif self == Application.DISTRIBUTION:
-
             grbdata_path = sys.argv[2]
             night = sys.argv[3]
             exit_after = sys.argv[4]

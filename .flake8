@@ -10,10 +10,10 @@ exclude =
     build,
     dist
 per-file-ignores =
-    ../Fink_GRB/fink_grb/online/ztf_join_gcn.py:W503,E402
-    ../Fink_GRB/fink_grb/offline/spark_offline.py:W503,W605
-    ../Fink_GRB/fink_grb/utils/fun_utils.py:F811
-    ../Fink_GRB/fink_grb/distribution/distribution.py:W503
-    ../Fink_GRB/fink_grb/observatory/__init__.py:E402
-    ../Fink_GRB/setup.py:W503
-    ../Fink_GRB/fink_grb/observatory/LVK/LVK.py:W503
+    ../Fink_MM/fink_mm/online/ztf_join_gcn.py:W503,E402
+    ../Fink_MM/fink_mm/offline/spark_offline.py:W503,W605
+    ../Fink_MM/fink_mm/utils/fun_utils.py:F811
+    ../Fink_MM/fink_mm/distribution/distribution.py:W503
+    ../Fink_MM/fink_mm/observatory/__init__.py:E402
+    ../Fink_MM/setup.py:W503
+    ../Fink_MM/fink_mm/observatory/LVK/LVK.py:W503
