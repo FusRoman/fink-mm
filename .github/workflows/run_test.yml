@@ -104,6 +104,7 @@ jobs:
         echo "PYTHONPATH="${SPARK_HOME}/python/test_coverage:$PYTHONPATH"" >> $GITHUB_ENV
         echo "COVERAGE_PROCESS_START="${ROOTPATH}/.coveragerc"" >> $GITHUB_ENV
         python -m pip install . --upgrade
+        python -m pip install -U fink_filters
 
     - name: Run test suites
       run: |
@@ -160,6 +161,7 @@ jobs:
         echo "PYTHONPATH="${SPARK_HOME}/python/test_coverage:$PYTHONPATH"" >> $GITHUB_ENV
         echo "COVERAGE_PROCESS_START="${ROOTPATH}/.coveragerc"" >> $GITHUB_ENV
         python -m pip install . --upgrade
+        python -m pip install -U fink_filters
         mkdir fink_grb/ci_gcn_test
         mkdir fink_grb/ci_join_test
 
