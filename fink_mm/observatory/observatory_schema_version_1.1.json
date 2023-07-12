@@ -1,16 +1,16 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "fink_grb/instruments/instrument_schema_version_1.0.json",
-  "title": "Instrument",
+  "$id": "fink_mm/observatory/observatory_schema_version_1.1.json",
+  "title": "Observatory",
   "description": "The description of an astronomical observatory sending alerts on the General Coordinates network",
   "type": "object",
   "properties": {
     "name": {
-      "description": "name of the instrument",
+      "description": "name of the observatory",
       "type": "string"
     },
     "//gcn_description": {
-      "description": "URL where to find the GCN description for this instrument",
+      "description": "URL where to find the GCN description for this Observatory",
       "type": "string"
     },
     "gcn_file_format": {

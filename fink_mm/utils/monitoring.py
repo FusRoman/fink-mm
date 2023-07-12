@@ -3,10 +3,10 @@
 # from terminaltables import DoubleTable, AsciiTable
 # import datetime
 # import pytz
-# from fink_grb.init import get_config, init_logging
+# from fink_mm.init import get_config, init_logging
 # import pandas as pd
 # import pyarrow.parquet as pq
-# from fink_grb.utils.fun_utils import get_hdfs_connector, return_verbose_level
+# from fink_mm.utils.fun_utils import get_hdfs_connector, return_verbose_level
 
 
 def gcn_stream_monitoring(arguments):  # pragma: no cover

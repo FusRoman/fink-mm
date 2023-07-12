@@ -8,10 +8,10 @@ import logging
 
 from pyarrow.fs import FileSystem
 
-import fink_grb.gcn_stream.gcn_reader as gr
-from fink_grb.init import get_config, init_logging, return_verbose_level
-from fink_grb.utils.fun_utils import get_hdfs_connector
-from fink_grb.observatory import TOPICS, TOPICS_FORMAT
+import fink_mm.gcn_stream.gcn_reader as gr
+from fink_mm.init import get_config, init_logging, return_verbose_level
+from fink_mm.utils.fun_utils import get_hdfs_connector
+from fink_mm.observatory import TOPICS, TOPICS_FORMAT
 from fink_client.scripts.fink_datatransfer import my_assign
 
 
@@ -70,12 +70,12 @@ def load_and_parse_gcn(
     Examples
     --------
 
-    >>> f = open('fink_grb/test/test_data/voevent_number=9897.xml').read().encode("UTF-8")
+    >>> f = open('fink_mm/test/test_data/voevent_number=9897.xml').read().encode("UTF-8")
     >>> with tempfile.TemporaryDirectory() as tmp_dir_gcn:
     ...     load_and_parse_gcn(f, "gcn.classic.voevent.FERMI_GBM_FIN_POS", tmp_dir_gcn, logger, False, False)
     ...     base_gcn = pd.read_parquet(tmp_dir_gcn + "/year=2022/month=08/day=30/683571622_0")
     ...     base_gcn = base_gcn.drop(columns="ackTime")
-    ...     test_gcn = pd.read_parquet("fink_grb/test/test_data/683571622_0_test")
+    ...     test_gcn = pd.read_parquet("fink_mm/test/test_data/683571622_0_test")
     ...     assert_frame_equal(base_gcn, test_gcn)
 
     >>> json_str = open(lvk_initial_path, 'r').read()
@@ -83,7 +83,7 @@ def load_and_parse_gcn(
     ...     load_and_parse_gcn(json_str, "igwn.gwalert", tmp_dir_gcn, logger, False, False)
     ...     base_gcn = pd.read_parquet(tmp_dir_gcn + "/year=2023/month=05/day=18/S230518h_0")
     ...     base_gcn = base_gcn.drop(columns="ackTime")
-    ...     test_gcn = pd.read_parquet("fink_grb/test/test_data/S230518h_0_test")
+    ...     test_gcn = pd.read_parquet("fink_mm/test/test_data/S230518h_0_test")
     ...     assert_frame_equal(base_gcn, test_gcn)
     """
 

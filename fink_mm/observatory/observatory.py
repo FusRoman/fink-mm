@@ -16,9 +16,9 @@ from astropy.time import Time
 
 from fink_utils.science.utils import ra2phi, dec2theta
 
-from fink_grb.observatory import OBSERVATORY_JSON_SCHEMA_PATH
-from fink_grb.test.hypothesis.observatory_schema import voevent_df_schema
-from fink_grb.utils.grb_prob import p_ser_grb_vect
+from fink_mm.observatory import OBSERVATORY_JSON_SCHEMA_PATH
+from fink_mm.test.hypothesis.observatory_schema import voevent_df_schema
+from fink_mm.utils.grb_prob import p_ser_grb_vect
 
 
 class BadInstrument(Exception):
@@ -49,7 +49,7 @@ class Observatory(ABC):
         <class 'Fermi.Fermi'>
         """
 
-        instr_path = files("fink_grb").joinpath(instr_file)
+        instr_path = files("fink_mm").joinpath(instr_file)
 
         with open(instr_path, "r") as f:
             instr_data = json.loads(f.read())
@@ -386,4 +386,4 @@ class Observatory(ABC):
 
 
 # command to call to run the doctest :
-# pytest --doctest-modules fink_grb/observatory/observatory.py -W ignore::DeprecationWarning
+# pytest --doctest-modules fink_mm/observatory/observatory.py -W ignore::DeprecationWarning

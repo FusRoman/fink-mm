@@ -1,8 +1,8 @@
 import voeventparse as vp
 import os.path as path
 
-from fink_grb.observatory import OBSERVATORY_PATH
-from fink_grb.observatory.observatory import Observatory, BadInstrument
+from fink_mm.observatory import OBSERVATORY_PATH
+from fink_mm.observatory.observatory import Observatory, BadInstrument
 
 
 class Swift(Observatory):

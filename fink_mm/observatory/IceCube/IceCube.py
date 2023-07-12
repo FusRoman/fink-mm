@@ -8,8 +8,8 @@ from astropy.coordinates import SkyCoord
 import astropy.units as u
 
 
-from fink_grb.observatory import OBSERVATORY_PATH
-from fink_grb.observatory.observatory import (
+from fink_mm.observatory import OBSERVATORY_PATH
+from fink_mm.observatory.observatory import (
     Observatory,
     BadInstrument,
     voevent_df_schema,

@@ -11,7 +11,7 @@ import subprocess
 
 from fink_utils.spark.partitioning import convert_to_datetime
 
-from fink_grb.utils.fun_utils import (
+from fink_mm.utils.fun_utils import (
     build_spark_submit,
     join_post_process,
     read_and_build_spark_submit,
@@ -19,9 +19,9 @@ from fink_grb.utils.fun_utils import (
     read_grb_admin_options,
     read_additional_spark_options,
 )
-import fink_grb.utils.application as apps
-from fink_grb.init import get_config, init_logging, return_verbose_level
-from fink_grb.utils.fun_utils import get_pixels
+import fink_mm.utils.application as apps
+from fink_mm.init import get_config, init_logging, return_verbose_level
+from fink_mm.utils.fun_utils import get_pixels
 
 
 def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist):
@@ -328,7 +328,7 @@ def launch_offline_mode(arguments):
     ...     }
     ... )
 
-    >>> datajoin = pd.read_parquet("fink_grb/test/test_output/offline").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datajoin = pd.read_parquet("fink_mm/test/test_output/offline").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
     >>> datajoin = datajoin.drop("grb_proba", axis=1)
 
     >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
@@ -406,14 +406,14 @@ def launch_offline_mode(arguments):
     stdout, stderr = process.communicate()
     if process.returncode != 0:  # pragma: no cover
         logger.error(
-            "Fink_GRB offline crossmatch application has ended with a non-zero returncode.\
+            "Fink_MM offline crossmatch application has ended with a non-zero returncode.\
                 \n\t cause:\n\t\t{}\n\t\t{}".format(
                 stdout, stderr
             )
         )
         exit(1)
 
-    logger.info("Fink_GRB offline crossmatch application ended normally")
+    logger.info("Fink_MM offline crossmatch application ended normally")
     return
 
 

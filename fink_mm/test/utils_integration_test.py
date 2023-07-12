@@ -6,8 +6,8 @@ from lxml.objectify import ObjectifiedElement
 
 from astropy.time import Time
 
-from fink_grb.utils.fun_utils import get_observatory
-from fink_grb.observatory import INSTR_FORMAT
+from fink_mm.utils.fun_utils import get_observatory
+from fink_mm.observatory import INSTR_FORMAT
 
 
 def get_copy_of_row(pdf: pd.DataFrame, index_row: int) -> dict:
@@ -63,7 +63,7 @@ def align_ztf(
 
     Examples
     --------
-    >>> path_ztf_raw = ("fink_grb/test/test_data/ztf_test/online/raw/year=2019/month=09/day=03/")
+    >>> path_ztf_raw = ("fink_mm/test/test_data/ztf_test/online/raw/year=2019/month=09/day=03/")
     >>> ztf_pdf = pd.read_parquet(path_ztf_raw)
 
     >>> random = np.random.default_rng(0)
@@ -200,7 +200,7 @@ def align_xml_gcn(
 
     Examples
     --------
-    >>> path_gcn = "fink_grb/test/test_data/683571622_0_test"
+    >>> path_gcn = "fink_mm/test/test_data/683571622_0_test"
     >>> gcn = pd.read_parquet(path_gcn)
 
     >>> trigger_time = '2023-06-06 07:33:30.511'
@@ -259,10 +259,10 @@ def align_ztf_and_gcn(
     Examples
     --------
     >>> today = Time.now()
-    >>> path_gcn = "fink_grb/test/test_data/683571622_0_test"
+    >>> path_gcn = "fink_mm/test/test_data/683571622_0_test"
     >>> gcn = pd.read_parquet(path_gcn)
 
-    >>> path_ztf_raw = ("fink_grb/test/test_data/ztf_test/online/raw/year=2019/month=09/day=03/")
+    >>> path_ztf_raw = ("fink_mm/test/test_data/ztf_test/online/raw/year=2019/month=09/day=03/")
     >>> ztf_pdf = pd.read_parquet(path_ztf_raw)
 
     >>> random = np.random.default_rng(0)

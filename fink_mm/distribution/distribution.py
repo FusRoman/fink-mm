@@ -6,17 +6,17 @@ import json
 from fink_utils.broker.sparkUtils import init_sparksession, connect_to_raw_database
 from importlib_resources import files
 
-import fink_grb
+import fink_mm
 
-from fink_grb.utils.fun_utils import (
+from fink_mm.utils.fun_utils import (
     read_and_build_spark_submit,
     read_grb_admin_options,
     read_additional_spark_options,
 )
-import fink_grb.utils.application as apps
-from fink_grb.init import get_config, init_logging, return_verbose_level
-from fink_grb.utils.fun_utils import build_spark_submit
-from fink_grb.distribution.apply_filters import apply_filters
+import fink_mm.utils.application as apps
+from fink_mm.init import get_config, init_logging, return_verbose_level
+from fink_mm.utils.fun_utils import build_spark_submit
+from fink_mm.distribution.apply_filters import apply_filters
 
 
 def grb_distribution(
@@ -77,9 +77,9 @@ def grb_distribution(
 
     logger = init_logging()
 
-    schema_path = files("fink_grb").joinpath(
-        "conf/fink_grb_schema_version_{}.avsc".format(
-            fink_grb.__distribution_schema_version__
+    schema_path = files("fink_mm").joinpath(
+        "conf/fink_mm_schema_version_{}.avsc".format(
+            fink_mm.__distribution_schema_version__
         )
     )
     with open(schema_path, "r") as f:
@@ -148,7 +148,7 @@ def launch_distribution(arguments):
     Examples
     --------
     >>> launch_distribution({
-    ... "--config" : "fink_grb/conf/distribute_for_test.conf",
+    ... "--config" : "fink_mm/conf/distribute_for_test.conf",
     ... "--night" : "20190903",
     ... "--exit_after" : 30
     ... })
@@ -227,14 +227,14 @@ def launch_distribution(arguments):
     stdout, stderr = process.communicate()
     if process.returncode != 0:  # pragma: no cover
         logger.error(
-            "Fink_GRB distribution stream spark application has ended with a non-zero returncode.\
+            "Fink_MM distribution stream spark application has ended with a non-zero returncode.\
                 \n\t cause:\n\t\t{}\n\t\t{}\n\n\n{}\n\n".format(
                 stdout, stderr, spark_submit
             )
         )
         exit(1)
 
-    logger.info("Fink_GRB distribution stream spark application ended normally")
+    logger.info("Fink_MM distribution stream spark application ended normally")
     return
 
 

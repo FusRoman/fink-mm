@@ -3,8 +3,8 @@ import os.path as path
 
 from lxml.objectify import ObjectifiedElement
 
-from fink_grb.observatory import OBSERVATORY_PATH
-from fink_grb.observatory.observatory import Observatory, BadInstrument
+from fink_mm.observatory import OBSERVATORY_PATH
+from fink_mm.observatory.observatory import Observatory, BadInstrument
 
 
 class Fermi(Observatory):

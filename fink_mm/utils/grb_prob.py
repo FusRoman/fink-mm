@@ -43,10 +43,10 @@ def p_ser_grb_vect(
     --------
 
     # alerts from the object ZTF21aagwbjr
-    >>> ztf_alerts = pd.read_parquet("fink_grb/test/test_data/ztf_alerts_sample.parquet")
+    >>> ztf_alerts = pd.read_parquet("fink_mm/test/test_data/ztf_alerts_sample.parquet")
 
     # gcn contains the notice 634112970 (GRB210204270)
-    >>> grb_alerts = pd.read_parquet("fink_grb/test/test_data/grb_samples.parquet")
+    >>> grb_alerts = pd.read_parquet("fink_mm/test/test_data/grb_samples.parquet")
 
     >>> proba = grb_alerts.apply(
     ... lambda x: p_ser_grb_vect(
@@ -191,8 +191,8 @@ def grb_assoc(
     ... ])
 
     >>> grb_prob = df_grb.toPandas()
-    >>> grb_prob.to_parquet("fink_grb/test/test_data/grb_prob_test.parquet")
-    >>> grb_test = pd.read_parquet("fink_grb/test/test_data/grb_prob_test.parquet")
+    >>> grb_prob.to_parquet("fink_mm/test/test_data/grb_prob_test.parquet")
+    >>> grb_test = pd.read_parquet("fink_mm/test/test_data/grb_prob_test.parquet")
     >>> assert_frame_equal(grb_prob, grb_test)
     """
     grb_proba = np.ones_like(ztf_ra.values, dtype=float) * -1.0

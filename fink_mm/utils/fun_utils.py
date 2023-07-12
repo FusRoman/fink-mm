@@ -12,10 +12,10 @@ from pyspark.sql.types import DoubleType, ArrayType, IntegerType
 from fink_filters.classification import extract_fink_classification
 from fink_utils.spark.utils import concat_col
 
-from fink_grb.observatory import obsname_to_class, INSTR_FORMAT
-from fink_grb.observatory.observatory import Observatory
-from fink_grb.gcn_stream.gcn_reader import load_voevent_from_file, load_json_from_file
-from fink_grb.init import init_logging
+from fink_mm.observatory import obsname_to_class, INSTR_FORMAT
+from fink_mm.observatory.observatory import Observatory
+from fink_mm.gcn_stream.gcn_reader import load_voevent_from_file, load_json_from_file
+from fink_mm.init import init_logging
 
 # from fink_broker.tracklet_identification import add_tracklet_information
 
@@ -720,7 +720,7 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
     Returns
     -------
     df_grb: PySpark DataFrame
-        df_grb with the output schema, see conf/fink_grb_schema_version_1.0.avsc
+        df_grb with the output schema, see conf/fink_mm_schema_version_1.0.avsc
 
     Examples
     --------
@@ -837,7 +837,7 @@ def read_and_build_spark_submit(config, logger):
 
     Examples
     --------
-    >>> config = get_config({"--config" : "fink_grb/conf/fink_grb.conf"})
+    >>> config = get_config({"--config" : "fink_mm/conf/fink_mm.conf"})
     >>> logger = init_logging()
     >>> read_and_build_spark_submit(config, logger)
     'spark-submit         --master local[2]         --conf spark.mesos.principal=         --conf spark.mesos.secret=         --conf spark.mesos.role=         --conf spark.executorEnv.HOME=/path/to/user/         --driver-memory 4G         --executor-memory 8G         --conf spark.cores.max=16         --conf spark.executor.cores=8'
@@ -904,7 +904,7 @@ def read_prior_params(config, logger):
 
     Examples
     --------
-    >>> config = get_config({"--config" : "fink_grb/conf/fink_grb.conf"})
+    >>> config = get_config({"--config" : "fink_mm/conf/fink_mm.conf"})
     >>> logger = init_logging()
     >>> read_prior_params(config, logger)
     ('5', '2', '0', '5')
@@ -954,7 +954,7 @@ def read_additional_spark_options(arguments, config, logger, verbose, is_test):
 
     Examples
     --------
-    >>> arguments = {"--config" : "fink_grb/conf/fink_grb.conf"}
+    >>> arguments = {"--config" : "fink_mm/conf/fink_mm.conf"}
     >>> config = get_config(arguments)
     >>> logger = init_logging()
     >>> res = read_additional_spark_options(arguments, config, logger, True, True)
@@ -1065,7 +1065,7 @@ def read_grb_admin_options(arguments, config, logger, is_test=False):
     Examples
     --------
     >>> arguments = {
-    ... "--config" : "fink_grb/conf/fink_grb.conf",
+    ... "--config" : "fink_mm/conf/fink_mm.conf",
     ... "--night" : "20221014",
     ... "--exit_after" : "120"
     ... }
@@ -1073,7 +1073,7 @@ def read_grb_admin_options(arguments, config, logger, is_test=False):
     >>> logger = init_logging()
 
     >>> read_grb_admin_options(arguments, config, logger, False)
-    ('20221014', '120', 'fink_grb/test/test_data/ztf_test/online', 'fink_grb/test/test_data/gcn_test/raw', 'fink_grb/test/test_output', '30', '4', '/home/roman.le-montagner/fink-broker/catalogs_hbase/ztf.jd.json', 7, 'localhost:9092', 'toto', 'tata')
+    ('20221014', '120', 'fink_mm/test/test_data/ztf_test/online', 'fink_mm/test/test_data/gcn_test/raw', 'fink_mm/test/test_output', '30', '4', '/home/roman.le-montagner/fink-broker/catalogs_hbase/ztf.jd.json', 7, 'localhost:9092', 'toto', 'tata')
 
     >>> res = read_grb_admin_options(arguments, config, logger, True)
 

@@ -1,4 +1,4 @@
-import fink_grb
+import fink_mm
 import importlib.util
 from importlib_resources import files
 import sys
@@ -27,7 +27,7 @@ def __get_observatory_class():
     """
     get all the observatory class into a dictionnary with the observatory name as key
     """
-    all_obs = glob(path.join(path.dirname(fink_grb.__file__), "observatory/*/*.py"))
+    all_obs = glob(path.join(path.dirname(fink_mm.__file__), "observatory/*/*.py"))
 
     # remove the multiple __init__.py
     all_obs = [p for p in all_obs if path.basename(p) != "__init__.py"]
@@ -55,7 +55,7 @@ def __get_topics():
     instr_format: dict
         a key value map (observatory name => file format)
     """
-    p = files("fink_grb").__str__() + "/observatory/*/*.json"
+    p = files("fink_mm").__str__() + "/observatory/*/*.json"
     res = []
     topic_format = {}
     instr_format = {}
@@ -77,8 +77,8 @@ def __get_topics():
 
 
 OBSERVATORY_PATH = "observatory"
-OBSERVATORY_SCHEMA_VERSION = fink_grb.__observatory_schema_version__
-OBSERVATORY_JSON_SCHEMA_PATH = files("fink_grb").joinpath(
+OBSERVATORY_SCHEMA_VERSION = fink_mm.__observatory_schema_version__
+OBSERVATORY_JSON_SCHEMA_PATH = files("fink_mm").joinpath(
     "observatory/observatory_schema_version_{}.json".format(OBSERVATORY_SCHEMA_VERSION)
 )
 __OBS_CLASS = __get_observatory_class()
@@ -128,9 +128,9 @@ def __get_detector(voevent):
     return instr_name
 
 
-# The fink_grb.observatory import have to be after the OBSERVATORY_JSON_SCHEMA_PATH definiton
+# The fink_mm.observatory import have to be after the OBSERVATORY_JSON_SCHEMA_PATH definiton
 # to avoid a circular import issue
-from fink_grb.observatory import observatory
+from fink_mm.observatory import observatory
 from lxml.objectify import ObjectifiedElement
 
 

@@ -13,7 +13,7 @@ from fink_utils.science.utils import ang2pix
 from fink_utils.spark.partitioning import convert_to_datetime
 from fink_utils.broker.sparkUtils import init_sparksession, connect_to_raw_database
 
-from fink_grb.utils.fun_utils import (
+from fink_mm.utils.fun_utils import (
     build_spark_submit,
     join_post_process,
     read_and_build_spark_submit,
@@ -21,9 +21,9 @@ from fink_grb.utils.fun_utils import (
     read_additional_spark_options,
     read_grb_admin_options,
 )
-import fink_grb.utils.application as apps
-from fink_grb.init import get_config, init_logging, return_verbose_level
-from fink_grb.utils.fun_utils import get_pixels
+import fink_mm.utils.application as apps
+from fink_mm.init import get_config, init_logging, return_verbose_level
+from fink_mm.utils.fun_utils import get_pixels
 
 
 def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist):
@@ -336,7 +336,7 @@ def launch_joining_stream(arguments):
     ... })
 
     >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    >>> datajoin = pd.read_parquet("fink_grb/test/test_output/online").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datajoin = pd.read_parquet("fink_mm/test/test_output/online").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
@@ -408,14 +408,14 @@ def launch_joining_stream(arguments):
     stdout, stderr = process.communicate()
     if process.returncode != 0:  # pragma: no cover
         logger.error(
-            "Fink_GRB joining stream spark application has ended with a non-zero returncode.\
+            "Fink_MM joining stream spark application has ended with a non-zero returncode.\
                 \n\t cause:\n\t\t{}\n\t\t{}".format(
                 stdout, stderr
             )
         )
         exit(1)
 
-    logger.info("Fink_GRB joining stream spark application ended normally")
+    logger.info("Fink_MM joining stream spark application ended normally")
     return
 
 

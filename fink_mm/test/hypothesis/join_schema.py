@@ -1,6 +1,6 @@
 from pandera import DataFrameSchema, Column, Check, Index
 
-# minimum set of column required by fink_grb for candidate field in the ztf alerts
+# minimum set of column required by fink_mm for candidate field in the ztf alerts
 fink_candidate_schema = DataFrameSchema(
     columns={
         "ssdistnr": Column(

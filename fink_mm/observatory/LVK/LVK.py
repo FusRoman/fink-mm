@@ -12,9 +12,9 @@ import datetime as dt
 import json
 from healpy.pixelfunc import pix2ang, ang2pix
 
-from fink_grb.observatory import OBSERVATORY_PATH
-from fink_grb.observatory.observatory import Observatory
-from fink_grb.test.hypothesis.observatory_schema import voevent_df_schema
+from fink_mm.observatory import OBSERVATORY_PATH
+from fink_mm.observatory.observatory import Observatory
+from fink_mm.test.hypothesis.observatory_schema import voevent_df_schema
 
 
 class LVK(Observatory):

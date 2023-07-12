@@ -5,10 +5,10 @@ from dateutil import parser
 
 from astropy.time import Time
 
-import fink_grb
-import fink_grb.offline.spark_offline as offline
-import fink_grb.online.ztf_join_gcn as online
-import fink_grb.distribution.distribution as distrib
+import fink_mm
+import fink_mm.offline.spark_offline as offline
+import fink_mm.online.ztf_join_gcn as online
+import fink_mm.distribution.distribution as distrib
 
 
 class Application(Flag):
@@ -43,7 +43,7 @@ class Application(Flag):
         """
         if self == Application.OFFLINE:
             application = os.path.join(
-                os.path.dirname(fink_grb.__file__),
+                os.path.dirname(fink_mm.__file__),
                 "offline",
                 "spark_offline.py prod",
             )
@@ -77,7 +77,7 @@ class Application(Flag):
         elif self == Application.ONLINE:
 
             application = os.path.join(
-                os.path.dirname(fink_grb.__file__),
+                os.path.dirname(fink_mm.__file__),
                 "online",
                 "ztf_join_gcn.py prod",
             )
@@ -103,7 +103,7 @@ class Application(Flag):
         elif self == Application.DISTRIBUTION:
 
             application = os.path.join(
-                os.path.dirname(fink_grb.__file__),
+                os.path.dirname(fink_mm.__file__),
                 "distribution",
                 "distribution.py prod",
             )

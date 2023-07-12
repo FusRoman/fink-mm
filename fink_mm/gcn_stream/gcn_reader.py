@@ -4,7 +4,7 @@ import io
 from lxml.objectify import ObjectifiedElement
 import json
 from logging import Logger
-from fink_grb.observatory import voevent_to_class, json_to_class
+from fink_mm.observatory import voevent_to_class, json_to_class
 
 
 def load_voevent_from_path(
@@ -105,7 +105,7 @@ def parse_xml_alert(gcn: bytes, logger: Logger, logs: bool) -> pd.DataFrame:
 
     Examples
     --------
-    >>> f = open('fink_grb/test/test_data/voevent_number=9897.xml').read().encode("UTF-8")
+    >>> f = open('fink_mm/test/test_data/voevent_number=9897.xml').read().encode("UTF-8")
     >>> parse_xml_alert(f, logger, False)
       observatory instrument event  ...  year month  day
     0       Fermi        GBM        ...  2022    08   30
