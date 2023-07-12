@@ -103,7 +103,7 @@ jobs:
       run: |
         echo "PYTHONPATH="${SPARK_HOME}/python/test_coverage:$PYTHONPATH"" >> $GITHUB_ENV
         echo "COVERAGE_PROCESS_START="${ROOTPATH}/.coveragerc"" >> $GITHUB_ENV
-        python -m pip install -U .
+        python -m pip install . --upgrade
 
     - name: Run test suites
       run: |
@@ -159,7 +159,7 @@ jobs:
       run: |
         echo "PYTHONPATH="${SPARK_HOME}/python/test_coverage:$PYTHONPATH"" >> $GITHUB_ENV
         echo "COVERAGE_PROCESS_START="${ROOTPATH}/.coveragerc"" >> $GITHUB_ENV
-        python -m pip install -U .
+        python -m pip install . --upgrade
         mkdir fink_grb/ci_gcn_test
         mkdir fink_grb/ci_join_test
 
