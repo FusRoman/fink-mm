@@ -274,9 +274,9 @@ def get_observatory(obsname: str, rawEvent: str) -> Observatory:
     Example
     -------
     >>> import os
-    >>> cwd = os.getcwd()
-    >>> print(cwd)
     >>> print(os.listdir())
+
+
     >>> pdf = pd.read_parquet(grb_data)
     >>> type(get_observatory(pdf["observatory"].iloc[0], pdf["raw_event"].iloc[0]))
     <class 'Fermi.Fermi'>
