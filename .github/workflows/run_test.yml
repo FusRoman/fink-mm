@@ -12,7 +12,7 @@ on:
 
 env:
   NIGHT: 20190903
-  CONFIGFILE_PATH: fink_grb/conf/integration.conf
+  CONFIGFILE_PATH: fink_mm/conf/integration.conf
   SECRET_ID: ${{ secrets.GCN_ID }}
   SECRET_SECRET: ${{ secrets.GCN_SECRET }}
 
@@ -35,13 +35,13 @@ jobs:
     - name: Set up env [1/3]
       run: |
         echo "ROOTPATH=`pwd`" >> $GITHUB_ENV
-        echo "FINK_GRB=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+        echo "FINK_MM=$GITHUB_WORKSPACE" >> $GITHUB_ENV
         echo "JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))" >> $GITHUB_ENV
 
 
     - name: Set up env [2/3]
       run: |
-        echo "PYTHONPATH="${PYTHONPATH}:${SPARKLIB}:${FINK_GRB}"" >> $GITHUB_ENV
+        echo "PYTHONPATH="${PYTHONPATH}:${SPARKLIB}:${FINK_MM}"" >> $GITHUB_ENV
 
     - name: Install fink-broker
       run: |
@@ -50,7 +50,7 @@ jobs:
         cd fink-broker
         pip install .
         echo "FINK_HOME=${HOME}/fink-broker" >> $GITHUB_ENV
-        cd $FINK_GRB
+        cd $FINK_MM
 
     - name: Set up env [3/3]
       run: |
@@ -67,7 +67,7 @@ jobs:
       run: |
         echo "GITHUB_PATH: $GITHUB_PATH"
         echo "PATH: $PATH"
-        echo "FINK_GRB: $FINK_GRB"
+        echo "FINK_MM: $FINK_MM"
         echo "SPARK_HOME: $SPARK_HOME"
         echo "SPARKLIB: $SPARKLIB"
         echo "PYTHONPATH: $PYTHONPATH"
@@ -81,19 +81,19 @@ jobs:
       run: |
         cd $USRLIBS
         source scripts/start_services.sh --kafka-version ${KAFKA_VERSION} --hbase-version ${HBASE_VERSION}
-        cd $FINK_GRB
+        cd $FINK_MM
 
     - name: Call raw2science
       run: |
-        fink start raw2science -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT --exit_after 90
+        fink start raw2science -c ${FINK_MM}/fink_mm/test/test_data/with_hbase/fink_test.conf --night $NIGHT --exit_after 90
 
     - name: Merge data
       run: |
-        fink start merge -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT
+        fink start merge -c ${FINK_MM}/fink_mm/test/test_data/with_hbase/fink_test.conf --night $NIGHT
 
     - name: Push Hbase data
       run: |
-        fink start index_archival -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT --index_table jd_objectId
+        fink start index_archival -c ${FINK_MM}/fink_mm/test/test_data/with_hbase/fink_test.conf --night $NIGHT --index_table jd_objectId
 
     - name: Check HBase table
       run: |
@@ -108,7 +108,7 @@ jobs:
 
     - name: Run test suites
       run: |
-        coverage run --source=${ROOTPATH} --rcfile=${ROOTPATH}/.coveragerc -m pytest --doctest-modules fink_grb
+        coverage run --source=${ROOTPATH} --rcfile=${ROOTPATH}/.coveragerc -m pytest --doctest-modules fink_mm
         curl -s https://codecov.io/bash | bash
 
   run-integration-test:
@@ -128,12 +128,12 @@ jobs:
     - name: Set up env [1/3]
       run: |
         echo "ROOTPATH=`pwd`" >> $GITHUB_ENV
-        echo "FINK_GRB=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+        echo "FINK_MM=$GITHUB_WORKSPACE" >> $GITHUB_ENV
         echo "JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))" >> $GITHUB_ENV
 
     - name: Set up env [2/3]
       run: |
-        echo "PYTHONPATH="${PYTHONPATH}:${SPARKLIB}:${FINK_GRB}"" >> $GITHUB_ENV
+        echo "PYTHONPATH="${PYTHONPATH}:${SPARKLIB}:${FINK_MM}"" >> $GITHUB_ENV
         echo "NIGHT=`date +"%Y%m%d" -d "now"`" >> $GITHUB_ENV
 
     - name: Install fink-broker
@@ -143,7 +143,7 @@ jobs:
         cd fink-broker
         pip install .
         echo "FINK_HOME=${HOME}/fink-broker" >> $GITHUB_ENV
-        cd $FINK_GRB
+        cd $FINK_MM
 
     - name: Set up env [3/3]
       run: |
@@ -162,70 +162,70 @@ jobs:
         echo "COVERAGE_PROCESS_START="${ROOTPATH}/.coveragerc"" >> $GITHUB_ENV
         python -m pip install . --upgrade
         python -m pip install -U fink_filters
-        mkdir fink_grb/ci_gcn_test
-        mkdir fink_grb/ci_join_test
+        mkdir fink_mm/ci_gcn_test
+        mkdir fink_mm/ci_join_test
 
     - name: Launch GCN stream
       # don't put --test for the gcn_stream command otherwise it will miss the gw alerts
       shell: bash
       run: |
-        fink_grb gcn_stream start --config $CONFIGFILE_PATH --test > fink_grb_gcnstream_${NIGHT}.log 2>&1 &
+        fink_mm gcn_stream start --config $CONFIGFILE_PATH --test > fink_mm_gcnstream_${NIGHT}.log 2>&1 &
         sleep 180s
 
     - name: Start services
       run: |
         cd $USRLIBS
         source scripts/start_services.sh --kafka-version ${KAFKA_VERSION} --hbase-version ${HBASE_VERSION}
-        cd $FINK_GRB
+        cd $FINK_MM
 
     - name: Generate fake gcn counterparts
       run: |
-        python fink_grb/test/prep_ztf_data.py
-        mv fink_grb/test/test_data/ztf_test/online/raw/year=2019 fink_grb
+        python fink_mm/test/prep_ztf_data.py
+        mv fink_mm/test/test_data/ztf_test/online/raw/year=2019 fink_mm
 
     - name: Check data
       run: |
           echo "GCN ALERTS"
-          ls -dlth fink_grb/ci_gcn_test/*/*/*/*
+          ls -dlth fink_mm/ci_gcn_test/*/*/*/*
           echo ""
           echo "ZTF ALERTS"
           echo "--- ONLINE SCIENCE"
-          ls -dlth fink_grb/test/test_data/ztf_test/online/science/*/*/*/*
+          ls -dlth fink_mm/test/test_data/ztf_test/online/science/*/*/*/*
           echo "--- ARCHIVE SCIENCE"
-          ls -dlth fink_grb/test/test_data/ztf_test/archive/science/*/*/*/*
+          ls -dlth fink_mm/test/test_data/ztf_test/archive/science/*/*/*/*
 
     # - name: Call raw2science
       # run: |
-        # fink start raw2science -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT --exit_after 90
+        # fink start raw2science -c ${FINK_MM}/fink_mm/test/test_data/with_hbase/fink_test.conf --night $NIGHT --exit_after 90
 
     # - name: Merge data
       # run: |
-        # fink start merge -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT
+        # fink start merge -c ${FINK_MM}/fink_mm/test/test_data/with_hbase/fink_test.conf --night $NIGHT
 
     - name: Push Hbase data
       run: |
-        fink start index_archival -c ${FINK_GRB}/fink_grb/test/test_data/with_hbase/fink_test.conf --night $NIGHT --index_table jd_objectId
+        fink start index_archival -c ${FINK_MM}/fink_mm/test/test_data/with_hbase/fink_test.conf --night $NIGHT --index_table jd_objectId
 
     - name: Run online join streaming
       run: |
-        fink_grb join_stream online --config $CONFIGFILE_PATH --night $NIGHT --exit_after 180
+        fink_mm join_stream online --config $CONFIGFILE_PATH --night $NIGHT --exit_after 180
 
     - name: Check online stream
       run: |
-        ls -lth fink_grb/ci_join_test/online/*/*/*
+        ls -lth fink_mm/ci_join_test/online/*/*/*
 
     - name: Run offline stream
       run: |
-        fink_grb join_stream offline --night $NIGHT --config $CONFIGFILE_PATH --test
+        fink_mm join_stream offline --night $NIGHT --config $CONFIGFILE_PATH --test
 
     - name: Check offline stream
       run: |
-        ls -lth fink_grb/ci_join_test/offline/*/*/*
+        ls -lth fink_mm/ci_join_test/offline/*/*/*
 
     # - name: Online Distribution
       # run: |
-        # fink_grb distribute --config $CONFIGFILE_PATH --night $NIGHT --exit_after 60
+        # fink_mm distribute --config $CONFIGFILE_PATH --night $NIGHT --exit_after 60
     
     # - name: Check Distribution
       # run: |
-         #python fink_grb/test/display_distribution.py
+         #python fink_mm/test/display_distribution.py
