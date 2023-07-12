@@ -276,6 +276,7 @@ def get_observatory(obsname: str, rawEvent: str) -> Observatory:
     >>> import os
     >>> cwd = os.getcwd()
     >>> print(cwd)
+    >>> print(os.listdir())
     >>> pdf = pd.read_parquet(grb_data)
     >>> type(get_observatory(pdf["observatory"].iloc[0], pdf["raw_event"].iloc[0]))
     <class 'Fermi.Fermi'>
@@ -314,7 +315,6 @@ def get_pixels(obsname: pd.Series, rawEvent: pd.Series, NSIDE: pd.Series) -> pd.
 
     Examples
     --------
-    >>> print(grb_data)
     >>> spark_grb = spark.read.format('parquet').load(grb_data)
     >>> NSIDE = 4
 
