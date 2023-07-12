@@ -8,7 +8,7 @@ from importlib_resources import files
 import logging
 import pathlib
 
-import fink_grb
+import fink_mm
 
 
 def return_verbose_level(config, logger):
@@ -29,7 +29,7 @@ def return_verbose_level(config, logger):
 
     Examples
     --------
-    >>> c = get_config({"--config" : "fink_grb/conf/fink_grb.conf"})
+    >>> c = get_config({"--config" : "fink_mm/conf/fink_mm.conf"})
     >>> logger = init_logging()
 
     >>> return_verbose_level(c, logger)
@@ -48,9 +48,9 @@ def return_verbose_level(config, logger):
     return logs
 
 
-def init_fink_grb(arguments):
+def init_fink_mm(arguments):
     """
-    Initialise the fink_grb environment. Get the config specify by the user with the
+    Initialise the fink_mm environment. Get the config specify by the user with the
     --config argument or the default if not provided.
 
     Parameters
@@ -64,11 +64,11 @@ def init_fink_grb(arguments):
 
     Examples
     --------
-    >>> init_fink_grb({"--config" : None})
-    >>> os.path.isdir("fink_grb/test/test_data/gcn_test/raw")
+    >>> init_fink_mm({"--config" : None})
+    >>> os.path.isdir("fink_mm/test/test_data/gcn_test/raw")
     True
 
-    >>> os.path.isdir("fink_grb/test/test_output/grb")
+    >>> os.path.isdir("fink_mm/test/test_output/grb")
     True
     """
     config = get_config(arguments)
@@ -92,7 +92,7 @@ def init_fink_grb(arguments):
 
 def get_config(arguments):
     """
-    Get, read and return the configuration file of fink_grb
+    Get, read and return the configuration file of fink_mm
 
     Parameters
     ----------
@@ -106,7 +106,7 @@ def get_config(arguments):
 
     Examples
     --------
-    >>> c = get_config({"--config" : "fink_grb/conf/fink_grb.conf"})
+    >>> c = get_config({"--config" : "fink_mm/conf/fink_mm.conf"})
     >>> type(c)
     <class 'configparser.ConfigParser'>
     >>> c.sections()
@@ -132,7 +132,7 @@ def get_config(arguments):
             )
             exit(1)
     else:
-        config_path = files("fink_grb").joinpath("conf/fink_grb.conf")
+        config_path = files("fink_mm").joinpath("conf/fink_mm.conf")
         config.read(config_path)
 
     return config
@@ -186,7 +186,7 @@ def init_logging() -> logging.Logger:
     <class 'logging.Logger'>
     """
     # create logger
-    logger = logging.getLogger(fink_grb.__name__)
+    logger = logging.getLogger(fink_mm.__name__)
     logger.setLevel(logging.DEBUG)
 
     # create console handler and set level to debug

@@ -1,10 +1,10 @@
 """
 Usage:
-    fink_grb gcn_stream (start|monitor) [--restart] [options]
-    fink_grb join_stream (offline|online) --night=<date> [--exit_after=<second>] [options]
-    fink_grb distribute  --night=<date> [--exit_after=<second>] [options]
-    fink_grb -h | --help
-    fink_grb --version
+    fink_mm gcn_stream (start|monitor) [--restart] [options]
+    fink_mm join_stream (offline|online) --night=<date> [--exit_after=<second>] [options]
+    fink_mm distribute  --night=<date> [--exit_after=<second>] [options]
+    fink_mm -h | --help
+    fink_mm --version
 
 Options:
   gcn_stream                       used to manage the gcn stream.
@@ -24,7 +24,7 @@ Options:
 """
 
 from docopt import docopt
-from fink_grb import __version__
+from fink_mm import __version__
 
 
 def main():
@@ -35,27 +35,27 @@ def main():
 
     if arguments["gcn_stream"]:
         if arguments["start"]:
-            from fink_grb.gcn_stream.gcn_stream import start_gcn_stream
+            from fink_mm.gcn_stream.gcn_stream import start_gcn_stream
 
             start_gcn_stream(arguments)
         elif arguments["monitor"]:
-            from fink_grb.utils.monitoring import gcn_stream_monitoring
+            from fink_mm.utils.monitoring import gcn_stream_monitoring
 
             gcn_stream_monitoring(arguments)
 
     elif arguments["join_stream"]:
         if arguments["online"]:
-            from fink_grb.online.ztf_join_gcn import launch_joining_stream
+            from fink_mm.online.ztf_join_gcn import launch_joining_stream
 
             launch_joining_stream(arguments)
 
         elif arguments["offline"]:
-            from fink_grb.offline.spark_offline import launch_offline_mode
+            from fink_mm.offline.spark_offline import launch_offline_mode
 
             launch_offline_mode(arguments)
 
     elif arguments["distribute"]:
-        from fink_grb.distribution.distribution import launch_distribution
+        from fink_mm.distribution.distribution import launch_distribution
 
         launch_distribution(arguments)
 

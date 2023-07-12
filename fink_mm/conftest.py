@@ -6,9 +6,9 @@ import tempfile
 from pandas.testing import assert_frame_equal
 from astropy.time import Time
 
-from fink_grb.gcn_stream.gcn_reader import load_voevent_from_path, load_json_from_path
-from fink_grb.observatory import voevent_to_class, json_to_class
-from fink_grb.init import init_logging
+from fink_mm.gcn_stream.gcn_reader import load_voevent_from_path, load_json_from_path
+from fink_mm.observatory import voevent_to_class, json_to_class
+from fink_mm.init import init_logging
 
 from scipy import special
 from math import sqrt
@@ -36,10 +36,10 @@ def init_test(doctest_namespace):
 def init_fermi(doctest_namespace):
     doctest_namespace[
         "fermi_gbm_voevent_path"
-    ] = "fink_grb/test/test_data/VODB/fermi/voevent_number=193.xml"
+    ] = "fink_mm/test/test_data/VODB/fermi/voevent_number=193.xml"
     doctest_namespace[
         "fermi_lat_voevent_path"
-    ] = "fink_grb/test/test_data/VODB/fermi/voevent_number=2842.xml"
+    ] = "fink_mm/test/test_data/VODB/fermi/voevent_number=2842.xml"
 
     fermi_gbm = voevent_to_class(
         load_voevent_from_path(doctest_namespace["fermi_gbm_voevent_path"], logger)
@@ -56,13 +56,13 @@ def init_fermi(doctest_namespace):
 def init_swift(doctest_namespace):
     doctest_namespace[
         "swift_bat_voevent_path"
-    ] = "fink_grb/test/test_data/VODB/swift/voevent_number=392.xml"
+    ] = "fink_mm/test/test_data/VODB/swift/voevent_number=392.xml"
     doctest_namespace[
         "swift_xrt_voevent_path"
-    ] = "fink_grb/test/test_data/VODB/swift/voevent_number=4554.xml"
+    ] = "fink_mm/test/test_data/VODB/swift/voevent_number=4554.xml"
     doctest_namespace[
         "swift_uvot_voevent_path"
-    ] = "fink_grb/test/test_data/VODB/swift/voevent_number=8582.xml"
+    ] = "fink_mm/test/test_data/VODB/swift/voevent_number=8582.xml"
 
     swift_bat = voevent_to_class(
         load_voevent_from_path(doctest_namespace["swift_bat_voevent_path"], logger)
@@ -83,13 +83,13 @@ def init_swift(doctest_namespace):
 def init_integral(doctest_namespace):
     doctest_namespace[
         "integral_weak_voevent_path"
-    ] = "fink_grb/test/test_data/VODB/integral/voevent_number=737.xml"
+    ] = "fink_mm/test/test_data/VODB/integral/voevent_number=737.xml"
     doctest_namespace[
         "integral_wakeup_voevent_path"
-    ] = "fink_grb/test/test_data/VODB/integral/voevent_number=18790.xml"
+    ] = "fink_mm/test/test_data/VODB/integral/voevent_number=18790.xml"
     doctest_namespace[
         "integral_refined_voevent_path"
-    ] = "fink_grb/test/test_data/VODB/integral/voevent_number=18791.xml"
+    ] = "fink_mm/test/test_data/VODB/integral/voevent_number=18791.xml"
 
     integral_weak = voevent_to_class(
         load_voevent_from_path(doctest_namespace["integral_weak_voevent_path"], logger)
@@ -114,13 +114,13 @@ def init_integral(doctest_namespace):
 def init_icecube(doctest_namespace):
     doctest_namespace[
         "icecube_cascade_voevent_path"
-    ] = "fink_grb/test/test_data/VODB/icecube/voevent_number=825.xml"
+    ] = "fink_mm/test/test_data/VODB/icecube/voevent_number=825.xml"
     doctest_namespace[
         "icecube_bronze_voevent_path"
-    ] = "fink_grb/test/test_data/VODB/icecube/voevent_number=3028.xml"
+    ] = "fink_mm/test/test_data/VODB/icecube/voevent_number=3028.xml"
     doctest_namespace[
         "icecube_gold_voevent_path"
-    ] = "fink_grb/test/test_data/VODB/icecube/voevent_number=45412.xml"
+    ] = "fink_mm/test/test_data/VODB/icecube/voevent_number=45412.xml"
 
     icecube_cascade = voevent_to_class(
         load_voevent_from_path(
@@ -143,9 +143,9 @@ def init_icecube(doctest_namespace):
 def init_LVK(doctest_namespace):
     doctest_namespace[
         "lvk_initial_path"
-    ] = "fink_grb/test/test_data/VODB/lvk/initial.txt"
-    doctest_namespace["lvk_update_path"] = "fink_grb/test/test_data/VODB/lvk/update.txt"
-    doctest_namespace["lvk_test_path"] = "fink_grb/test/test_data/VODB/lvk/test.txt"
+    ] = "fink_mm/test/test_data/VODB/lvk/initial.txt"
+    doctest_namespace["lvk_update_path"] = "fink_mm/test/test_data/VODB/lvk/update.txt"
+    doctest_namespace["lvk_test_path"] = "fink_mm/test/test_data/VODB/lvk/test.txt"
 
     lvk_initial = json_to_class(
         load_json_from_path(doctest_namespace["lvk_initial_path"], logger)
@@ -172,11 +172,11 @@ def init_spark(doctest_namespace):
 
     doctest_namespace["Time"] = Time
 
-    grb_data = "fink_grb/test/test_data/gcn_test/raw/year=2019/month=09/day=03"
-    gw_data = "fink_grb/test/test_data/S230518h_0_test"
-    join_data = "fink_grb/test/test_data/join_raw_datatest.parquet"
+    grb_data = "fink_mm/test/test_data/gcn_test/raw/year=2019/month=09/day=03"
+    gw_data = "fink_mm/test/test_data/S230518h_0_test"
+    join_data = "fink_mm/test/test_data/join_raw_datatest.parquet"
     alert_data = (
-        "fink_grb/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/"
+        "fink_mm/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/"
     )
 
     doctest_namespace["grb_data"] = grb_data
@@ -184,9 +184,9 @@ def init_spark(doctest_namespace):
     doctest_namespace["join_data"] = join_data
     doctest_namespace["alert_data"] = alert_data
 
-    ztf_datatest = "fink_grb/test/test_data/ztf_test/online"
-    gcn_datatest = "fink_grb/test/test_data/gcn_test/raw"
-    join_data_test = "fink_grb/test/test_data/online"
+    ztf_datatest = "fink_mm/test/test_data/ztf_test/online"
+    gcn_datatest = "fink_mm/test/test_data/gcn_test/raw"
+    join_data_test = "fink_mm/test/test_data/online"
 
     doctest_namespace["ztf_datatest"] = ztf_datatest
     doctest_namespace["gcn_datatest"] = gcn_datatest
@@ -207,7 +207,7 @@ def init_spark(doctest_namespace):
         "bootstrap.servers": "localhost:9092",
         "group_id": "rlm_fink",
     }
-    topics = ["fink_grb_bronze"]
+    topics = ["fink_mm_bronze"]
 
     headers = [
         "Generated at (jd)",
@@ -219,19 +219,19 @@ def init_spark(doctest_namespace):
 
     doctest_namespace["AlertConsumer"] = AlertConsumer
     doctest_namespace["tabulate"] = tabulate
-    doctest_namespace["ztfxgcn_test"] = "fink_grb/test/test_data/distribution_test_data/"
+    doctest_namespace["ztfxgcn_test"] = "fink_mm/test/test_data/distribution_test_data/"
     doctest_namespace["headers"] = headers
     doctest_namespace["maxtimeout"] = maxtimeout
     doctest_namespace["myconfig"] = myconfig
     doctest_namespace["topics"] = topics
 
-    from fink_grb.init import get_config, init_logging
+    from fink_mm.init import get_config, init_logging
     from scipy import special
     from math import sqrt
     from pyspark.sql.functions import explode
 
-    path_data_fid_1 = "fink_grb/test/test_data/ztf_alert_samples_fid_1.parquet"
-    path_data_fid_2 = "fink_grb/test/test_data/ztf_alert_samples_fid_2.parquet"
+    path_data_fid_1 = "fink_mm/test/test_data/ztf_alert_samples_fid_1.parquet"
+    path_data_fid_2 = "fink_mm/test/test_data/ztf_alert_samples_fid_2.parquet"
 
     doctest_namespace["special"] = special
     doctest_namespace["sqrt"] = sqrt
