@@ -18,6 +18,31 @@ def apply_filters(
     username,
     password,
 ):
+    """
+    Apply the user defined filters the the output of the Fink_MM package
+
+    Parameters
+    ----------
+    df_stream : spark streaming dataframe
+        input streaming dataframe save by the ztf_join_gcn online
+    schema : dictionnary
+        schema describing the data send to the kafka stream
+    tinterval : integer
+        interval between processing batch
+    checkpointpath_grb : str
+        path where are stored the kafka checkpoint
+    kafka_broker_server : str
+        IP adress of the kafka broker
+    username : str
+        username 
+    password : password
+        password
+
+    Returns
+    -------
+    spark streaming dataframe
+        same as input but filtered by the user defined filters
+    """
     df_grb_bronze = (
         df_stream.withColumn(
             "f_bronze",
