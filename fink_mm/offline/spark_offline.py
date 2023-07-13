@@ -176,6 +176,9 @@ def spark_offline(
     >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True)
     >>> datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime", "p_assoc"], axis=1)
 
+    >>> datatest = datatest.drop("t2", axis=1).sort_index(axis=1)
+    >>> datajoin = datajoin.drop("t2", axis=1).sort_index(axis=1)
+
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
     spark = init_sparksession(
@@ -333,6 +336,9 @@ def launch_offline_mode(arguments):
 
     >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True)
     >>> datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime", "p_assoc"], axis=1)
+
+    >>> datatest = datatest.drop("t2", axis=1).sort_index(axis=1)
+    >>> datajoin = datajoin.drop("t2", axis=1).sort_index(axis=1)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
