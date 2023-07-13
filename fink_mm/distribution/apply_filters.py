@@ -34,7 +34,7 @@ def apply_filters(
     kafka_broker_server : str
         IP adress of the kafka broker
     username : str
-        username 
+        username
     password : password
         password
 
