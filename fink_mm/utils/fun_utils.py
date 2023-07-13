@@ -380,30 +380,30 @@ def get_association_proba(
     ... )
 
     >>> df_proba.select(["objectId", "triggerId", "p_assoc"]).show()
-    +------------+---------+---------+
-    |    objectId|triggerId|  p_assoc|
-    +------------+---------+---------+
-    |ZTF19abvxqrw|683482851|     -1.0|
-    |ZTF19aarcrtb|683482851|     -1.0|
-    |ZTF18abrhuke|683482851|     -1.0|
-    |ZTF19aarcsqv|683482851|     -1.0|
-    |ZTF18abrfzni|683482851|     -1.0|
-    |ZTF18abthehu|683482851|     -1.0|
-    |ZTF18abrhqed|683482851|     -1.0|
-    |ZTF18abcjaer|683482851|     -1.0|
-    |ZTF19aarcsra|683482851|     -1.0|
-    |ZTF18abdlhrp|683482851|     -1.0|
-    |ZTF18abrgwwe|683482851|     -1.0|
-    |ZTF19abvxscp|683482851|     -1.0|
-    |ZTF18abthswi|683482851|     -1.0|
-    |ZTF19abvxvpj|683482851|     -1.0|
-    |ZTF19abvxscg|683482851|     -1.0|
-    |ZTF19abrvetd|683482851|     -1.0|
-    |ZTF19abvxwnh|683482851|     -1.0|
-    |ZTF19abvxwnw|683482851|     -1.0|
-    |ZTF19abvxwyv|683482851|     -1.0|
-    |ZTF19abagehm|683482851|     -1.0|
-    +------------+---------+---------+
+    +------------+---------+-------+
+    |    objectId|triggerId|p_assoc|
+    +------------+---------+-------+
+    |ZTF19abvxqrw|683482851|   -1.0|
+    |ZTF19aarcrtb|683482851|   -1.0|
+    |ZTF18abrhuke|683482851|   -1.0|
+    |ZTF19aarcsqv|683482851|   -1.0|
+    |ZTF18abrfzni|683482851|   -1.0|
+    |ZTF18abthehu|683482851|   -1.0|
+    |ZTF18abrhqed|683482851|   -1.0|
+    |ZTF18abcjaer|683482851|   -1.0|
+    |ZTF19aarcsra|683482851|   -1.0|
+    |ZTF18abdlhrp|683482851|   -1.0|
+    |ZTF18abrgwwe|683482851|   -1.0|
+    |ZTF19abvxscp|683482851|   -1.0|
+    |ZTF18abthswi|683482851|   -1.0|
+    |ZTF19abvxvpj|683482851|   -1.0|
+    |ZTF19abvxscg|683482851|   -1.0|
+    |ZTF19abrvetd|683482851|   -1.0|
+    |ZTF19abvxwnh|683482851|   -1.0|
+    |ZTF19abvxwnw|683482851|   -1.0|
+    |ZTF19abvxwyv|683482851|   -1.0|
+    |ZTF19abagehm|683482851|   -1.0|
+    +------------+---------+-------+
     only showing top 20 rows
     <BLANKLINE>
     """
