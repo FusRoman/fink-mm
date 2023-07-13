@@ -170,11 +170,11 @@ def spark_offline(
     ...    False
     ... )
 
-    >>> datajoin = pd.read_parquet(grb_dataoutput + "/offline").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    >>> datajoin = datajoin.drop("grb_proba", axis=1)
+    >>> datajoin = pd.read_parquet(grb_dataoutput + "/offline").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True)
+    >>> datajoin = datajoin.drop("p_assoc", axis=1)
 
-    >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    >>> datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime", "grb_proba"], axis=1)
+    >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True)
+    >>> datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime", "p_assoc"], axis=1)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
@@ -271,8 +271,8 @@ def spark_offline(
         "dec", "ztf_dec"
     )
 
-    grb_alert = grb_alert.withColumnRenamed("ra", "grb_ra").withColumnRenamed(
-        "dec", "grb_dec"
+    grb_alert = grb_alert.withColumnRenamed("ra", "gcn_ra").withColumnRenamed(
+        "dec", "gcn_dec"
     )
 
     join_condition = [
@@ -328,11 +328,11 @@ def launch_offline_mode(arguments):
     ...     }
     ... )
 
-    >>> datajoin = pd.read_parquet("fink_mm/test/test_output/offline").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    >>> datajoin = datajoin.drop("grb_proba", axis=1)
+    >>> datajoin = pd.read_parquet("fink_mm/test/test_output/offline").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True)
+    >>> datajoin = datajoin.drop("p_assoc", axis=1)
 
-    >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    >>> datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime", "grb_proba"], axis=1)
+    >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True)
+    >>> datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime", "p_assoc"], axis=1)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """

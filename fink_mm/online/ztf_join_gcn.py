@@ -198,8 +198,8 @@ def ztf_join_gcn_stream(
     ...     4, 100, 5, 5, 2, 0, 5
     ... )
 
-    >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    >>> datajoin = pd.read_parquet(grb_dataoutput + "/online").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True)
+    >>> datajoin = pd.read_parquet(grb_dataoutput + "/online").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True)
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
     logger = init_logging()
@@ -258,8 +258,8 @@ def ztf_join_gcn_stream(
         "ztf_dec", col("candidate.dec")
     )
 
-    df_grb_stream = df_grb_stream.withColumnRenamed("ra", "grb_ra").withColumnRenamed(
-        "dec", "grb_dec"
+    df_grb_stream = df_grb_stream.withColumnRenamed("ra", "gcn_ra").withColumnRenamed(
+        "dec", "gcn_dec"
     )
 
     # join the two streams according to the healpix columns.
@@ -335,8 +335,8 @@ def launch_joining_stream(arguments):
     ...     "--exit_after" : 100
     ... })
 
-    >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
-    >>> datajoin = pd.read_parquet("fink_mm/test/test_output/online").sort_values(["objectId", "triggerId", "grb_ra"]).reset_index(drop=True)
+    >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True)
+    >>> datajoin = pd.read_parquet("fink_mm/test/test_output/online").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """

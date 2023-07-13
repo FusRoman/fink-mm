@@ -369,7 +369,7 @@ def get_association_proba(
     >>> sparkDF = spark.read.format('parquet').load(join_data)
 
     >>> df_proba = sparkDF.withColumn(
-    ...     "grb_proba",
+    ...     "p_assoc",
     ...     get_association_proba(
     ...         sparkDF["observatory"],
     ...         sparkDF["raw_event"],
@@ -379,9 +379,9 @@ def get_association_proba(
     ...     ),
     ... )
 
-    >>> df_proba.select(["objectId", "triggerId", "grb_proba"]).show()
+    >>> df_proba.select(["objectId", "triggerId", "p_assoc"]).show()
     +------------+---------+---------+
-    |    objectId|triggerId|grb_proba|
+    |    objectId|triggerId|  p_assoc|
     +------------+---------+---------+
     |ZTF19abvxqrw|683482851|     -1.0|
     |ZTF19aarcrtb|683482851|     -1.0|
@@ -773,7 +773,7 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
 
     # refine the association and compute the serendipitous probability
     df_grb = df_grb.withColumn(
-        "grb_proba",
+        "p_assoc",
         get_association_proba(
             df_grb["observatory"],
             df_grb["raw_event"],
@@ -796,11 +796,11 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
         "event",
         "observatory",
         "triggerId",
-        "grb_ra",
-        "grb_dec",
-        col("err_arcmin").alias("grb_loc_error"),
+        "gcn_ra",
+        "gcn_dec",
+        col("err_arcmin").alias("gcn_loc_error"),
         "triggerTimeUTC",
-        "grb_proba",
+        "p_assoc",
         "fink_class",
     ]
 
@@ -814,7 +814,7 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
         ]
 
     # select a subset of columns before the writing
-    df_grb = df_grb.select(column_to_return).filter("grb_proba != -1.0")
+    df_grb = df_grb.select(column_to_return).filter("p_assoc != -1.0")
 
     return df_grb
 
