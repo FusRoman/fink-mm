@@ -783,6 +783,28 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
         ),
     )
 
+    fink_added_value = ['cdsxmatch',
+        'DR3Name',
+        'Plx',
+        'e_Plx',
+        'gcvs',
+        'vsx',
+        'x3hsp',
+        'x4lac',
+        'mangrove',
+        'roid',
+        'rf_snia_vs_nonia',
+        'snn_snia_vs_nonia',
+        'snn_sn_vs_all',
+        'mulens',
+        'nalerthist',
+        'rf_kn_vs_nonkn',
+        't2',
+        'anomaly_score',
+        'lc_features_g',
+        'lc_features_r'
+    ]
+
     column_to_return = [
         "objectId",
         "candid",
@@ -802,7 +824,7 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
         "triggerTimeUTC",
         "p_assoc",
         "fink_class",
-    ]
+    ] + fink_added_value
 
     if with_rate:
         column_to_return += [
