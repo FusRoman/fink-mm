@@ -138,3 +138,7 @@ tmp_alert
 build_egg.sh
 launch_offline_mm_locally.sh
 science2mm_locally.sh
+.vscode
+clean_it.sh
+export_unit_test.sh
+it_test.sh
