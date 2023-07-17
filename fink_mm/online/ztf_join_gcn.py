@@ -9,7 +9,7 @@ import sys
 from pyspark.sql import functions as F
 from pyspark.sql.functions import explode, col
 
-from astropy.time import Time
+# from astropy.time import Time
 
 from fink_utils.science.utils import ang2pix
 from fink_utils.spark.partitioning import convert_to_datetime
