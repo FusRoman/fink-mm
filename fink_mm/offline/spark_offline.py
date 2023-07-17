@@ -221,47 +221,6 @@ def spark_offline(
         .filter(~col("jd_objectId").startswith("schema_"))  # remove key column
     )
 
-    ztf_alert = ztf_alert.select(
-        "jd_objectId",
-        "objectId",
-        "candid",
-        "ra",
-        "dec",
-        "jd",
-        "fid",
-        "rb",
-        "jdstarthist",
-        "jdendhist",
-        "ssdistnr",
-        "distpsnr1",
-        "sgscore1",
-        "neargaia",
-        "cdsxmatch",
-        "DR3Name",
-        "Plx",
-        "e_Plx",
-        "gcvs",
-        "vsx",
-        "x3hsp",
-        "x4lac",
-        "mangrove",
-        "roid",
-        "mulens",
-        "nalerthist",
-        "snn_snia_vs_nonia",
-        "snn_sn_vs_all",
-        "rf_snia_vs_nonia",
-        "ndethist",
-        "drb",
-        "classtar",
-        "rf_kn_vs_nonkn",
-        "t2",
-        "anomaly_score",
-        "lc_features_g",
-        "lc_features_r",
-        "tracklet",
-    )
-
     ztf_alert = ztf_alert.filter(
         ztf_alert["jd_objectId"] >= "{}".format(low_bound)
     ).filter(ztf_alert["jd_objectId"] < "{}".format(start_window))
