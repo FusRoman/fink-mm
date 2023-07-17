@@ -171,10 +171,7 @@ def spark_offline(
     ... )
 
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/offline").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True)
-    >>> datajoin = datajoin.drop("p_assoc", axis=1)
-
-    >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True)
-    >>> datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime", "p_assoc"], axis=1)
+    >>> datatest = pd.read_parquet(offline_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
@@ -301,13 +298,7 @@ def launch_offline_mode(arguments):
     ... )
 
     >>> datajoin = pd.read_parquet("fink_mm/test/test_output/offline").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True)
-    >>> datajoin = datajoin.drop("p_assoc", axis=1)
-
-    >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True)
-    >>> datatest = datatest.drop(["delta_mag", "rate", "from_upper", "start_vartime", "diff_vartime", "p_assoc"], axis=1)
-
-    >>> datatest = datatest.drop("t2", axis=1).sort_index(axis=1)
-    >>> datajoin = datajoin.drop("t2", axis=1).sort_index(axis=1)
+    >>> datatest = pd.read_parquet(offline_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
