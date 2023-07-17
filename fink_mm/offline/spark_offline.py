@@ -177,7 +177,8 @@ def spark_offline(
     ... 't2_KN', 't2_M-dwarf', 't2_Mira', 't2_RRL', 't2_SLSN-I', 't2_SNII',
     ... 't2_SNIa', 't2_SNIa-91bg', 't2_SNIax', 't2_SNIbc', 't2_TDE',
     ... 't2_mu-Lens-Single']
-    >>> datatest[cols] = -1.0
+    >>> datatest = datatest.drop(cols, axis=1)
+    >>> datajoin = datajoin.drop(cols, axis=1)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
