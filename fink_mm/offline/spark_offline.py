@@ -306,6 +306,12 @@ def launch_offline_mode(arguments):
     >>> datajoin = pd.read_parquet("fink_mm/test/test_output/offline").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True)
     >>> datatest = pd.read_parquet(offline_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True)
 
+    >>> cols = ['t2_AGN', 't2_EB',
+    ... 't2_KN', 't2_M-dwarf', 't2_Mira', 't2_RRL', 't2_SLSN-I', 't2_SNII',
+    ... 't2_SNIa', 't2_SNIa-91bg', 't2_SNIax', 't2_SNIbc', 't2_TDE',
+    ... 't2_mu-Lens-Single']
+    >>> datatest[cols] = -1.0
+
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
     config = get_config(arguments)
