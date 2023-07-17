@@ -257,7 +257,7 @@ def ztf_join_gcn_stream(
     path_last_night = gcn_rawdatapath + "/year={}/month={}/day={}".format(
         last_time[0:4], last_time[4:6], last_time[6:8]
     )
-    path_gcn_data = [
+    list_path_gcn_data = [
         gcn_rawdatapath
         + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8])
     ]
@@ -265,12 +265,12 @@ def ztf_join_gcn_stream(
         spark,
         path_last_night,
     ):
-        path_last_night.append(path_gcn_data)
+        list_path_gcn_data.append(path_last_night)
 
     df_grb_stream = connect_to_raw_database(
         gcn_rawdatapath
         + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
-        path_gcn_data,
+        list_path_gcn_data,
         latestfirst=True,
     )
 
