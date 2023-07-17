@@ -174,6 +174,7 @@ def spark_offline(
     >>> datatest = pd.read_parquet(offline_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True)
 
     >>> datatest["t2_AGN"] = -1.0
+    >>> datatest["t2_EB"] = -1.0
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
     spark = init_sparksession(
