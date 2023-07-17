@@ -72,7 +72,7 @@ def grb_distribution(
     1
     """
     spark = init_sparksession(
-        "science2grb_distribution_{}{}{}".format(night[0:4], night[4:6], night[6:8])
+        "science2mm_distribution_{}{}{}".format(night[0:4], night[4:6], night[6:8])
     )
 
     logger = init_logging()

@@ -183,7 +183,7 @@ def spark_offline(
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
     spark = init_sparksession(
-        "science2grb_offline_{}{}{}".format(night[0:4], night[4:6], night[6:8])
+        "science2mm_offline_{}{}{}".format(night[0:4], night[4:6], night[6:8])
     )
     logger = init_logging()
     low_bound = start_window - TimeDelta(time_window * 24 * 3600, format="sec").jd

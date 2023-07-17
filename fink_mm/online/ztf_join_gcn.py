@@ -9,6 +9,8 @@ import sys
 from pyspark.sql import functions as F
 from pyspark.sql.functions import explode, col
 
+from astropy.time import Time
+
 from fink_utils.science.utils import ang2pix
 from fink_utils.spark.partitioning import convert_to_datetime
 from fink_utils.broker.sparkUtils import init_sparksession, connect_to_raw_database
@@ -135,6 +137,28 @@ def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia
 #     return pd.Series(ipix_disc)
 
 
+def check_path_exist(spark, path):
+    """Check we have data for the given night on HDFS
+
+    Parameters
+    ----------
+    path: str
+        Path on HDFS (file or folder)
+
+    Returns
+    ----------
+    out: bool
+    """
+    # check on hdfs
+    jvm = spark._jvm
+    jsc = spark._jsc
+    fs = jvm.org.apache.hadoop.fs.FileSystem.get(jsc.hadoopConfiguration())
+    if fs.exists(jvm.org.apache.hadoop.fs.Path(path)):
+        return True
+    else:
+        return False
+
+
 def ztf_join_gcn_stream(
     ztf_datapath_prefix,
     gcn_datapath_prefix,
@@ -208,7 +232,7 @@ def ztf_join_gcn_stream(
     """
     logger = init_logging()
     spark = init_sparksession(
-        "science2grb_online_{}{}{}".format(night[0:4], night[4:6], night[6:8])
+        "science2mm_online_{}{}{}".format(night[0:4], night[4:6], night[6:8])
     )
 
     scidatapath = ztf_datapath_prefix + "/science"
@@ -229,11 +253,24 @@ def ztf_join_gcn_stream(
     gcn_rawdatapath = gcn_datapath_prefix
 
     # connection to the gcn stream
+    last_time = (Time(f"{night[0:4]}-{night[4:6]}-{night[6:8]}") - 1).strftime("%Y%m%d")
+    path_last_night = gcn_rawdatapath + "/year={}/month={}/day={}".format(
+        last_time[0:4], last_time[4:6], last_time[6:8]
+    )
+    path_gcn_data = [
+        gcn_rawdatapath
+        + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8])
+    ]
+    if check_path_exist(
+        spark,
+        path_last_night,
+    ):
+        path_last_night.append(path_gcn_data)
+
     df_grb_stream = connect_to_raw_database(
         gcn_rawdatapath
         + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
-        gcn_rawdatapath
-        + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
+        path_gcn_data,
         latestfirst=True,
     )
 
