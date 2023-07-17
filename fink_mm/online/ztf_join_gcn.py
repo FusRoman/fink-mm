@@ -253,30 +253,31 @@ def ztf_join_gcn_stream(
     gcn_rawdatapath = gcn_datapath_prefix
 
     # connection to the gcn stream
-    last_time = (Time(f"{night[0:4]}-{night[4:6]}-{night[6:8]}") - 1).strftime("%Y%m%d")
-    path_last_night = gcn_rawdatapath + "/year={}/month={}/day={}".format(
-        last_time[0:4], last_time[4:6], last_time[6:8]
-    )
-    list_path_gcn_data = [
-        gcn_rawdatapath
-        + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8])
-    ]
-    if check_path_exist(
-        spark,
-        path_last_night,
-    ):
-        list_path_gcn_data.append(path_last_night)
+    # last_time = (Time(f"{night[0:4]}-{night[4:6]}-{night[6:8]}") - 1).strftime("%Y%m%d")
+    # path_last_night = gcn_rawdatapath + "/year={}/month={}/day={}".format(
+    #     last_time[0:4], last_time[4:6], last_time[6:8]
+    # )
+    # list_path_gcn_data = [
+    #     gcn_rawdatapath
+    #     + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8])
+    # ]
+    # if check_path_exist(
+    #     spark,
+    #     path_last_night,
+    # ):
+    #     list_path_gcn_data.append(path_last_night)
 
-    print()
-    print("----")
-    print(list_path_gcn_data)
-    print("-----")
-    print()
+    # print()
+    # print("----")
+    # print(list_path_gcn_data)
+    # print("-----")
+    # print()
 
     df_grb_stream = connect_to_raw_database(
         gcn_rawdatapath
         + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
-        list_path_gcn_data,
+        gcn_rawdatapath
+        + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
         latestfirst=True,
     )
 
