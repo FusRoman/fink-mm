@@ -267,6 +267,8 @@ def ztf_join_gcn_stream(
     ):
         list_path_gcn_data.append(path_last_night)
 
+    print(list_path_gcn_data)
+
     df_grb_stream = connect_to_raw_database(
         gcn_rawdatapath
         + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
