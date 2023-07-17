@@ -783,10 +783,6 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
         ),
     )
 
-    print("-----")
-    df_grb.show()
-    print("-----")
-
     fink_added_value = [
         "cdsxmatch",
         "DR3Name",
