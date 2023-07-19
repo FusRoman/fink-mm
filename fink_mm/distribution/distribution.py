@@ -1,12 +1,8 @@
 import time
 import subprocess
 import sys
-import json
 
 from fink_utils.broker.sparkUtils import init_sparksession, connect_to_raw_database
-from importlib_resources import files
-
-import fink_mm
 
 from fink_mm.utils.fun_utils import (
     read_and_build_spark_submit,
@@ -93,7 +89,11 @@ def grb_distribution(
     )
 
     df_grb_stream = (
-        df_grb_stream.drop("year").drop("month").drop("day").drop("timestamp").drop("t2")
+        df_grb_stream.drop("year")
+        .drop("month")
+        .drop("day")
+        .drop("timestamp")
+        .drop("t2")
     )
 
     schema = schema_converter.to_avro(df_grb_stream.coalesce(1).limit(1).schema)
