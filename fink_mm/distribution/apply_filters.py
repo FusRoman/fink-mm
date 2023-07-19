@@ -112,4 +112,4 @@ def apply_filters(
             tinterval,
         )
 
-        return grb_stream_distribute
+    return grb_stream_distribute
