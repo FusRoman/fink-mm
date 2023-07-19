@@ -75,6 +75,7 @@ def apply_filters(
                 df_stream["fink_class"],
                 df_stream["observatory"],
                 df_stream["rb"],
+                df_stream["gcn_loc_error"],
                 df_stream["p_assoc"],
                 df_stream["rate"],
             ),
