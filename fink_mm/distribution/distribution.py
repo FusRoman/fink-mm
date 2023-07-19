@@ -107,7 +107,6 @@ def grb_distribution(
     cnames[cnames.index("mangrove")] = "struct(mangrove.*) as mangrove"
     df_grb_stream = df_grb_stream.selectExpr(cnames)
 
-
     schema = schema_converter.to_avro(df_grb_stream.coalesce(1).limit(1).schema)
 
     grb_stream_distribute = apply_filters(
