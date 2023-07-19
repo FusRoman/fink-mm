@@ -18,6 +18,8 @@ from fink_mm.init import get_config, init_logging, return_verbose_level
 from fink_mm.utils.fun_utils import build_spark_submit
 from fink_mm.distribution.apply_filters import apply_filters
 
+from fink_utils.spark import schema_converter
+
 
 def grb_distribution(
     grbdatapath, night, tinterval, exit_after, kafka_broker_server, username, password
@@ -77,16 +79,6 @@ def grb_distribution(
 
     logger = init_logging()
 
-    schema_path = files("fink_mm").joinpath(
-        "conf/fink_mm_schema_version_{}.avsc".format(
-            fink_mm.__distribution_schema_version__
-        )
-    )
-    with open(schema_path, "r") as f:
-        schema = json.dumps(f.read())
-
-    schema = json.loads(schema)
-
     checkpointpath_grb = grbdatapath + "/grb_distribute_checkpoint"
 
     grbdatapath += "/online"
@@ -104,13 +96,15 @@ def grb_distribution(
         df_grb_stream.drop("year").drop("month").drop("day").drop("timestamp").drop("t2")
     )
 
-    cnames = df_grb_stream.columns
-    cnames[cnames.index("fid")] = "cast(fid as long) as fid"
-    cnames[cnames.index("rb")] = "cast(rb as double) as rb"
-    cnames[
-        cnames.index("triggerTimeUTC")
-    ] = "cast(triggerTimeUTC as string) as triggerTimeUTC"
-    df_grb_stream = df_grb_stream.selectExpr(cnames)
+    schema = schema_converter.to_avro(df_grb_stream.coalesce(1).limit(1).schema)
+
+    # cnames = df_grb_stream.columns
+    # cnames[cnames.index("fid")] = "cast(fid as long) as fid"
+    # cnames[cnames.index("rb")] = "cast(rb as double) as rb"
+    # cnames[
+    #     cnames.index("triggerTimeUTC")
+    # ] = "cast(triggerTimeUTC as string) as triggerTimeUTC"
+    # df_grb_stream = df_grb_stream.selectExpr(cnames)
 
     grb_stream_distribute = apply_filters(
         df_grb_stream,
