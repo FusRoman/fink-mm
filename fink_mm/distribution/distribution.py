@@ -15,6 +15,7 @@ from fink_mm.utils.fun_utils import build_spark_submit
 from fink_mm.distribution.apply_filters import apply_filters
 
 from fink_utils.spark import schema_converter
+import pyspark.sql.functions as F
 
 
 def grb_distribution(
@@ -94,7 +95,6 @@ def grb_distribution(
         .drop("day")
         .drop("timestamp")
         .drop("t2")
-        .drop("mangrove")
     )
 
     cnames = df_grb_stream.columns
@@ -107,6 +107,20 @@ def grb_distribution(
     cnames[cnames.index("lc_features_r")] = "struct(lc_features_r.*) as lc_features_r"
     # cnames[cnames.index("mangrove")] = "struct(mangrove.*) as mangrove"
     df_grb_stream = df_grb_stream.selectExpr(cnames)
+    df_grb_stream = df_grb_stream.withColumnRenamed("mangrove", "old_mangrove")
+
+    new_mangrove_col = F.struct(
+        *[
+            F.col("old_mangrove").getItem(c).alias(c)
+            for c in ["HyperLEDA_name", "2MASS_name", "lum_dist", "ang_dist"]
+        ]
+    ).alias("mangrove")
+
+    df_grb_stream = df_grb_stream.select(df_grb_stream.columns + [new_mangrove_col])
+
+    df_grb_stream.printSchema()
+
+    df_grb_stream = df_grb_stream.drop("old_mangrove")
 
     schema = schema_converter.to_avro(df_grb_stream.coalesce(1).limit(1).schema)
 
