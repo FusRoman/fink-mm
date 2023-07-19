@@ -101,7 +101,7 @@ def grb_distribution(
     )
 
     df_grb_stream = (
-        df_grb_stream.drop("year").drop("month").drop("day").drop("timestamp")
+        df_grb_stream.drop("year").drop("month").drop("day").drop("timestamp").drop("t2")
     )
 
     cnames = df_grb_stream.columns
