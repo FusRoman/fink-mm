@@ -96,15 +96,19 @@ def grb_distribution(
         .drop("t2")
     )
 
-    schema = schema_converter.to_avro(df_grb_stream.coalesce(1).limit(1).schema)
-
-    # cnames = df_grb_stream.columns
+    cnames = df_grb_stream.columns
     # cnames[cnames.index("fid")] = "cast(fid as long) as fid"
     # cnames[cnames.index("rb")] = "cast(rb as double) as rb"
     # cnames[
     #     cnames.index("triggerTimeUTC")
     # ] = "cast(triggerTimeUTC as string) as triggerTimeUTC"
     # df_grb_stream = df_grb_stream.selectExpr(cnames)
+    cnames[cnames.index('lc_features_g')] = 'struct(lc_features_g.*) as lc_features_g'
+    cnames[cnames.index('lc_features_r')] = 'struct(lc_features_r.*) as lc_features_r'
+    cnames[cnames.index('mangrove')] = 'struct(mangrove.*) as lc_features_r'
+
+    schema = schema_converter.to_avro(df_grb_stream.coalesce(1).limit(1).schema)
+
 
     grb_stream_distribute = apply_filters(
         df_grb_stream,
