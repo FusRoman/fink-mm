@@ -1,6 +1,7 @@
 import time
 import subprocess
 import sys
+import json
 
 from fink_utils.broker.sparkUtils import init_sparksession, connect_to_raw_database
 
@@ -16,6 +17,7 @@ from fink_mm.distribution.apply_filters import apply_filters
 
 from fink_utils.spark import schema_converter
 import pyspark.sql.functions as F
+from pyspark.sql.types import StructField, StructType
 
 
 def grb_distribution(
@@ -80,14 +82,55 @@ def grb_distribution(
 
     grbdatapath += "/online"
 
-    # connection to the grb database
-    df_grb_stream = connect_to_raw_database(
+    # force the mangrove columns to have the struct type
+    userschema = spark.read.parquet(
         grbdatapath
-        + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
-        grbdatapath
-        + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
-        latestfirst=True,
+        + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8])
+    ).schema
+    json_schema = json.loads(userschema.json())
+    mangrove_good_schema = {
+        "metadata": {},
+        "name": "mangrove",
+        "nullable": True,
+        "type": {
+            "fields": [
+                {"metadata": {}, "name": "HyperLEDA_name", "nullable": True, "type": "string"},
+                {"metadata": {}, "name": "2MASS_name", "nullable": True, "type": "string"},
+                {"metadata": {}, "name": "lum_dist", "nullable": True, "type": "double"},
+                {"metadata": {}, "name": "ang_dist", "nullable": True, "type": "double"}
+            ],
+            "type": "struct",
+        },
+    }
+    # good_mangrove_structfield = StructField.fromJson(mangrove_good_schema)
+    json_schema["fields"] = [
+        field for field in json_schema["fields"] if field["name"] != "mangrove"
+    ]
+    json_schema["fields"].append(mangrove_good_schema)
+    userschema = StructType.fromJson(json_schema)
+
+
+    basepath = grbdatapath + "/year={}/month={}/day={}".format(
+        night[0:4], night[4:6], night[6:8]
     )
+    path = basepath
+    df_grb_stream = (
+        spark.readStream.format("parquet")
+        .schema(userschema)
+        .option("basePath", basepath)
+        .option("path", path)
+        .option("latestFirst", True)
+        .load()
+    )
+
+    # connection to the grb database
+    # df_grb_stream = connect_to_raw_database(
+    #     grbdatapath
+    #     + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
+    #     grbdatapath
+    #     + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
+    #     latestfirst=True,
+    # )
 
     df_grb_stream = (
         df_grb_stream.drop("year")
@@ -108,17 +151,6 @@ def grb_distribution(
     # cnames[cnames.index("mangrove")] = "struct(mangrove.*) as mangrove"
     df_grb_stream = df_grb_stream.selectExpr(cnames)
     df_grb_stream = df_grb_stream.withColumnRenamed("mangrove", "old_mangrove")
-
-    new_mangrove_col = F.struct(
-        *[
-            F.col("old_mangrove").getItem(c).alias(c if c != "2MASS_name" else "TwoMASS_name")
-            for c in ["HyperLEDA_name", "2MASS_name", "lum_dist", "ang_dist"]
-        ]
-    ).alias("mangrove")
-
-    df_grb_stream = df_grb_stream.select(df_grb_stream.columns + [new_mangrove_col])
-
-    df_grb_stream = df_grb_stream.drop("old_mangrove")
 
     schema = schema_converter.to_avro(df_grb_stream.coalesce(1).limit(1).schema)
 
