@@ -3,7 +3,7 @@ import subprocess
 import sys
 import json
 
-from fink_utils.broker.sparkUtils import init_sparksession, connect_to_raw_database
+from fink_utils.broker.sparkUtils import init_sparksession
 
 from fink_mm.utils.fun_utils import (
     read_and_build_spark_submit,
@@ -16,8 +16,7 @@ from fink_mm.utils.fun_utils import build_spark_submit
 from fink_mm.distribution.apply_filters import apply_filters
 
 from fink_utils.spark import schema_converter
-import pyspark.sql.functions as F
-from pyspark.sql.types import StructField, StructType
+from pyspark.sql.types import StructType
 
 
 def grb_distribution(
@@ -94,10 +93,30 @@ def grb_distribution(
         "nullable": True,
         "type": {
             "fields": [
-                {"metadata": {}, "name": "HyperLEDA_name", "nullable": True, "type": "string"},
-                {"metadata": {}, "name": "2MASS_name", "nullable": True, "type": "string"},
-                {"metadata": {}, "name": "lum_dist", "nullable": True, "type": "double"},
-                {"metadata": {}, "name": "ang_dist", "nullable": True, "type": "double"}
+                {
+                    "metadata": {},
+                    "name": "HyperLEDA_name",
+                    "nullable": True,
+                    "type": "string",
+                },
+                {
+                    "metadata": {},
+                    "name": "2MASS_name",
+                    "nullable": True,
+                    "type": "string",
+                },
+                {
+                    "metadata": {},
+                    "name": "lum_dist",
+                    "nullable": True,
+                    "type": "double",
+                },
+                {
+                    "metadata": {},
+                    "name": "ang_dist",
+                    "nullable": True,
+                    "type": "double",
+                },
             ],
             "type": "struct",
         },
@@ -108,7 +127,6 @@ def grb_distribution(
     ]
     json_schema["fields"].append(mangrove_good_schema)
     userschema = StructType.fromJson(json_schema)
-
 
     basepath = grbdatapath + "/year={}/month={}/day={}".format(
         night[0:4], night[4:6], night[6:8]
