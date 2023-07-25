@@ -8,7 +8,7 @@ import io
 import shutil
 
 # This script is used to generate the avro schema used by the distribution
-# The schema will be pushed into fink_grb/conf/ and its name will be 'fink_grb_schema_version_*SCHEMA_VERSION*.avro'
+# The schema will be pushed into fink_mm/conf/ and its name will be 'fink_mm_schema_version_*SCHEMA_VERSION*.avro'
 #   where *SCHEMA_VERSION* is the schema version
 
 SCHEMA_VERSION = "1.2"
@@ -75,14 +75,14 @@ for k, v in confdic.items():
 
 spark = SparkSession.builder.appName("fink_test").config(conf=conf).getOrCreate()
 
-df = spark.read.format("parquet").load("fink_grb/test/test_data/online/")
+df = spark.read.format("parquet").load("fink_mm/test/test_data/online/")
 
 df = df.drop("year").drop("month").drop("day").drop("timestamp")
 
 df.show()
 
 
-path_for_avro = "fink_grb_schema_version_{}.avro".format(SCHEMA_VERSION)
+path_for_avro = "fink_mm_schema_version_{}.avro".format(SCHEMA_VERSION)
 
 df.coalesce(1).limit(1).write.format("avro").save(path_for_avro)
 
@@ -98,7 +98,7 @@ with open("/tmp/{}".format(path_for_avro.replace(".avro", ".avsc")), "r") as f:
 
 shutil.copy(
     "/tmp/{}".format(path_for_avro.replace(".avro", ".avsc")),
-    "fink_grb/conf/{}".format(path_for_avro.replace(".avro", ".avsc")),
+    "fink_mm/conf/{}".format(path_for_avro.replace(".avro", ".avsc")),
 )
 
 schema = json.loads(schema_)

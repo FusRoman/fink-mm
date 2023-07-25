@@ -3,35 +3,35 @@
 from glob import glob
 import os.path as path
 from setuptools import setup, find_packages
-import fink_grb
+import fink_mm
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 
 setup(
-    name="fink-grb",
-    version=fink_grb.__version__,
-    description="Correlation of Fink alerts with notices from gamma ray monitors",
+    name="fink-mm",
+    version=fink_mm.__version__,
+    description="Correlation of Fink alerts with notices from the General Coordinate Network (GCN)",
     author="Roman Le Montagner",
     author_email="roman.le-montagner@ijclab.in2p3.fr",
-    url="https://github.com/FusRoman/Fink_GRB",
+    url="https://github.com/FusRoman/Fink_MM",
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=find_packages(),
     package_data={
-        "fink_grb": [
-            "conf/fink_grb.conf",
-            "conf/fink_grb_schema_version_{}.avsc".format(
-                fink_grb.__distribution_schema_version__
+        "fink_mm": [
+            "conf/fink_mm.conf",
+            "conf/fink_mm_schema_version_{}.avsc".format(
+                fink_mm.__distribution_schema_version__
             ),
             "observatory/observatory_schema_version_{}.json".format(
-                fink_grb.__observatory_schema_version__
+                fink_mm.__observatory_schema_version__
             ),
         ]
         + [
-            path.relpath(el, start="fink_grb")
-            for el in glob("fink_grb/observatory/*/*.json")
+            path.relpath(el, start="fink_mm")
+            for el in glob("fink_mm/observatory/*/*.json")
         ]
     },
     install_requires=[
@@ -57,11 +57,11 @@ setup(
         "pandera==0.14.5",
         "astropy_healpix==0.7",
     ],
-    entry_points={"console_scripts": ["fink_grb=fink_grb.fink_grb_cli:main"]},
+    entry_points={"console_scripts": ["fink_mm=fink_mm.fink_mm_cli:main"]},
     license="Apache-2.0 License",
     platforms="Linux Debian distribution",
     project_urls={
-        "Source": "https://github.com/FusRoman/Fink_GRB",
+        "Source": "https://github.com/FusRoman/Fink_MM",
     },
     python_requires=">=3.7",
 )
