@@ -2,7 +2,7 @@
 
 source ~/.bash_profile
 
-NIGHT=`date +"%Y%m%d" -d "now"`
+NIGHT=`date +"%Y%m%d" -d "now - 1 days"`
 # NIGHT=`date +"%Y%m%d" -d "now + 1 days"`
 YEAR=${NIGHT:0:4}
 MONTH=${NIGHT:4:2}
