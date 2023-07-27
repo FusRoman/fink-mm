@@ -26,4 +26,4 @@ jobs:
         pip install flake8
     - name: Flake8 Fink MM
       run: |
-        flake8 ../Fink_MM
+        flake8 ../fink-mm
