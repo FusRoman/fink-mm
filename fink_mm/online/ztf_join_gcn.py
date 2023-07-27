@@ -63,7 +63,7 @@ def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia
     >>> spark_filter = ztf_grb_filter(sparkDF, 5, 2, 0, 5)
 
     >>> spark_filter.count()
-    48
+    32
     """
     spark_filter = (
         spark_ztf.filter(
