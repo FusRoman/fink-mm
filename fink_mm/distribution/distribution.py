@@ -78,7 +78,6 @@ def format_mangrove_col(userschema: StructType) -> StructType:
     return userschema
 
 
-
 def grb_distribution(
     grbdatapath, night, tinterval, exit_after, kafka_broker_server, username, password
 ):
