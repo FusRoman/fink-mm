@@ -262,7 +262,7 @@ def ztf_join_gcn_stream(
     # keep gcn emitted during the day time until the end of the stream (17:00 Paris Time)
     cur_time = Time(f"{night[0:4]}-{night[4:6]}-{night[6:8]}")
     last_time = cur_time - timedelta(hours=7)  # 17:00 Paris time yesterday
-    end_time = cur_time + timedelta(hour=17)  # 17:00 Paris time today
+    end_time = cur_time + timedelta(hours=17)  # 17:00 Paris time today
     df_grb_stream = df_grb_stream.filter(
         f"triggerTimejd >= {last_time.jd} and triggerTimejd < {end_time.jd}"
     )
