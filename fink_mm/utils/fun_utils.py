@@ -862,6 +862,7 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
         "triggerTimeUTC",
         "p_assoc",
         "fink_class",
+        "raw_event"
     ] + fink_added_value
 
     if with_rate:
