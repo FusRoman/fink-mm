@@ -15,7 +15,7 @@ setup(
     description="Correlation of Fink alerts with notices from the General Coordinate Network (GCN)",
     author="Roman Le Montagner",
     author_email="roman.le-montagner@ijclab.in2p3.fr",
-    url="https://github.com/FusRoman/Fink_MM",
+    url="https://github.com/FusRoman/fink-mm",
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=find_packages(),
@@ -61,7 +61,7 @@ setup(
     license="Apache-2.0 License",
     platforms="Linux Debian distribution",
     project_urls={
-        "Source": "https://github.com/FusRoman/Fink_MM",
+        "Source": "https://github.com/FusRoman/fink-mm",
     },
     python_requires=">=3.7",
 )

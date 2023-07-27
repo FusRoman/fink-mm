@@ -225,9 +225,9 @@ jobs:
       run: |
         ls -lth fink_mm/ci_join_test/offline/*/*/*
 
-    # - name: Online Distribution
-      # run: |
-        # fink_mm distribute --config $CONFIGFILE_PATH --night $NIGHT --exit_after 60
+    - name: Online Distribution
+      run: |
+        fink_mm distribute --config $CONFIGFILE_PATH --night $NIGHT --exit_after 60
     
     # - name: Check Distribution
       # run: |

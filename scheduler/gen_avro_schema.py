@@ -6,13 +6,13 @@ import fastavro
 import json
 import io
 import shutil
+from fink_mm import __distribution_schema_version__
 
 # This script is used to generate the avro schema used by the distribution
 # The schema will be pushed into fink_mm/conf/ and its name will be 'fink_mm_schema_version_*SCHEMA_VERSION*.avro'
 #   where *SCHEMA_VERSION* is the schema version
 
-SCHEMA_VERSION = "1.2"
-
+SCHEMA_VERSION = __distribution_schema_version__
 
 def readschemadata(bytes_io: io._io.BytesIO) -> fastavro._read.reader:
     """Read data that already has an Avro schema.
@@ -77,9 +77,9 @@ spark = SparkSession.builder.appName("fink_test").config(conf=conf).getOrCreate(
 
 df = spark.read.format("parquet").load("fink_mm/test/test_data/online/")
 
-df = df.drop("year").drop("month").drop("day").drop("timestamp")
+df = df.drop("year").drop("month").drop("day").drop("timestamp").drop("t2")
 
-df.show()
+df.printSchema()
 
 
 path_for_avro = "fink_mm_schema_version_{}.avro".format(SCHEMA_VERSION)

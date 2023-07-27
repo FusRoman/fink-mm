@@ -1,0 +1,695 @@
+{
+  "type": "record",
+  "name": "topLevelRecord",
+  "fields": [
+    {
+      "name": "objectId",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "candid",
+      "type": [
+        "long",
+        "null"
+      ]
+    },
+    {
+      "name": "ztf_ra",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "ztf_dec",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "fid",
+      "type": [
+        "long",
+        "null"
+      ]
+    },
+    {
+      "name": "jdstarthist",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "rb",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "jd",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "instrument",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "event",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "observatory",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "triggerId",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "gcn_ra",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "gcn_dec",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "gcn_loc_error",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "triggerTimeUTC",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "p_assoc",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "fink_class",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "delta_mag",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "rate",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "from_upper",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "start_vartime",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "diff_vartime",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "cdsxmatch",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "DR3Name",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "Plx",
+      "type": [
+        "float",
+        "null"
+      ]
+    },
+    {
+      "name": "e_Plx",
+      "type": [
+        "float",
+        "null"
+      ]
+    },
+    {
+      "name": "gcvs",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "vsx",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "x3hsp",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "x4lac",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "mangrove",
+      "type": [
+        {
+          "type": "array",
+          "items": [
+            {
+              "type": "array",
+              "items": [
+                "string",
+                "null"
+              ]
+            },
+            "null"
+          ]
+        },
+        "null"
+      ]
+    },
+    {
+      "name": "roid",
+      "type": [
+        "int",
+        "null"
+      ]
+    },
+    {
+      "name": "rf_snia_vs_nonia",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "snn_snia_vs_nonia",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "snn_sn_vs_all",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "mulens",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "nalerthist",
+      "type": [
+        "int",
+        "null"
+      ]
+    },
+    {
+      "name": "rf_kn_vs_nonkn",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "anomaly_score",
+      "type": [
+        "double",
+        "null"
+      ]
+    },
+    {
+      "name": "lc_features_g",
+      "type": [
+        {
+          "type": "record",
+          "name": "lc_features_g",
+          "namespace": "topLevelRecord",
+          "fields": [
+            {
+              "name": "amplitude",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "anderson_darling_normal",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "beyond_1_std",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "chi2",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "cusum",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "inter_percentile_range_10",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "kurtosis",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "linear_fit_reduced_chi2",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "linear_fit_slope",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "linear_fit_slope_sigma",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "linear_trend",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "linear_trend_noise",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "linear_trend_sigma",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "magnitude_percentage_ratio_20_10",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "magnitude_percentage_ratio_40_5",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "maximum_slope",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "mean",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "mean_variance",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "median",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "median_absolute_deviation",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "median_buffer_range_percentage_10",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "percent_amplitude",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "skew",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "standard_deviation",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "stetson_K",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "weighted_mean",
+              "type": [
+                "int",
+                "null"
+              ]
+            }
+          ]
+        },
+        "null"
+      ]
+    },
+    {
+      "name": "lc_features_r",
+      "type": [
+        {
+          "type": "record",
+          "name": "lc_features_r",
+          "namespace": "topLevelRecord",
+          "fields": [
+            {
+              "name": "amplitude",
+              "type": [
+                "double",
+                "null"
+              ]
+            },
+            {
+              "name": "anderson_darling_normal",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "beyond_1_std",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "chi2",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "cusum",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "inter_percentile_range_10",
+              "type": [
+                "double",
+                "null"
+              ]
+            },
+            {
+              "name": "kurtosis",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "linear_fit_reduced_chi2",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "linear_fit_slope",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "linear_fit_slope_sigma",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "linear_trend",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "linear_trend_noise",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "linear_trend_sigma",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "magnitude_percentage_ratio_20_10",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "magnitude_percentage_ratio_40_5",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "maximum_slope",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "mean",
+              "type": [
+                "double",
+                "null"
+              ]
+            },
+            {
+              "name": "mean_variance",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "median",
+              "type": [
+                "double",
+                "null"
+              ]
+            },
+            {
+              "name": "median_absolute_deviation",
+              "type": [
+                "double",
+                "null"
+              ]
+            },
+            {
+              "name": "median_buffer_range_percentage_10",
+              "type": [
+                "double",
+                "null"
+              ]
+            },
+            {
+              "name": "percent_amplitude",
+              "type": [
+                "double",
+                "null"
+              ]
+            },
+            {
+              "name": "skew",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "standard_deviation",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "stetson_K",
+              "type": [
+                "int",
+                "null"
+              ]
+            },
+            {
+              "name": "weighted_mean",
+              "type": [
+                "double",
+                "null"
+              ]
+            }
+          ]
+        },
+        "null"
+      ]
+    },
+    {
+      "name": "__index_level_0__",
+      "type": [
+        "long",
+        "null"
+      ]
+    }
+  ]
+}
