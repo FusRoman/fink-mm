@@ -19,7 +19,7 @@ def apply_filters(
     password,
 ):
     """
-    Apply the user defined filters the the output of the Fink_MM package
+    Apply the user defined filters the the output of the fink-mm package
 
     Parameters
     ----------

@@ -289,14 +289,14 @@ def launch_distribution(arguments):
     stdout, stderr = process.communicate()
     if process.returncode != 0:  # pragma: no cover
         logger.error(
-            "Fink_MM distribution stream spark application has ended with a non-zero returncode.\
+            "fink-mm distribution stream spark application has ended with a non-zero returncode.\
                 \n\t cause:\n\t\t{}\n\t\t{}\n\n\n{}\n\n".format(
                 stdout, stderr, spark_submit
             )
         )
         exit(1)
 
-    logger.info("Fink_MM distribution stream spark application ended normally")
+    logger.info("fink-mm distribution stream spark application ended normally")
     return
 
 
