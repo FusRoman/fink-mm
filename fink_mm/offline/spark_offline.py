@@ -162,7 +162,7 @@ def spark_offline(
     >>> spark_offline(
     ...    hbase_catalog,
     ...    gcn_datatest,
-    ...    ".",
+    ...    "grb_dataoutput",
     ...    "20190903",
     ...    4,
     ...    Time("2019-09-04").jd,
