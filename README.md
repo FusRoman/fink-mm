@@ -1,4 +1,4 @@
-# Fink_MM
+# fink-mm
 
 [![PEP8](https://github.com/FusRoman/Fink_MM/actions/workflows/linter.yml/badge.svg)](https://github.com/FusRoman/Fink_MM/actions/workflows/linter.yml)
 [![Sentinel](https://github.com/FusRoman/Fink_MM/actions/workflows/run_test.yml/badge.svg)](https://github.com/FusRoman/Fink_MM/actions/workflows/run_test.yml)
