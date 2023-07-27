@@ -19,6 +19,66 @@ from fink_utils.spark import schema_converter
 from pyspark.sql.types import StructType
 
 
+def format_mangrove_col(userschema: StructType) -> StructType:
+    """
+    Format the mangrove column from Fink.
+    The mangrove column is originally a MapType and will be cast into a Struct.
+
+    Parameters
+    ----------
+    userschema : StructType
+        input schema, mangrove column is a MapType
+
+    Returns
+    -------
+    StructType
+        ouptut schema, mangrove column is a StructType
+    """
+    json_schema = json.loads(userschema.json())
+    mangrove_good_schema = {
+        "metadata": {},
+        "name": "mangrove",
+        "nullable": True,
+        "type": {
+            "fields": [
+                {
+                    "metadata": {},
+                    "name": "HyperLEDA_name",
+                    "nullable": True,
+                    "type": "string",
+                },
+                {
+                    "metadata": {},
+                    "name": "TwoMASS_name",
+                    "nullable": True,
+                    "type": "string",
+                },
+                {
+                    "metadata": {},
+                    "name": "lum_dist",
+                    "nullable": True,
+                    "type": "string",
+                },
+                {
+                    "metadata": {},
+                    "name": "ang_dist",
+                    "nullable": True,
+                    "type": "string",
+                },
+            ],
+            "type": "struct",
+        },
+    }
+    # good_mangrove_structfield = StructField.fromJson(mangrove_good_schema)
+    json_schema["fields"] = [
+        field for field in json_schema["fields"] if field["name"] != "mangrove"
+    ]
+    json_schema["fields"].append(mangrove_good_schema)
+    userschema = StructType.fromJson(json_schema)
+    return userschema
+
+
+
 def grb_distribution(
     grbdatapath, night, tinterval, exit_after, kafka_broker_server, username, password
 ):
@@ -86,47 +146,7 @@ def grb_distribution(
         grbdatapath
         + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8])
     ).schema
-    json_schema = json.loads(userschema.json())
-    mangrove_good_schema = {
-        "metadata": {},
-        "name": "mangrove",
-        "nullable": True,
-        "type": {
-            "fields": [
-                {
-                    "metadata": {},
-                    "name": "HyperLEDA_name",
-                    "nullable": True,
-                    "type": "string",
-                },
-                {
-                    "metadata": {},
-                    "name": "TwoMASS_name",
-                    "nullable": True,
-                    "type": "string",
-                },
-                {
-                    "metadata": {},
-                    "name": "lum_dist",
-                    "nullable": True,
-                    "type": "string",
-                },
-                {
-                    "metadata": {},
-                    "name": "ang_dist",
-                    "nullable": True,
-                    "type": "string",
-                },
-            ],
-            "type": "struct",
-        },
-    }
-    # good_mangrove_structfield = StructField.fromJson(mangrove_good_schema)
-    json_schema["fields"] = [
-        field for field in json_schema["fields"] if field["name"] != "mangrove"
-    ]
-    json_schema["fields"].append(mangrove_good_schema)
-    userschema = StructType.fromJson(json_schema)
+    userschema = format_mangrove_col(userschema)
 
     basepath = grbdatapath + "/year={}/month={}/day={}".format(
         night[0:4], night[4:6], night[6:8]
