@@ -179,7 +179,7 @@ def spark_offline(
     ... 't2_mu-Lens-Single']
     >>> datatest = datatest.drop(cols, axis=1)
     >>> datajoin = datajoin.drop(cols + ["year", "month", "day"], axis=1)
-    
+
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
     spark = init_sparksession(
