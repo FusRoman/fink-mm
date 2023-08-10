@@ -246,7 +246,32 @@ def ztf_join_gcn_stream(
         + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
         latestfirst=False,
     )
-    df_ztf_stream = df_ztf_stream.select("objectId", "candid", "candidate", "prv_candidates")
+    df_ztf_stream = df_ztf_stream.select(
+        "objectId", 
+        "candid", 
+        "candidate", 
+        "prv_candidates",
+        "cdsxmatch",
+        "DR3Name",
+        "Plx",
+        "e_Plx",
+        "gcvs",
+        "vsx",
+        "x3hsp",
+        "x4lac",
+        "mangrove",
+        "roid",
+        "rf_snia_vs_nonia",
+        "snn_snia_vs_nonia",
+        "snn_sn_vs_all",
+        "mulens",
+        "nalerthist",
+        "rf_kn_vs_nonkn",
+        "t2",
+        "anomaly_score",
+        "lc_features_g",
+        "lc_features_r"
+    )
 
     df_ztf_stream = ztf_grb_filter(
         df_ztf_stream, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist
