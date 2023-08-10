@@ -247,9 +247,9 @@ def ztf_join_gcn_stream(
         latestfirst=False,
     )
     df_ztf_stream = df_ztf_stream.select(
-        "objectId", 
-        "candid", 
-        "candidate", 
+        "objectId",
+        "candid",
+        "candidate",
         "prv_candidates",
         "cdsxmatch",
         "DR3Name",
@@ -270,7 +270,7 @@ def ztf_join_gcn_stream(
         "t2",
         "anomaly_score",
         "lc_features_g",
-        "lc_features_r"
+        "lc_features_r",
     )
 
     df_ztf_stream = ztf_grb_filter(
