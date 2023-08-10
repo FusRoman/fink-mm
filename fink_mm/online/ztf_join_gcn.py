@@ -246,6 +246,7 @@ def ztf_join_gcn_stream(
         + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
         latestfirst=False,
     )
+    df_ztf_stream = df_ztf_stream.select("objectId", "candid", "candidate", "prv_candidates")
 
     df_ztf_stream = ztf_grb_filter(
         df_ztf_stream, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist
