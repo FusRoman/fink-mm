@@ -193,7 +193,7 @@ def init_logging(logger_name=fink_mm.__name__) -> logging.Logger:
         self.removeHandler(self.console_handler)
         self.addHandler(self.blank_handler)
         for i in range(how_many_lines):
-            self.info('\n')
+            self.info("\n")
 
         # Switch back
         self.removeHandler(self.blank_handler)
@@ -219,7 +219,7 @@ def init_logging(logger_name=fink_mm.__name__) -> logging.Logger:
 
     blank_handler = logging.StreamHandler()
     blank_handler.setLevel(logging.DEBUG)
-    blank_handler.setFormatter(logging.Formatter(fmt=''))
+    blank_handler.setFormatter(logging.Formatter(fmt=""))
 
     logger.console_handler = ch
     logger.blank_handler = blank_handler

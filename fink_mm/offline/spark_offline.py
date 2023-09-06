@@ -178,7 +178,7 @@ def spark_offline(
     ... 't2_SNIa', 't2_SNIa-91bg', 't2_SNIax', 't2_SNIbc', 't2_TDE',
     ... 't2_mu-Lens-Single']
     >>> datatest = datatest.drop(cols, axis=1)
-    >>> datajoin = datajoin.drop(cols, axis=1)
+    >>> datajoin = datajoin.drop(cols + ["year", "month", "day"], axis=1)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
@@ -312,7 +312,7 @@ def launch_offline_mode(arguments):
     ... 't2_SNIa', 't2_SNIa-91bg', 't2_SNIax', 't2_SNIbc', 't2_TDE',
     ... 't2_mu-Lens-Single']
     >>> datatest = datatest.drop(cols, axis=1)
-    >>> datajoin = datajoin.drop(cols, axis=1)
+    >>> datajoin = datajoin.drop(cols + ["year", "month", "day"], axis=1)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
