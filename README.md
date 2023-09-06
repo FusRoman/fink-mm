@@ -1,7 +1,7 @@
-# Fink_GRB
+# fink-mm
 
-[![PEP8](https://github.com/FusRoman/Fink_GRB/actions/workflows/linter.yml/badge.svg)](https://github.com/FusRoman/Fink_GRB/actions/workflows/linter.yml)
-[![Sentinel](https://github.com/FusRoman/Fink_GRB/actions/workflows/run_test.yml/badge.svg)](https://github.com/FusRoman/Fink_GRB/actions/workflows/run_test.yml)
+[![PEP8](https://github.com/FusRoman/fink-mm/actions/workflows/linter.yml/badge.svg)](https://github.com/FusRoman/fink-mm/actions/workflows/linter.yml)
+[![Sentinel](https://github.com/FusRoman/fink-mm/actions/workflows/run_test.yml/badge.svg)](https://github.com/FusRoman/fink-mm/actions/workflows/run_test.yml)
 
 Correlation of the [Fink](https://fink-broker.org/) alerts with multi-messenger instruments for real-time purpose
 * Available Instruments
@@ -15,24 +15,24 @@ Correlation of the [Fink](https://fink-broker.org/) alerts with multi-messenger 
 
 * Install from GitHub with pip
 ```console
-toto@linux:~$ pip install git+https://github.com/FusRoman/Fink_GRB@v0.6-beta
+toto@linux:~$ pip install git+https://github.com/FusRoman/fink-mm@v0.6-beta
 ```
-* Download the default config file from GitHub:fink_grb/conf/fink_grb.conf and move it in a custom location
+* Download the default config file from GitHub:fink_mm/conf/fink_mm.conf and move it in a custom location
 Update your configuration file with your custom parameters.
 Please note that the configuration file's paths must not end with a '/'.
-* Once Fink_GRB has been installed via pip, the command `fink_grb` become available. Type `fink_grb --help` to see the help message and show what you can do with Fink_GRB.
+* Once fink-mm has been installed via pip, the command `fink_mm` become available. Type `fink_mm --help` to see the help message and show what you can do with fink-mm.
 
-### Setup the Fink_GRB daemons
+### Setup the fink-mm daemons
 * Start listening to GCN
 ```console
-toto@linux:~$ fink_grb gcn_stream start --config /config_path 
+toto@linux:~$ fink_mm gcn_stream start --config /config_path 
 ```
 The above command will start a daemon that will store the GCN issued from the instruments registered in the system. The GNC will be stored at the location specified in the configuration file by the entry named 'online_gcn_data_prefix'. The path can be a local path or a hdfs path. In the latter case, the path must start with hdfs://IP:PORT///your_path where IP and PORT refer to the hdfs driver.
 
-> :warning: The GCN stream need to be restarted after each update of Fink_GRB. Use the `ps aux | grep fink_grb` command to identify the process number of the gcn stream and kill it then restart the gcn stream with the same command as above.
+> :warning: The GCN stream need to be restarted after each update of fink-mm. Use the `ps aux | grep fink_mm` command to identify the process number of the gcn stream and kill it then restart the gcn stream with the same command as above.
 
 ### Schedulers
-Fink_GRB has multiples script in the scheduler folder to launch the different services.
+fink-mm has multiples script in the scheduler folder to launch the different services.
 * science2grb.sh will launch the online services that will cross-match in real-time the alerts issued from the ZTF/LSST with incoming GCN. (latency: ZTF/LSST latency + 30 seconds max)
 * science2grb_offline.sh launch the offline services that will cross-match all the latest alerts from ZTF/LSST with the GCN within the time window (in days) specified in your config file. (latency: 1 day)
 * grb2distribution.sh launch the distribution services that will send the outputs of the online services in real-time to the registered users of the [fink-client](https://github.com/astrolabsoftware/fink-client). (latency: ZTF/LSST latency + 30 seconds + Network latency to reach fink-client)
@@ -40,9 +40,9 @@ Fink_GRB has multiples script in the scheduler folder to launch the different se
 #### **Modify the scripts**
 Download the multiple scripts from GitHub:scheduler/
 These scripts use some paths that have to be modified before the deployment.
-* Two variables names `FINK_GRB_CONFIG` and `LOG_PATH` are common to all script. The first is the location of your configuration file, and the second is where to store log files. Either you modify the value of these variables directly in the scripts, science2grb.sh and science2grb_offline.sh or you remove the declaration in these scripts and export these variables within your ~/.bashrc or ~/.bash_profile.
+* Two variables names `FINK_MM_CONFIG` and `LOG_PATH` are common to all script. The first is the location of your configuration file, and the second is where to store log files. Either you modify the value of these variables directly in the scripts, science2grb.sh and science2grb_offline.sh or you remove the declaration in these scripts and export these variables within your ~/.bashrc or ~/.bash_profile.
 ```console
-export FINK_GRB_CONFIG="path/to/conf/fink_grb.conf"
+export FINK_MM_CONFIG="path/to/conf/fink_mm.conf"
 export LOG_PATH="path/to/store/log"
 ```
 
@@ -69,7 +69,7 @@ The module output is pushed into the folder specified by the config entry named 
 The output could be local or in a HDFS cluster.
 Two folders are created inside; one called 'online' and one called 'offline'. Inside these two folders, the data are repartitions following the same principle: 'year=year/month=month/day=day'. At the end of the path, you will find ```.parquet``` files containing the data.
 
-### Fink_GRB Output Schema
+### fink-mm Output Schema
 
 |Field              |Type  |Contents                                                                          |
 |-------------------|------|----------------------------------------------------------------------------------|
@@ -85,11 +85,11 @@ Two folders are created inside; one called 'online' and one called 'offline'. In
 |instrument_or_event|String|Triggering instruments (GBM, XRT, ...)                                            |
 |platform           |String|Triggering platform (Fermi, Swift, IceCube, ...)                                  |
 |triggerId          |String|Unique GCN identifier ([GCN viewer](https://heasarc.gsfc.nasa.gov/wsgi-scripts/tach/gcn_v2/tach.wsgi/) to retrieve quickly the notice)|
-|grb_ra             |float |GCN Event right ascension                                                         |
-|grb_dec            |float |GCN Event declination                                                             |
-|grb_loc_error      |float |GCN error location in arcminute                                                   |
+|gcn_ra             |float |GCN Event right ascension                                                         |
+|gcn_dec            |float |GCN Event declination                                                             |
+|gcn_loc_error      |float |GCN error location in arcminute                                                   |
 |triggerTimeUTC     |String|GCN TriggerTime in UTC                                                            |
-|grb_proba          |float |Serendipitous probability to associate the alerts with the GCN event              |
+|p_assoc            |float |Serendipitous probability to associate the alerts with the GCN event              |
 |fink_class         |String|[Fink Classification](https://fink-broker.readthedocs.io/en/latest/science/classification/)                                                                                              |
 |                                                                                                             |
 |Field available only for the online mode                                                                     |
@@ -99,12 +99,16 @@ Two folders are created inside; one called 'online' and one called 'offline'. In
 |start_vartime      |float |first variation time at 5 sigma of the object (in jd, only valid for 30 days)     |
 |diff_vartime       |float |difference between start_vartime and jd (if above 30, start_vartime is not valid) |
 
-### Fink-client topics related to Fink_GRB
+### Fink-client topics related to fink-mm
 
 The connection to the distribution stream is made by the [fink-client](https://github.com/astrolabsoftware/fink-client). Three topics are available :
 
 |Topic Name     | Description                                                                              |
 |---------------|------------------------------------------------------------------------------------------|
-|fink_grb_bronze| Alerts with a real bogus (rb) >= 0.5, classified by Fink as SN candidate, Unknown and Ambiguous within the error location of a GCN event.                                                                  |
+| --- GRB Filter --- |
+|fink_grb_bronze| Alerts with a real bogus (rb) >= 0.7, classified by Fink as an extra galactic events within the error location of a GRB event.|
 |fink_grb_silver| Alerts satisfying the bronze filter with a grb_proba >= 5 sigma.                         |
-|fink_grb_gold  |Alerts satisfying the silver filter with a mag_rate > 0.3 mag/day.                        |
+|fink_grb_gold  | Alerts satisfying the silver filter with a mag_rate > 0.3 mag/day and a rb >= 0.9.       |
+||
+| --- GW Filter --- |
+|fink_gw_bronze | Alerts with a real bogus (rb) >= 0.7, classified by Fink as an extra galactic events within the error location of a GW event.|

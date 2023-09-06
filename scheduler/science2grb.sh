@@ -2,14 +2,14 @@
 
 source ~/.bash_profile
 
-NIGHT=`date +"%Y%m%d" -d "now"`
+NIGHT=`date +"%Y%m%d" -d "now - 1 days"`
 # NIGHT=`date +"%Y%m%d" -d "now + 1 days"`
 YEAR=${NIGHT:0:4}
 MONTH=${NIGHT:4:2}
 DAY=${NIGHT:6:2}
 
-FINK_GRB_CONFIG="path/config/file"
-FINK_GRB_LOG="path/to/store/log"
+FINK_MM_CONFIG="path/config/file"
+FINK_MM_LOG="path/to/store/log"
 
 
 # same entries as in the .conf
@@ -34,7 +34,7 @@ while true; do
             # LEASETIME must be computed by taking the difference between now and max end 
             LEASETIME=$(( `date +'%s' -d '17:00 today'` - `date +'%s' -d 'now'` ))
 
-            nohup fink_grb join_stream online --config ${FINK_GRB_CONFIG} --night ${NIGHT} --exit_after ${LEASETIME} > ${FINK_GRB_LOG}/fink_grb_online_${YEAR}${MONTH}${DAY}.log 2>&1
+            nohup fink_mm join_stream online --config ${FINK_MM_CONFIG} --night ${NIGHT} --exit_after ${LEASETIME} > ${FINK_MM_LOG}/fink_mm_online_${YEAR}${MONTH}${DAY}.log 2>&1
             break
         fi
      fi

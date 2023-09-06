@@ -24,6 +24,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install flake8
-    - name: Flake8 Fink GRB
+    - name: Flake8 Fink MM
       run: |
-        flake8 ../Fink_GRB
+        flake8 ../fink-mm
