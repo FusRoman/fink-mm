@@ -9,7 +9,7 @@ from fink_filters.filter_on_axis_grb.filter import (
 
 
 def get_gold_and_silver(event_pdf):
-    bronze_mask = bronze_events(event_pdf["fink_class"], event_pdf["rb"])
+    # bronze_mask = bronze_events(event_pdf["fink_class"], event_pdf["rb"])
     silver_mask = silver_events(
         event_pdf["fink_class"], event_pdf["rb"], event_pdf["grb_proba"]
     )
