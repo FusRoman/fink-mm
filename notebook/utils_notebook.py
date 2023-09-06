@@ -1,19 +1,18 @@
 import numpy as np
 
 import matplotlib.pyplot as plt
-from fink_filters.filter_on_axis_grb.filter import (
-    bronze_events,
-    silver_events,
-    gold_events,
+from fink_filters.filter_mm_module.filter import (
+    f_grb_bronze_events,
+    f_grb_silver_events,
+    f_grb_gold_events,
 )
 
-
 def get_gold_and_silver(event_pdf):
-    bronze_mask = bronze_events(event_pdf["fink_class"], event_pdf["rb"])
-    silver_mask = silver_events(
+    # bronze_mask = bronze_events(event_pdf["fink_class"], event_pdf["rb"])
+    silver_mask = f_grb_silver_events(
         event_pdf["fink_class"], event_pdf["rb"], event_pdf["grb_proba"]
     )
-    gold_mask = gold_events(
+    gold_mask = f_grb_gold_events(
         event_pdf["fink_class"], event_pdf["rb"], event_pdf["grb_proba"], event_pdf["rate"]
     )
 
@@ -53,11 +52,11 @@ def plot_ztf_join_distribution(event_pdf, eventId):
     for _class in fink_class_event:
         tmp_pdf = event_pdf[event_pdf["fink_class"] == _class]
 
-        bronze_mask = bronze_events(tmp_pdf["fink_class"], tmp_pdf["rb"])
-        silver_mask = silver_events(
+        bronze_mask = f_grb_bronze_events(tmp_pdf["fink_class"], tmp_pdf["rb"])
+        silver_mask = f_grb_silver_events(
             tmp_pdf["fink_class"], tmp_pdf["rb"], tmp_pdf["grb_proba"]
         )
-        gold_mask = gold_events(
+        gold_mask = f_grb_gold_events(
             tmp_pdf["fink_class"], tmp_pdf["rb"], tmp_pdf["grb_proba"], tmp_pdf["rate"]
         )
 

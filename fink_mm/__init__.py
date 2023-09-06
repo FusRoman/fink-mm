@@ -12,6 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-__version__ = "0.11"
-__distribution_schema_version__ = "1.2"
+__version__ = "0.13"
+__distribution_schema_version__ = "1.3"
 __observatory_schema_version__ = "1.1"

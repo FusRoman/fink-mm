@@ -1,7 +1,7 @@
-# Fink_MM
+# fink-mm
 
-[![PEP8](https://github.com/FusRoman/Fink_MM/actions/workflows/linter.yml/badge.svg)](https://github.com/FusRoman/Fink_MM/actions/workflows/linter.yml)
-[![Sentinel](https://github.com/FusRoman/Fink_MM/actions/workflows/run_test.yml/badge.svg)](https://github.com/FusRoman/Fink_MM/actions/workflows/run_test.yml)
+[![PEP8](https://github.com/FusRoman/fink-mm/actions/workflows/linter.yml/badge.svg)](https://github.com/FusRoman/fink-mm/actions/workflows/linter.yml)
+[![Sentinel](https://github.com/FusRoman/fink-mm/actions/workflows/run_test.yml/badge.svg)](https://github.com/FusRoman/fink-mm/actions/workflows/run_test.yml)
 
 Correlation of the [Fink](https://fink-broker.org/) alerts with multi-messenger instruments for real-time purpose
 * Available Instruments
@@ -15,24 +15,24 @@ Correlation of the [Fink](https://fink-broker.org/) alerts with multi-messenger 
 
 * Install from GitHub with pip
 ```console
-toto@linux:~$ pip install git+https://github.com/FusRoman/Fink_MM@v0.6-beta
+toto@linux:~$ pip install git+https://github.com/FusRoman/fink-mm@v0.6-beta
 ```
 * Download the default config file from GitHub:fink_mm/conf/fink_mm.conf and move it in a custom location
 Update your configuration file with your custom parameters.
 Please note that the configuration file's paths must not end with a '/'.
-* Once Fink_MM has been installed via pip, the command `fink_mm` become available. Type `fink_mm --help` to see the help message and show what you can do with Fink_MM.
+* Once fink-mm has been installed via pip, the command `fink_mm` become available. Type `fink_mm --help` to see the help message and show what you can do with fink-mm.
 
-### Setup the Fink_MM daemons
+### Setup the fink-mm daemons
 * Start listening to GCN
 ```console
 toto@linux:~$ fink_mm gcn_stream start --config /config_path 
 ```
 The above command will start a daemon that will store the GCN issued from the instruments registered in the system. The GNC will be stored at the location specified in the configuration file by the entry named 'online_gcn_data_prefix'. The path can be a local path or a hdfs path. In the latter case, the path must start with hdfs://IP:PORT///your_path where IP and PORT refer to the hdfs driver.
 
-> :warning: The GCN stream need to be restarted after each update of Fink_MM. Use the `ps aux | grep fink_mm` command to identify the process number of the gcn stream and kill it then restart the gcn stream with the same command as above.
+> :warning: The GCN stream need to be restarted after each update of fink-mm. Use the `ps aux | grep fink_mm` command to identify the process number of the gcn stream and kill it then restart the gcn stream with the same command as above.
 
 ### Schedulers
-Fink_MM has multiples script in the scheduler folder to launch the different services.
+fink-mm has multiples script in the scheduler folder to launch the different services.
 * science2grb.sh will launch the online services that will cross-match in real-time the alerts issued from the ZTF/LSST with incoming GCN. (latency: ZTF/LSST latency + 30 seconds max)
 * science2grb_offline.sh launch the offline services that will cross-match all the latest alerts from ZTF/LSST with the GCN within the time window (in days) specified in your config file. (latency: 1 day)
 * grb2distribution.sh launch the distribution services that will send the outputs of the online services in real-time to the registered users of the [fink-client](https://github.com/astrolabsoftware/fink-client). (latency: ZTF/LSST latency + 30 seconds + Network latency to reach fink-client)
@@ -69,7 +69,7 @@ The module output is pushed into the folder specified by the config entry named 
 The output could be local or in a HDFS cluster.
 Two folders are created inside; one called 'online' and one called 'offline'. Inside these two folders, the data are repartitions following the same principle: 'year=year/month=month/day=day'. At the end of the path, you will find ```.parquet``` files containing the data.
 
-### Fink_MM Output Schema
+### fink-mm Output Schema
 
 |Field              |Type  |Contents                                                                          |
 |-------------------|------|----------------------------------------------------------------------------------|
@@ -99,7 +99,7 @@ Two folders are created inside; one called 'online' and one called 'offline'. In
 |start_vartime      |float |first variation time at 5 sigma of the object (in jd, only valid for 30 days)     |
 |diff_vartime       |float |difference between start_vartime and jd (if above 30, start_vartime is not valid) |
 
-### Fink-client topics related to Fink_MM
+### Fink-client topics related to fink-mm
 
 The connection to the distribution stream is made by the [fink-client](https://github.com/astrolabsoftware/fink-client). Three topics are available :
 

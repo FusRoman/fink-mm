@@ -9,7 +9,8 @@ import sys
 from pyspark.sql import functions as F
 from pyspark.sql.functions import explode, col
 
-# from astropy.time import Time
+from astropy.time import Time
+from datetime import timedelta
 
 from fink_utils.science.utils import ang2pix
 from fink_utils.spark.partitioning import convert_to_datetime
@@ -245,6 +246,32 @@ def ztf_join_gcn_stream(
         + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
         latestfirst=False,
     )
+    df_ztf_stream = df_ztf_stream.select(
+        "objectId",
+        "candid",
+        "candidate",
+        "prv_candidates",
+        "cdsxmatch",
+        "DR3Name",
+        "Plx",
+        "e_Plx",
+        "gcvs",
+        "vsx",
+        "x3hsp",
+        "x4lac",
+        "mangrove",
+        "roid",
+        "rf_snia_vs_nonia",
+        "snn_snia_vs_nonia",
+        "snn_sn_vs_all",
+        "mulens",
+        "nalerthist",
+        "rf_kn_vs_nonkn",
+        "t2",
+        "anomaly_score",
+        "lc_features_g",
+        "lc_features_r",
+    )
 
     df_ztf_stream = ztf_grb_filter(
         df_ztf_stream, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist
@@ -252,33 +279,18 @@ def ztf_join_gcn_stream(
 
     gcn_rawdatapath = gcn_datapath_prefix
 
-    # connection to the gcn stream
-    # last_time = (Time(f"{night[0:4]}-{night[4:6]}-{night[6:8]}") - 1).strftime("%Y%m%d")
-    # path_last_night = gcn_rawdatapath + "/year={}/month={}/day={}".format(
-    #     last_time[0:4], last_time[4:6], last_time[6:8]
-    # )
-    # list_path_gcn_data = [
-    #     gcn_rawdatapath
-    #     + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8])
-    # ]
-    # if check_path_exist(
-    #     spark,
-    #     path_last_night,
-    # ):
-    #     list_path_gcn_data.append(path_last_night)
-
-    # print()
-    # print("----")
-    # print(list_path_gcn_data)
-    # print("-----")
-    # print()
-
     df_grb_stream = connect_to_raw_database(
-        gcn_rawdatapath
-        + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
-        gcn_rawdatapath
-        + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
+        gcn_rawdatapath,
+        gcn_rawdatapath + "/year={}/month={}/day=*?*".format(night[0:4], night[4:6]),
         latestfirst=True,
+    )
+
+    # keep gcn emitted during the day time until the end of the stream (17:00 Paris Time)
+    cur_time = Time(f"{night[0:4]}-{night[4:6]}-{night[6:8]}")
+    last_time = cur_time - timedelta(hours=7)  # 17:00 Paris time yesterday
+    end_time = cur_time + timedelta(hours=17)  # 17:00 Paris time today
+    df_grb_stream = df_grb_stream.filter(
+        f"triggerTimejd >= {last_time.jd} and triggerTimejd < {end_time.jd}"
     )
 
     if logs:  # pragma: no cover
@@ -317,7 +329,7 @@ def ztf_join_gcn_stream(
         df_ztf_stream.hpix == df_grb_stream.hpix,
         df_ztf_stream.candidate.jdstarthist > df_grb_stream.triggerTimejd,
     ]
-    df_grb = df_ztf_stream.join(df_grb_stream, join_condition, "inner")
+    df_grb = df_ztf_stream.join(F.broadcast(df_grb_stream), join_condition, "inner")
 
     df_grb = join_post_process(df_grb)
 
@@ -459,14 +471,14 @@ def launch_joining_stream(arguments):
     stdout, stderr = process.communicate()
     if process.returncode != 0:  # pragma: no cover
         logger.error(
-            "Fink_MM joining stream spark application has ended with a non-zero returncode.\
+            "fink-mm joining stream spark application has ended with a non-zero returncode.\
                 \n\t cause:\n\t\t{}\n\t\t{}".format(
                 stdout, stderr
             )
         )
         exit(1)
 
-    logger.info("Fink_MM joining stream spark application ended normally")
+    logger.info("fink-mm joining stream spark application ended normally")
     return
 
 

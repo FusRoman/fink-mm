@@ -19,7 +19,7 @@ def apply_filters(
     password,
 ):
     """
-    Apply the user defined filters the the output of the Fink_MM package
+    Apply the user defined filters the the output of the fink-mm package
 
     Parameters
     ----------
@@ -75,6 +75,7 @@ def apply_filters(
                 df_stream["fink_class"],
                 df_stream["observatory"],
                 df_stream["rb"],
+                df_stream["gcn_loc_error"],
                 df_stream["p_assoc"],
                 df_stream["rate"],
             ),
@@ -112,4 +113,4 @@ def apply_filters(
             tinterval,
         )
 
-        return grb_stream_distribute
+    return grb_stream_distribute

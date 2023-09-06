@@ -6,6 +6,7 @@ import pytz
 # from importlib.resources import files
 from importlib_resources import files
 import logging
+import types
 import pathlib
 
 import fink_mm
@@ -166,7 +167,7 @@ class EnvInterpolation(configparser.BasicInterpolation):
         return os.path.expandvars(value)
 
 
-def init_logging() -> logging.Logger:
+def init_logging(logger_name=fink_mm.__name__) -> logging.Logger:
     """
     Initialise a logger for the gcn stream
 
@@ -186,7 +187,19 @@ def init_logging() -> logging.Logger:
     <class 'logging.Logger'>
     """
     # create logger
-    logger = logging.getLogger(fink_mm.__name__)
+
+    def log_newline(self, how_many_lines=1):
+        # Switch handler, output a blank line
+        self.removeHandler(self.console_handler)
+        self.addHandler(self.blank_handler)
+        for i in range(how_many_lines):
+            self.info("\n")
+
+        # Switch back
+        self.removeHandler(self.blank_handler)
+        self.addHandler(self.console_handler)
+
+    logger = logging.getLogger(logger_name)
     logger.setLevel(logging.DEBUG)
 
     # create console handler and set level to debug
@@ -203,5 +216,13 @@ def init_logging() -> logging.Logger:
 
     # add ch to logger
     logger.addHandler(ch)
+
+    blank_handler = logging.StreamHandler()
+    blank_handler.setLevel(logging.DEBUG)
+    blank_handler.setFormatter(logging.Formatter(fmt=""))
+
+    logger.console_handler = ch
+    logger.blank_handler = blank_handler
+    logger.newline = types.MethodType(log_newline, logger)
 
     return logger

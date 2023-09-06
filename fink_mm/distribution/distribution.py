@@ -3,10 +3,7 @@ import subprocess
 import sys
 import json
 
-from fink_utils.broker.sparkUtils import init_sparksession, connect_to_raw_database
-from importlib_resources import files
-
-import fink_mm
+from fink_utils.broker.sparkUtils import init_sparksession
 
 from fink_mm.utils.fun_utils import (
     read_and_build_spark_submit,
@@ -17,6 +14,68 @@ import fink_mm.utils.application as apps
 from fink_mm.init import get_config, init_logging, return_verbose_level
 from fink_mm.utils.fun_utils import build_spark_submit
 from fink_mm.distribution.apply_filters import apply_filters
+
+from fink_utils.spark import schema_converter
+from pyspark.sql.types import StructType
+
+
+def format_mangrove_col(userschema: StructType) -> StructType:
+    """
+    Format the mangrove column from Fink.
+    The mangrove column is originally a MapType and will be cast into a Struct.
+
+    Parameters
+    ----------
+    userschema : StructType
+        input schema, mangrove column is a MapType
+
+    Returns
+    -------
+    StructType
+        ouptut schema, mangrove column is a StructType
+    """
+    json_schema = json.loads(userschema.json())
+    mangrove_good_schema = {
+        "metadata": {},
+        "name": "mangrove",
+        "nullable": True,
+        "type": {
+            "fields": [
+                {
+                    "metadata": {},
+                    "name": "HyperLEDA_name",
+                    "nullable": True,
+                    "type": "string",
+                },
+                {
+                    "metadata": {},
+                    "name": "TwoMASS_name",
+                    "nullable": True,
+                    "type": "string",
+                },
+                {
+                    "metadata": {},
+                    "name": "lum_dist",
+                    "nullable": True,
+                    "type": "string",
+                },
+                {
+                    "metadata": {},
+                    "name": "ang_dist",
+                    "nullable": True,
+                    "type": "string",
+                },
+            ],
+            "type": "struct",
+        },
+    }
+    # good_mangrove_structfield = StructField.fromJson(mangrove_good_schema)
+    json_schema["fields"] = [
+        field for field in json_schema["fields"] if field["name"] != "mangrove"
+    ]
+    json_schema["fields"].append(mangrove_good_schema)
+    userschema = StructType.fromJson(json_schema)
+    return userschema
 
 
 def grb_distribution(
@@ -77,40 +136,62 @@ def grb_distribution(
 
     logger = init_logging()
 
-    schema_path = files("fink_mm").joinpath(
-        "conf/fink_mm_schema_version_{}.avsc".format(
-            fink_mm.__distribution_schema_version__
-        )
-    )
-    with open(schema_path, "r") as f:
-        schema = json.dumps(f.read())
-
-    schema = json.loads(schema)
-
     checkpointpath_grb = grbdatapath + "/grb_distribute_checkpoint"
 
     grbdatapath += "/online"
 
-    # connection to the grb database
-    df_grb_stream = connect_to_raw_database(
+    # force the mangrove columns to have the struct type
+    userschema = spark.read.parquet(
         grbdatapath
-        + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
-        grbdatapath
-        + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
-        latestfirst=True,
+        + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8])
+    ).schema
+    userschema = format_mangrove_col(userschema)
+
+    basepath = grbdatapath + "/year={}/month={}/day={}".format(
+        night[0:4], night[4:6], night[6:8]
+    )
+    path = basepath
+    df_grb_stream = (
+        spark.readStream.format("parquet")
+        .schema(userschema)
+        .option("basePath", basepath)
+        .option("path", path)
+        .option("latestFirst", True)
+        .load()
     )
 
+    # connection to the grb database
+    # df_grb_stream = connect_to_raw_database(
+    #     grbdatapath
+    #     + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
+    #     grbdatapath
+    #     + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
+    #     latestfirst=True,
+    # )
+
     df_grb_stream = (
-        df_grb_stream.drop("year").drop("month").drop("day").drop("timestamp")
+        df_grb_stream.drop("year")
+        .drop("month")
+        .drop("day")
+        .drop("timestamp")
+        .drop("t2")
     )
 
     cnames = df_grb_stream.columns
-    cnames[cnames.index("fid")] = "cast(fid as long) as fid"
+    cnames[cnames.index("fid")] = "cast(fid as int) as fid"
     cnames[cnames.index("rb")] = "cast(rb as double) as rb"
+    cnames[cnames.index("candid")] = "cast(candid as int) as candid"
+    cnames[cnames.index("Plx")] = "cast(Plx as double) as Plx"
+    cnames[cnames.index("e_Plx")] = "cast(e_Plx as double) as e_Plx"
     cnames[
         cnames.index("triggerTimeUTC")
     ] = "cast(triggerTimeUTC as string) as triggerTimeUTC"
+    cnames[cnames.index("lc_features_g")] = "struct(lc_features_g.*) as lc_features_g"
+    cnames[cnames.index("lc_features_r")] = "struct(lc_features_r.*) as lc_features_r"
+    cnames[cnames.index("mangrove")] = "struct(mangrove.*) as mangrove"
     df_grb_stream = df_grb_stream.selectExpr(cnames)
+
+    schema = schema_converter.to_avro(df_grb_stream.coalesce(1).limit(1).schema)
 
     grb_stream_distribute = apply_filters(
         df_grb_stream,
@@ -227,14 +308,14 @@ def launch_distribution(arguments):
     stdout, stderr = process.communicate()
     if process.returncode != 0:  # pragma: no cover
         logger.error(
-            "Fink_MM distribution stream spark application has ended with a non-zero returncode.\
+            "fink-mm distribution stream spark application has ended with a non-zero returncode.\
                 \n\t cause:\n\t\t{}\n\t\t{}\n\n\n{}\n\n".format(
                 stdout, stderr, spark_submit
             )
         )
         exit(1)
 
-    logger.info("Fink_MM distribution stream spark application ended normally")
+    logger.info("fink-mm distribution stream spark application ended normally")
     return
 
 

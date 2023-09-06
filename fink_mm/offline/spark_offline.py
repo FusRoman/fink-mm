@@ -178,7 +178,7 @@ def spark_offline(
     ... 't2_SNIa', 't2_SNIa-91bg', 't2_SNIax', 't2_SNIbc', 't2_TDE',
     ... 't2_mu-Lens-Single']
     >>> datatest = datatest.drop(cols, axis=1)
-    >>> datajoin = datajoin.drop(cols, axis=1)
+    >>> datajoin = datajoin.drop(cols + ["year", "month", "day"], axis=1)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
@@ -312,7 +312,7 @@ def launch_offline_mode(arguments):
     ... 't2_SNIa', 't2_SNIa-91bg', 't2_SNIax', 't2_SNIbc', 't2_TDE',
     ... 't2_mu-Lens-Single']
     >>> datatest = datatest.drop(cols, axis=1)
-    >>> datajoin = datajoin.drop(cols, axis=1)
+    >>> datajoin = datajoin.drop(cols + ["year", "month", "day"], axis=1)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
@@ -386,14 +386,14 @@ def launch_offline_mode(arguments):
     stdout, stderr = process.communicate()
     if process.returncode != 0:  # pragma: no cover
         logger.error(
-            "Fink_MM offline crossmatch application has ended with a non-zero returncode.\
+            "fink-mm offline crossmatch application has ended with a non-zero returncode.\
                 \n\t cause:\n\t\t{}\n\t\t{}".format(
                 stdout, stderr
             )
         )
         exit(1)
 
-    logger.info("Fink_MM offline crossmatch application ended normally")
+    logger.info("fink-mm offline crossmatch application ended normally")
     return
 
 
