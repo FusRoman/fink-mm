@@ -203,7 +203,7 @@ def spark_offline(
 
     grb_alert = grb_alert.withColumn(
         'rank',
-        F.rank().over(Window.partitionBy('objectId').orderBy(F.desc('jd')))
+        F.rank().over(Window.partitionBy('triggerId').orderBy(F.desc('triggerTimejd')))
     ).filter('rank = 1').drop('rank')
 
     nb_gcn_alert = grb_alert.cache().count()

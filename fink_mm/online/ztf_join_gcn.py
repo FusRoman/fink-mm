@@ -297,7 +297,7 @@ def ztf_join_gcn_stream(
     # keep only the last updated gcn
     df_grb_stream = df_grb_stream.withColumn(
         'rank',
-        F.rank().over(Window.partitionBy('objectId').orderBy(F.desc('jd')))
+        F.rank().over(Window.partitionBy('triggerId').orderBy(F.desc('triggerTimejd')))
     ).filter('rank = 1').drop('rank')
 
     if logs:  # pragma: no cover
