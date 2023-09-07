@@ -4,7 +4,7 @@ from astropy.time import TimeDelta, Time
 from fink_utils.science.utils import ang2pix
 from fink_utils.broker.sparkUtils import init_sparksession
 
-from pyspark.sql import functions as F
+from pyspark.sql import functions as F, Window
 from pyspark.sql.functions import explode, col
 import sys
 import subprocess
@@ -200,6 +200,11 @@ def spark_offline(
     grb_alert = grb_alert.filter(grb_alert.triggerTimejd >= low_bound).filter(
         grb_alert.triggerTimejd <= start_window
     )
+
+    grb_alert = grb_alert.withColumn(
+        'rank',
+        F.rank().over(Window.partitionBy('objectId').orderBy(F.desc('jd')))
+    ).filter('rank = 1').drop('rank')
 
     nb_gcn_alert = grb_alert.cache().count()
     if nb_gcn_alert == 0:
