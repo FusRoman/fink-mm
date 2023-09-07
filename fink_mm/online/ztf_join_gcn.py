@@ -458,6 +458,7 @@ def launch_joining_stream(arguments):
         pansstar_dist=pansstar_dist,
         pansstar_star_score=pansstar_star_score,
         gaia_dist=gaia_dist,
+        logs=verbose
     )
 
     spark_submit = build_spark_submit(

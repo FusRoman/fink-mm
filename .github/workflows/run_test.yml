@@ -172,7 +172,7 @@ jobs:
       # don't put --test for the gcn_stream command otherwise it will miss the gw alerts
       shell: bash
       run: |
-        fink_mm gcn_stream start --config $CONFIGFILE_PATH --test > fink_mm_gcnstream_${NIGHT}.log 2>&1 &
+        fink_mm gcn_stream start --config $CONFIGFILE_PATH --test --verbose > fink_mm_gcnstream_${NIGHT}.log 2>&1 &
         sleep 180s
 
     - name: Start services
@@ -211,15 +211,15 @@ jobs:
 
     - name: Run online join streaming
       run: |
-        fink_mm join_stream online --config $CONFIGFILE_PATH --night $NIGHT --exit_after 180
+        fink_mm join_stream online --config $CONFIGFILE_PATH --night $NIGHT --exit_after 180 --verbose
 
     - name: Run offline stream
       run: |
-        fink_mm join_stream offline --night $NIGHT --config $CONFIGFILE_PATH --test
+        fink_mm join_stream offline --night $NIGHT --config $CONFIGFILE_PATH --test --verbose
 
     - name: Online Distribution
       run: |
-        fink_mm distribute --config $CONFIGFILE_PATH --night $NIGHT --exit_after 60
+        fink_mm distribute --config $CONFIGFILE_PATH --night $NIGHT --exit_after 60 --verbose
 
     - name: Check online stream
       run: |
