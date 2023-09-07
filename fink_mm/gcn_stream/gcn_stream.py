@@ -2,6 +2,7 @@ import signal
 import pyarrow as pa
 import pyarrow.parquet as pq
 import os
+import time
 
 from gcn_kafka import Consumer
 import logging
@@ -129,7 +130,9 @@ def load_and_parse_gcn(
             table,
             root_path=gcn_rawdatapath,
             partition_cols=["year", "month", "day"],
-            basename_template="{}_{}".format(str(df["triggerId"].values[0]), "{i}"),
+            basename_template="{}_{}_{}".format(
+                str(df["triggerId"].values[0]), time.time(), "{i}"
+            ),
             existing_data_behavior="overwrite_or_ignore",
             filesystem=gcn_fs,
         )
