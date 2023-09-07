@@ -6,7 +6,7 @@ import time
 import subprocess
 import sys
 
-from pyspark.sql import functions as F, Window
+from pyspark.sql import functions as F
 from pyspark.sql.functions import explode, col
 
 from astropy.time import Time
@@ -293,13 +293,6 @@ def ztf_join_gcn_stream(
         f"triggerTimejd >= {last_time.jd} and triggerTimejd < {end_time.jd}"
     )
 
-    # sort by descending order and remove the duplicates gcn and keep the last occurences
-    # keep only the last updated gcn
-    df_grb_stream = df_grb_stream.withColumn(
-        'rank',
-        F.rank().over(Window.partitionBy('triggerId').orderBy(F.desc('triggerTimejd')))
-    ).filter('rank = 1').drop('rank')
-
     if logs:  # pragma: no cover
         logger.info("connection to the database successfull")
 
@@ -370,6 +363,15 @@ def ztf_join_gcn_stream(
 
     if logs:  # pragma: no cover
         logger.info("Stream launching successfull")
+        print("-----------------")
+        logger.info(f"last progress : {query_grb.lastProgress}")
+        print()
+        print()
+        logger.info(f"recent progress : {query_grb.recentProgress}")
+        print()
+        print()
+        logger.info(f"query status : {query_grb.status}")
+        print("-----------------")
 
     # Keep the Streaming running until something or someone ends it!
     if exit_after is not None:
