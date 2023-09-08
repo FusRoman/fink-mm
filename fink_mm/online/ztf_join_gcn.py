@@ -90,54 +90,6 @@ def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia
     return spark_filter
 
 
-# @pandas_udf(ArrayType(IntegerType()))
-# def box2pixs(ra, dec, radius, NSIDE):
-#     """
-#     Return all the pixels from a healpix map with NSIDE
-#     overlapping the given area defined by the center ra, dec and the radius.
-
-#     Parameters
-#     ----------
-#     ra : pd.Series
-#         right ascension columns
-#     dec : pd.Series
-#         declination columns
-#     radius : pd.Series
-#         error radius of the high energy events, must be in degrees
-#     NSIDE : pd.Series
-#         pixels size of the healpix map
-
-#     Return
-#     ------
-#     ipix_disc : pd.Series
-#         columns of array containing all the pixel numbers overlapping the error area.
-
-#     Examples
-#     --------
-#     >>> spark_grb = spark.read.format('parquet').load(grb_data)
-#     >>> NSIDE = 4
-
-#     >>> spark_grb = spark_grb.withColumn(
-#     ... "err_degree", spark_grb["err_arcmin"] / 60
-#     ... )
-#     >>> spark_grb = spark_grb.withColumn("hpix_circle", box2pixs(
-#     ...     spark_grb.ra, spark_grb.dec, spark_grb.err_degree, F.lit(NSIDE)
-#     ... ))
-
-#     >>> spark_grb.withColumn("hpix", explode("hpix_circle"))\
-#             .orderBy("hpix")\
-#                 .select(["triggerId", "hpix"]).head(5)
-#     [Row(triggerId=683499781, hpix=3), Row(triggerId=683499781, hpix=9), Row(triggerId=683499781, hpix=10), Row(triggerId=683499781, hpix=11), Row(triggerId=683476673, hpix=13)]
-#     """
-#     theta, phi = dec2theta(dec.values), ra2phi(ra.values)
-#     vec = hp.ang2vec(theta, phi)
-#     ipix_disc = [
-#         hp.query_disc(nside=n, vec=v, radius=np.radians(r), inclusive=True)
-#         for n, v, r in zip(NSIDE.values, vec, radius.values)
-#     ]
-#     return pd.Series(ipix_disc)
-
-
 def check_path_exist(spark, path):
     """Check we have data for the given night on HDFS
 
@@ -229,6 +181,9 @@ def ztf_join_gcn_stream(
     >>> datatest = datatest.drop("t2", axis=1)
     >>> datajoin = datajoin.drop("t2", axis=1)
 
+    >>> datatest["gcn_status"] = "initial"
+    >>> datatest = datatest.reindex(sorted(datatest.columns), axis=1)
+    >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
     logger = init_logging()
@@ -410,6 +365,8 @@ def launch_joining_stream(arguments):
     >>> datatest = datatest.drop("t2", axis=1)
     >>> datajoin = datajoin.drop("t2", axis=1)
 
+    >>> datatest = datatest.reindex(sorted(datatest.columns), axis=1)
+    >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
     config = get_config(arguments)
@@ -458,7 +415,7 @@ def launch_joining_stream(arguments):
         pansstar_dist=pansstar_dist,
         pansstar_star_score=pansstar_star_score,
         gaia_dist=gaia_dist,
-        logs=verbose
+        logs=verbose,
     )
 
     spark_submit = build_spark_submit(
@@ -469,10 +426,6 @@ def launch_joining_stream(arguments):
         packages,
         external_files,
     )
-
-    print()
-    print(spark_submit)
-    print()
 
     process = subprocess.Popen(
         spark_submit,
