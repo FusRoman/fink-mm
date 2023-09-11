@@ -326,7 +326,7 @@ def launch_offline_mode(arguments):
     ...         "--config" : None,
     ...         "--night" : "20190903",
     ...         "--exit_after" : 100,
-    ...         "--test" : True
+    ...         "--test" : True,
     ...         "--verbose" : False
     ...     }
     ... )
