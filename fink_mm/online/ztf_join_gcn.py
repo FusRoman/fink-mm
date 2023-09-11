@@ -365,6 +365,7 @@ def launch_joining_stream(arguments):
     >>> datatest = datatest.drop("t2", axis=1)
     >>> datajoin = datajoin.drop("t2", axis=1)
 
+    >>> datatest["gcn_status"] = "initial"
     >>> datatest = datatest.reindex(sorted(datatest.columns), axis=1)
     >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
