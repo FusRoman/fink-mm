@@ -440,13 +440,16 @@ def launch_joining_stream(arguments):
     if process.returncode != 0:  # pragma: no cover
         logger.error(
             "fink-mm joining stream spark application has ended with a non-zero returncode.\
-                \n\t cause:\n\t\t{}\n\t\t{}".format(
-                stdout, stderr
+                \n\t cause:\n\t\t{}".format(
+                stderr
             )
         )
         exit(1)
 
-    logger.info("fink-mm joining stream spark application ended normally")
+    if arguments["--verbose"]:
+        logger.info("fink-mm joining stream spark application ended normally")
+        print()
+        logger.info(f"job logs:\n\n{stdout}")
     return
 
 
