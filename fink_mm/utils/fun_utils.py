@@ -856,6 +856,7 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
         "event",
         "observatory",
         "triggerId",
+        "gcn_status",
         "gcn_ra",
         "gcn_dec",
         col("err_arcmin").alias("gcn_loc_error"),
@@ -968,7 +969,7 @@ def read_prior_params(config, logger):
     >>> config = get_config({"--config" : "fink_mm/conf/fink_mm.conf"})
     >>> logger = init_logging()
     >>> read_prior_params(config, logger)
-    ('5', '2', '0', '5')
+    ('5', '2', '0.5', '5')
     """
     try:
         ast_dist = config["PRIOR_FILTER"]["ast_dist"]
