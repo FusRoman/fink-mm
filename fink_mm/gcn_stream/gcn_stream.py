@@ -166,9 +166,6 @@ def load_and_parse_gcn(
 
         table = pa.Table.from_pandas(df)
 
-        filename = f"{str(df['triggerId'].values[0])}_0"
-        current_filepath = gcn_rawdatapath + f"/year={df['year'].values[0]}/month={df['month'].values[0]}day={df['day'].values[0]}/{filename}"
-
         pq.write_to_dataset(
             table,
             root_path=gcn_rawdatapath,

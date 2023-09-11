@@ -429,10 +429,6 @@ def launch_joining_stream(arguments):
         external_files,
     )
 
-    print()
-    print(spark_submit)
-    print()
-
     process = subprocess.Popen(
         spark_submit,
         stdout=subprocess.PIPE,
