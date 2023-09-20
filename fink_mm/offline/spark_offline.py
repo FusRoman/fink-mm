@@ -201,7 +201,7 @@ def spark_offline(
             )
         )
 
-    grb_alert = spark.read.format("parquet").load(gcn_read_path)
+    grb_alert = spark.read.format("parquet").option('mergeSchema', True).load(gcn_read_path)
 
     grb_alert = grb_alert.filter(grb_alert.triggerTimejd >= low_bound).filter(
         grb_alert.triggerTimejd <= start_window
