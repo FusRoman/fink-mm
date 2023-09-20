@@ -413,10 +413,8 @@ def launch_offline_mode(arguments):
     stdout, stderr = process.communicate()
     if process.returncode != 0:  # pragma: no cover
         logger.error(
-            "fink-mm offline crossmatch application has ended with a non-zero returncode.\
-                \n\t cause:\n\t\t{}".format(
-                stderr
-            )
+            f"fink-mm offline crossmatch application has ended with a non-zero returncode.\
+                \n\tstdout: \n\n{stdout} \n\tstderr:\n\n{stderr}"
         )
         exit(1)
 
