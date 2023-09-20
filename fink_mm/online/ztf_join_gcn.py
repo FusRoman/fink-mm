@@ -241,7 +241,7 @@ def ztf_join_gcn_stream(
     # )
 
     # Create a DF from the database
-    userschema = spark.read.parquet(gcn_rawdatapath).schema
+    userschema = spark.read.option('mergeSchema', True).parquet(gcn_rawdatapath).schema
 
     df_grb_stream = (
         spark.readStream.format("parquet")
@@ -453,10 +453,8 @@ def launch_joining_stream(arguments):
     stdout, stderr = process.communicate()
     if process.returncode != 0:  # pragma: no cover
         logger.error(
-            "fink-mm joining stream spark application has ended with a non-zero returncode.\
-                \n\t cause:\n\t\t{}".format(
-                stderr
-            )
+            f"fink-mm joining stream spark application has ended with a non-zero returncode.\
+                \n\tstdout:\n\n{stdout} \n\tstderr:\n\n{stderr}"
         )
         exit(1)
 
