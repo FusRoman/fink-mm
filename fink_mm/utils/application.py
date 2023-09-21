@@ -93,6 +93,7 @@ class Application(Flag):
                 application += " " + kwargs["pansstar_dist"]
                 application += " " + kwargs["pansstar_star_score"]
                 application += " " + kwargs["gaia_dist"]
+                application += " " + str(True) if kwargs["logs"] else " " + str(False)
             except Exception as e:
                 logger.error("Parameter not found \n\t {}\n\t{}".format(e, kwargs))
                 exit(1)
@@ -168,6 +169,7 @@ class Application(Flag):
             pansstar_dist = float(sys.argv[10])
             pansstar_star_score = float(sys.argv[11])
             gaia_dist = float(sys.argv[12])
+            logs = True if sys.argv[13] == "True" else False
 
             online.ztf_join_gcn_stream(
                 ztf_datapath_prefix,
@@ -181,6 +183,7 @@ class Application(Flag):
                 pansstar_dist,
                 pansstar_star_score,
                 gaia_dist,
+                logs,
             )
 
         elif self == Application.DISTRIBUTION:

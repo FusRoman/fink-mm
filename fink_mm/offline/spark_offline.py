@@ -23,6 +23,12 @@ import fink_mm.utils.application as apps
 from fink_mm.init import get_config, init_logging, return_verbose_level
 from fink_mm.utils.fun_utils import get_pixels
 
+from fink_filters.filter_mm_module.filter import (
+    f_grb_bronze_events,
+    f_grb_silver_events,
+    f_gw_bronze_events,
+)
+
 
 def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist):
     """
@@ -176,9 +182,9 @@ def spark_offline(
     >>> cols = ['t2_AGN', 't2_EB',
     ... 't2_KN', 't2_M-dwarf', 't2_Mira', 't2_RRL', 't2_SLSN-I', 't2_SNII',
     ... 't2_SNIa', 't2_SNIa-91bg', 't2_SNIax', 't2_SNIbc', 't2_TDE',
-    ... 't2_mu-Lens-Single']
+    ... 't2_mu-Lens-Single', "year", "month", "day"]
     >>> datatest = datatest.drop(cols, axis=1)
-    >>> datajoin = datajoin.drop(cols + ["year", "month", "day"], axis=1)
+    >>> datajoin = datajoin.drop(cols, axis=1)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
@@ -260,6 +266,26 @@ def spark_offline(
 
     df_grb = join_post_process(join_ztf_grb, with_rate=False, from_hbase=True)
 
+    df_grb = df_grb.withColumn(
+        "is_grb_bronze",
+        f_grb_bronze_events(df_grb["fink_class"], df_grb["observatory"], df_grb["rb"]),
+    )
+
+    df_grb = df_grb.withColumn(
+        "is_grb_silver",
+        f_grb_silver_events(
+            df_grb["fink_class"],
+            df_grb["observatory"],
+            df_grb["rb"],
+            df_grb["p_assoc"],
+        ),
+    )
+
+    df_grb = df_grb.withColumn(
+        "is_gw_bronze",
+        f_gw_bronze_events(df_grb["fink_class"], df_grb["observatory"], df_grb["rb"]),
+    )
+
     timecol = "jd"
     converter = lambda x: convert_to_datetime(x)  # noqa: E731
     if "timestamp" not in df_grb.columns:
@@ -300,7 +326,8 @@ def launch_offline_mode(arguments):
     ...         "--config" : None,
     ...         "--night" : "20190903",
     ...         "--exit_after" : 100,
-    ...         "--test" : True
+    ...         "--test" : True,
+    ...         "--verbose" : False
     ...     }
     ... )
 
@@ -310,9 +337,9 @@ def launch_offline_mode(arguments):
     >>> cols = ['t2_AGN', 't2_EB',
     ... 't2_KN', 't2_M-dwarf', 't2_Mira', 't2_RRL', 't2_SLSN-I', 't2_SNII',
     ... 't2_SNIa', 't2_SNIa-91bg', 't2_SNIax', 't2_SNIbc', 't2_TDE',
-    ... 't2_mu-Lens-Single']
+    ... 't2_mu-Lens-Single', "year", "month", "day"]
     >>> datatest = datatest.drop(cols, axis=1)
-    >>> datajoin = datajoin.drop(cols + ["year", "month", "day"], axis=1)
+    >>> datajoin = datajoin.drop(cols, axis=1)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
@@ -387,13 +414,16 @@ def launch_offline_mode(arguments):
     if process.returncode != 0:  # pragma: no cover
         logger.error(
             "fink-mm offline crossmatch application has ended with a non-zero returncode.\
-                \n\t cause:\n\t\t{}\n\t\t{}".format(
-                stdout, stderr
+                \n\t cause:\n\t\t{}".format(
+                stderr
             )
         )
         exit(1)
 
-    logger.info("fink-mm offline crossmatch application ended normally")
+    if arguments["--verbose"]:
+        logger.info("fink-mm joining stream spark application ended normally")
+        print()
+        logger.info(f"job logs:\n\n{stdout}")
     return
 
 
