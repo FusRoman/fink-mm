@@ -201,7 +201,7 @@ def spark_offline(
             )
         )
 
-    grb_alert = spark.read.format("parquet").load(gcn_read_path)
+    grb_alert = spark.read.format("parquet").option('mergeSchema', True).load(gcn_read_path)
 
     grb_alert = grb_alert.filter(grb_alert.triggerTimejd >= low_bound).filter(
         grb_alert.triggerTimejd <= start_window
@@ -413,10 +413,8 @@ def launch_offline_mode(arguments):
     stdout, stderr = process.communicate()
     if process.returncode != 0:  # pragma: no cover
         logger.error(
-            "fink-mm offline crossmatch application has ended with a non-zero returncode.\
-                \n\t cause:\n\t\t{}".format(
-                stderr
-            )
+            f"fink-mm offline crossmatch application has ended with a non-zero returncode.\
+                \n\tstdout: \n\n{stdout} \n\tstderr:\n\n{stderr}"
         )
         exit(1)
 

@@ -234,10 +234,23 @@ def ztf_join_gcn_stream(
 
     gcn_rawdatapath = gcn_datapath_prefix
 
-    df_grb_stream = connect_to_raw_database(
-        gcn_rawdatapath,
-        gcn_rawdatapath + "/year={}/month={}/day=*?*".format(night[0:4], night[4:6]),
-        latestfirst=True,
+    # df_grb_stream = connect_to_raw_database(
+    #     gcn_rawdatapath,
+    #     gcn_rawdatapath + "/year={}/month={}/day=*?*".format(night[0:4], night[4:6]),
+    #     latestfirst=True,
+    # )
+
+    # Create a DF from the database
+    userschema = spark.read.option('mergeSchema', True).parquet(gcn_rawdatapath).schema
+
+    df_grb_stream = (
+        spark.readStream.format("parquet")
+        .schema(userschema)
+        .option("basePath", gcn_rawdatapath)
+        .option("path", gcn_rawdatapath + "/year={}/month={}/day=*?*".format(night[0:4], night[4:6]))
+        .option("latestFirst", True)
+        .option('mergeSchema', True)
+        .load()
     )
 
     # keep gcn emitted during the day time until the end of the stream (17:00 Paris Time)
@@ -440,10 +453,8 @@ def launch_joining_stream(arguments):
     stdout, stderr = process.communicate()
     if process.returncode != 0:  # pragma: no cover
         logger.error(
-            "fink-mm joining stream spark application has ended with a non-zero returncode.\
-                \n\t cause:\n\t\t{}".format(
-                stderr
-            )
+            f"fink-mm joining stream spark application has ended with a non-zero returncode.\
+                \n\tstdout:\n\n{stdout} \n\tstderr:\n\n{stderr}"
         )
         exit(1)
 
