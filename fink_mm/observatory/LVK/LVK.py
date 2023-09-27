@@ -3,6 +3,7 @@ import io
 from hdfs import InsecureClient
 import numpy as np
 import pandas as pd
+import os
 import astropy.units as u
 from astropy.time import Time
 from astropy.table import QTable
@@ -16,7 +17,49 @@ from healpy.pixelfunc import pix2ang, ang2pix
 from fink_mm.observatory import OBSERVATORY_PATH
 from fink_mm.observatory.observatory import Observatory
 from fink_mm.test.hypothesis.observatory_schema import voevent_df_schema
-from fink_mm.utils.fun_utils import gcn_from_hdfs
+
+
+def gcn_from_hdfs(client, triggerId, gcn_status, last_day, end_day):
+    root = "/user/julien.peloton/fink_mm/gcn_storage/raw"
+    path_last = os.path.join(
+        root,
+        "year={:04d}/month={:02d}/day={:02d}".format(
+            last_day.datetime.year, last_day.datetime.month, last_day.datetime.day
+        ),
+    )
+    path_end = os.path.join(
+        root,
+        "year={:04d}/month={:02d}/day={:02d}".format(
+            end_day.datetime.year, end_day.datetime.month, end_day.datetime.day
+        ),
+    )
+    all_gcn = []
+    for parquet_path in [path_last, path_end]:
+        for p, _, files in client.walk(parquet_path):
+            for f in np.sort(files):
+                if triggerId in f:
+                    path_to_load = os.path.join(p, f)
+                    with client.read(path_to_load) as reader:
+                        content = reader.read()
+                        pdf = pd.read_parquet(io.BytesIO(content))
+                        all_gcn.append(pdf)
+
+    if len(all_gcn) == 0:
+        raise FileNotFoundError(
+            "File not found at these locations [{}, {}] with triggerId = {}".format(
+                path_last, path_end, triggerId
+            )
+        )
+    else:
+        pdf_concat = pd.concat(all_gcn)
+        res = pdf_concat[pdf_concat["gcn_status"] == gcn_status]
+        if len(res) == 0:
+            raise FileNotFoundError(
+                "File not found with this gcn_status = {}".format(gcn_status)
+            )
+        else:
+            return res
+
 
 
 class LVK(Observatory):
