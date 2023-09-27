@@ -111,7 +111,7 @@ class LVK(Observatory):
                 self.voevent["superevent_id"][0] == "S"
                 or self.voevent["superevent_id"][0] == "M"
             )
-        return self.voevent["superevent_id"][0] == "S"
+        return self.voevent["superevent_id"][0] == "S" and self.voevent["event"]["significant"]
 
     def is_listened_packets_types(self) -> bool:
         """
