@@ -339,7 +339,7 @@ def get_association_proba(
     hdfs_adress: pd.Series,
     gcn_status: pd.Series,
     last_day: pd.Series,
-    end_day: pd.Series
+    end_day: pd.Series,
 ) -> pd.Series:
     """
     Compute the association probability between the ztf alerts and the gcn events.
@@ -418,12 +418,13 @@ def get_association_proba(
     return pd.Series(
         [
             get_observatory(obs, event).association_proba(
-                z_ra, z_dec,
+                z_ra,
+                z_dec,
                 z_trigger_time,
                 hdfs_adress=hdfs_adress,
                 gcn_status=gcn_status,
                 last_day=last_day.value,
-                end_day=end_day.value
+                end_day=end_day.value,
             )
             for obs, event, z_ra, z_dec, z_trigger_time in zip(
                 obsname, rawEvent, ztf_ra, ztf_dec, jdstarthist
@@ -718,7 +719,14 @@ def format_rate_results(spark_df, rate_column):
     )
 
 
-def join_post_process(df_grb, hdfs_adress, last_time_broadcast, end_time_broadcast, with_rate=True, from_hbase=False):
+def join_post_process(
+    df_grb,
+    hdfs_adress,
+    last_time_broadcast,
+    end_time_broadcast,
+    with_rate=True,
+    from_hbase=False,
+):
     """
     Post processing after the join, used by offline and online
 
@@ -798,7 +806,7 @@ def join_post_process(df_grb, hdfs_adress, last_time_broadcast, end_time_broadca
             hdfs_adress,
             df_grb["gcn_status"],
             last_time_broadcast,
-            end_time_broadcast
+            end_time_broadcast,
         ),
     )
 
@@ -1224,17 +1232,19 @@ def read_grb_admin_options(arguments, config, logger, is_test=False):
 
 
 def gcn_from_hdfs(client, triggerId, gcn_status, last_day, end_day):
-    root = '/user/julien.peloton/fink_mm/gcn_storage/raw'
-    path_last = os.path.join(root, 'year={:04d}/month={:02d}/day={:02d}'.format(
-        last_day.datetime.year, 
-        last_day.datetime.month, 
-        last_day.datetime.day
-    ))
-    path_end = os.path.join(root, 'year={:04d}/month={:02d}/day={:02d}'.format(
-        end_day.datetime.year, 
-        end_day.datetime.month, 
-        end_day.datetime.day
-    ))
+    root = "/user/julien.peloton/fink_mm/gcn_storage/raw"
+    path_last = os.path.join(
+        root,
+        "year={:04d}/month={:02d}/day={:02d}".format(
+            last_day.datetime.year, last_day.datetime.month, last_day.datetime.day
+        ),
+    )
+    path_end = os.path.join(
+        root,
+        "year={:04d}/month={:02d}/day={:02d}".format(
+            end_day.datetime.year, end_day.datetime.month, end_day.datetime.day
+        ),
+    )
     all_gcn = []
     for parquet_path in [path_last, path_end]:
         for p, _, files in client.walk(parquet_path):
@@ -1247,13 +1257,17 @@ def gcn_from_hdfs(client, triggerId, gcn_status, last_day, end_day):
                         all_gcn.append(pdf)
 
     if len(all_gcn) == 0:
-        raise FileNotFoundError("File not found at these locations [{}, {}] with triggerId = {}".format(path_last, path_end, triggerId))
+        raise FileNotFoundError(
+            "File not found at these locations [{}, {}] with triggerId = {}".format(
+                path_last, path_end, triggerId
+            )
+        )
     else:
         pdf_concat = pd.concat(all_gcn)
         res = pdf_concat[pdf_concat["gcn_status"] == gcn_status]
         if len(res) == 0:
-            raise FileNotFoundError("File not found with this gcn_status = {}".format(gcn_status))
+            raise FileNotFoundError(
+                "File not found with this gcn_status = {}".format(gcn_status)
+            )
         else:
             return res
-
-

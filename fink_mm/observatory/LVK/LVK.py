@@ -59,15 +59,19 @@ class LVK(Observatory):
         if "skymap" in self.voevent["event"]:
             skymap_str = self.voevent["event"]["skymap"]
         else:
-            hdfs_adress = kwargs['hdfs_adress']
-            hdfs_client = InsecureClient(f'http://{hdfs_adress}:50070', user='hdfs', root="/user/julien.peloton")
+            hdfs_adress = kwargs["hdfs_adress"]
+            hdfs_client = InsecureClient(
+                f"http://{hdfs_adress}:50070", user="hdfs", root="/user/julien.peloton"
+            )
             triggerId = self.get_trigger_id()
             gcn_status = kwargs["gcn_status"]
             last_day = kwargs["last_day"]
             end_day = kwargs["end_day"]
-            gcn_pdf = gcn_from_hdfs(hdfs_client, triggerId, gcn_status, last_day, end_day)
+            gcn_pdf = gcn_from_hdfs(
+                hdfs_client, triggerId, gcn_status, last_day, end_day
+            )
             skymap_str = json.loads(gcn_pdf["raw_event"].iloc[0])["event"]["skymap"]
-        
+
         # Decode and parse skymap
         skymap_bytes = b64decode(skymap_str)
         skymap = QTable.read(io.BytesIO(skymap_bytes))
@@ -399,7 +403,12 @@ class LVK(Observatory):
         >>> lvk_initial.association_proba(95.712890625, -10.958863307027668, 0)
         0.0054008620296433045
         """
-        if "hdfs_adress" in kwargs and "gcn_status" in kwargs and "last_day" in kwargs and "end_day" in kwargs:
+        if (
+            "hdfs_adress" in kwargs
+            and "gcn_status" in kwargs
+            and "last_day" in kwargs
+            and "end_day" in kwargs
+        ):
             skymap = self.get_skymap(kwargs)
         else:
             skymap = self.get_skymap()

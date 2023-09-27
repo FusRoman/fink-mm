@@ -116,8 +116,7 @@ def check_path_exist(spark, path):
         return False
 
 
-
-def aux_remove_skymap(d: dict)-> dict:
+def aux_remove_skymap(d: dict) -> dict:
     """
     Remove the skymap key from the gw event given in input.
 
@@ -132,9 +131,10 @@ def aux_remove_skymap(d: dict)-> dict:
         same as input but without the skymap key.
     """
     return {
-        k:v  if k != "event" else {k2:v2 for k2, v2 in v.items() if k2 != "skymap"}
+        k: v if k != "event" else {k2: v2 for k2, v2 in v.items() if k2 != "skymap"}
         for k, v in d.items()
     }
+
 
 @pandas_udf(StringType())
 def remove_skymap(obsname: pd.Series, rawEvent: pd.Series) -> pd.Series:
@@ -155,12 +155,10 @@ def remove_skymap(obsname: pd.Series, rawEvent: pd.Series) -> pd.Series:
     """
     return pd.Series(
         [
-            json.dumps(aux_remove_skymap(json.loads(raw))) 
-            if obs == "LVK" else raw 
+            json.dumps(aux_remove_skymap(json.loads(raw))) if obs == "LVK" else raw
             for obs, raw in zip(obsname, rawEvent)
         ]
     )
-
 
 
 def ztf_join_gcn_stream(
@@ -289,15 +287,19 @@ def ztf_join_gcn_stream(
     gcn_rawdatapath = gcn_datapath_prefix
 
     # Create a DF from the database
-    userschema = spark.read.option('mergeSchema', True).parquet(gcn_rawdatapath).schema
+    userschema = spark.read.option("mergeSchema", True).parquet(gcn_rawdatapath).schema
 
     df_grb_stream = (
         spark.readStream.format("parquet")
         .schema(userschema)
         .option("basePath", gcn_rawdatapath)
-        .option("path", gcn_rawdatapath + "/year={}/month={}/day=*?*".format(night[0:4], night[4:6]))
+        .option(
+            "path",
+            gcn_rawdatapath
+            + "/year={}/month={}/day=*?*".format(night[0:4], night[4:6]),
+        )
         .option("latestFirst", True)
-        .option('mergeSchema', True)
+        .option("mergeSchema", True)
         .load()
     )
 
@@ -328,10 +330,11 @@ def ztf_join_gcn_stream(
 
     # remove the gw skymap to save memory before the join
     df_grb_stream = df_grb_stream.withColumn(
-        "tmpRaw", 
-        remove_skymap(df_grb_stream.observatory, df_grb_stream.raw_event)
+        "tmpRaw", remove_skymap(df_grb_stream.observatory, df_grb_stream.raw_event)
     )
-    df_grb_stream = df_grb_stream.drop("raw_event").withColumnRenamed("tmpRaw", "raw_event")
+    df_grb_stream = df_grb_stream.drop("raw_event").withColumnRenamed(
+        "tmpRaw", "raw_event"
+    )
 
     df_grb_stream = df_grb_stream.withColumn("hpix", explode("hpix_circle"))
 
@@ -357,7 +360,9 @@ def ztf_join_gcn_stream(
 
     last_time_broadcast = spark.sparkContext.broadcast(last_time.datetime)
     end_time_broadcast = spark.sparkContext.broadcast(end_time.datetime)
-    df_grb = join_post_process(df_grb, hdfs_adress, last_time_broadcast, end_time_broadcast)
+    df_grb = join_post_process(
+        df_grb, hdfs_adress, last_time_broadcast, end_time_broadcast
+    )
 
     # re-create partitioning columns if needed.
     timecol = "jd"
@@ -499,7 +504,7 @@ def launch_joining_stream(arguments):
         pansstar_star_score=pansstar_star_score,
         gaia_dist=gaia_dist,
         logs=verbose,
-        hdfs_adress=hdfs_adress
+        hdfs_adress=hdfs_adress,
     )
 
     spark_submit = build_spark_submit(
