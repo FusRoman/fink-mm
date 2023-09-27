@@ -338,8 +338,6 @@ def get_association_proba(
     jdstarthist: pd.Series,
     hdfs_adress: pd.Series,
     gcn_status: pd.Series,
-    last_day: pd.Series,
-    end_day: pd.Series,
 ) -> pd.Series:
     """
     Compute the association probability between the ztf alerts and the gcn events.
@@ -423,8 +421,8 @@ def get_association_proba(
                 z_trigger_time,
                 hdfs_adress=hdfs_adress,
                 gcn_status=gcn_status,
-                last_day=last_day.value,
-                end_day=end_day.value,
+                last_day=globals["last_time_broadcast"].value,
+                end_day=globals["end_time_broadcast"].value,
             )
             for obs, event, z_ra, z_dec, z_trigger_time in zip(
                 obsname, rawEvent, ztf_ra, ztf_dec, jdstarthist
@@ -722,8 +720,6 @@ def format_rate_results(spark_df, rate_column):
 def join_post_process(
     df_grb,
     hdfs_adress,
-    last_time_broadcast,
-    end_time_broadcast,
     with_rate=True,
     from_hbase=False,
 ):
@@ -805,8 +801,6 @@ def join_post_process(
             df_grb["{}".format("start_vartime" if with_rate else "jdstarthist")],
             hdfs_adress,
             df_grb["gcn_status"],
-            last_time_broadcast,
-            end_time_broadcast,
         ),
     )
 

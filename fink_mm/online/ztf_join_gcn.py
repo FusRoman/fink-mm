@@ -360,8 +360,11 @@ def ztf_join_gcn_stream(
 
     last_time_broadcast = spark.sparkContext.broadcast(last_time.datetime)
     end_time_broadcast = spark.sparkContext.broadcast(end_time.datetime)
+    globals["last_time_broadcast"] = last_time_broadcast
+    globals["end_time_broadcast"] = end_time_broadcast
+
     df_grb = join_post_process(
-        df_grb, hdfs_adress, last_time_broadcast, end_time_broadcast
+        df_grb, hdfs_adress
     )
 
     # re-create partitioning columns if needed.
