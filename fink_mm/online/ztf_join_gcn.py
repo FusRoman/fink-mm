@@ -5,9 +5,13 @@ warnings.filterwarnings("ignore")
 import time
 import subprocess
 import sys
+import json
+import pandas as pd
+from threading import Timer
 
 from pyspark.sql import functions as F
-from pyspark.sql.functions import explode, col
+from pyspark.sql.functions import explode, col, pandas_udf
+from pyspark.sql.types import StringType
 
 from astropy.time import Time
 from datetime import timedelta
@@ -112,6 +116,53 @@ def check_path_exist(spark, path):
         return False
 
 
+
+def aux_remove_skymap(d: dict)-> dict:
+    """
+    Remove the skymap key from the gw event given in input.
+
+    Parameters
+    ----------
+    d : dict
+        gw event dictionnary
+
+    Returns
+    -------
+    dict
+        same as input but without the skymap key.
+    """
+    return {
+        k:v  if k != "event" else {k2:v2 for k2, v2 in v.items() if k2 != "skymap"}
+        for k, v in d.items()
+    }
+
+@pandas_udf(StringType())
+def remove_skymap(obsname: pd.Series, rawEvent: pd.Series) -> pd.Series:
+    """
+    Remove the skymap key for the LVK alert
+
+    Parameters
+    ----------
+    obsname : pd.Series
+        observatory name
+    rawEvent : pd.Series
+        raw_event
+
+    Returns
+    -------
+    pd.Series
+        raw_event columns but for the LVK alerts, the skymap key has been removed.
+    """
+    return pd.Series(
+        [
+            json.dumps(aux_remove_skymap(json.loads(raw))) 
+            if obs == "LVK" else raw 
+            for obs, raw in zip(obsname, rawEvent)
+        ]
+    )
+
+
+
 def ztf_join_gcn_stream(
     ztf_datapath_prefix,
     gcn_datapath_prefix,
@@ -120,6 +171,7 @@ def ztf_join_gcn_stream(
     NSIDE,
     exit_after,
     tinterval,
+    hdfs_adress,
     ast_dist,
     pansstar_dist,
     pansstar_star_score,
@@ -146,6 +198,8 @@ def ztf_join_gcn_stream(
         the maximum active time in second of the streaming process
     tinterval : int
         the processing interval time in second between the data batch
+    hdfs_adress: string
+        HDFS adress used to instanciate the hdfs client from the hdfs package
     ast_dist: float
         distance to nearest known solar system object; set to -999.0 if none [arcsec]
         ssdistnr field
@@ -234,12 +288,6 @@ def ztf_join_gcn_stream(
 
     gcn_rawdatapath = gcn_datapath_prefix
 
-    # df_grb_stream = connect_to_raw_database(
-    #     gcn_rawdatapath,
-    #     gcn_rawdatapath + "/year={}/month={}/day=*?*".format(night[0:4], night[4:6]),
-    #     latestfirst=True,
-    # )
-
     # Create a DF from the database
     userschema = spark.read.option('mergeSchema', True).parquet(gcn_rawdatapath).schema
 
@@ -277,6 +325,14 @@ def ztf_join_gcn_stream(
         "hpix_circle",
         get_pixels(df_grb_stream.observatory, df_grb_stream.raw_event, F.lit(NSIDE)),
     )
+
+    # remove the gw skymap to save memory before the join
+    df_grb_stream = df_grb_stream.withColumn(
+        "tmpRaw", 
+        remove_skymap(df_grb_stream.observatory, df_grb_stream.raw_event)
+    )
+    df_grb_stream = df_grb_stream.drop("raw_event").withColumnRenamed("tmpRaw", "raw_event")
+
     df_grb_stream = df_grb_stream.withColumn("hpix", explode("hpix_circle"))
 
     if logs:  # pragma: no cover
@@ -299,7 +355,9 @@ def ztf_join_gcn_stream(
     ]
     df_grb = df_ztf_stream.join(F.broadcast(df_grb_stream), join_condition, "inner")
 
-    df_grb = join_post_process(df_grb)
+    last_time_broadcast = spark.sparkContext.broadcast(last_time.datetime)
+    end_time_broadcast = spark.sparkContext.broadcast(end_time.datetime)
+    df_grb = join_post_process(df_grb, hdfs_adress, last_time_broadcast, end_time_broadcast)
 
     # re-create partitioning columns if needed.
     timecol = "jd"
@@ -328,23 +386,32 @@ def ztf_join_gcn_stream(
         .trigger(processingTime="{} seconds".format(tinterval))
         .start()
     )
+    logger.info("Stream launching successfull")
 
-    if logs:  # pragma: no cover
-        logger.info("Stream launching successfull")
-        print("-----------------")
-        logger.info(f"last progress : {query_grb.lastProgress}")
-        print()
-        print()
-        logger.info(f"recent progress : {query_grb.recentProgress}")
-        print()
-        print()
-        logger.info(f"query status : {query_grb.status}")
-        print("-----------------")
+    class RepeatTimer(Timer):
+        def run(self):
+            while not self.finished.wait(self.interval):
+                self.function(*self.args, **self.kwargs)
 
+    def print_logs():
+        if logs:  # pragma: no cover
+            print("-----------------")
+            logger.info(f"last progress : {query_grb.lastProgress}")
+            print()
+            print()
+            logger.info(f"recent progress : {query_grb.recentProgress}")
+            print()
+            print()
+            logger.info(f"query status : {query_grb.status}")
+            print("-----------------")
+
+    logs_thread = RepeatTimer(tinterval / 2, print_logs)
+    logs_thread.start()
     # Keep the Streaming running until something or someone ends it!
     if exit_after is not None:
         time.sleep(int(exit_after))
         query_grb.stop()
+        logs_thread.cancel()
         logger.info("Exiting the science2grb streaming subprocess normally...")
     else:  # pragma: no cover
         # Wait for the end of queries
@@ -409,6 +476,7 @@ def launch_joining_stream(arguments):
         gcn_datapath_prefix,
         grb_datapath_prefix,
         tinterval,
+        hdfs_adress,
         NSIDE,
         _,
         _,
@@ -431,6 +499,7 @@ def launch_joining_stream(arguments):
         pansstar_star_score=pansstar_star_score,
         gaia_dist=gaia_dist,
         logs=verbose,
+        hdfs_adress=hdfs_adress
     )
 
     spark_submit = build_spark_submit(
@@ -442,26 +511,22 @@ def launch_joining_stream(arguments):
         external_files,
     )
 
-    process = subprocess.Popen(
+    completed_process = subprocess.run(
         spark_submit,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        universal_newlines=True,
         shell=True,
     )
 
-    stdout, stderr = process.communicate()
-    if process.returncode != 0:  # pragma: no cover
+    if completed_process.returncode != 0:  # pragma: no cover
         logger.error(
             f"fink-mm joining stream spark application has ended with a non-zero returncode.\
-                \n\tstdout:\n\n{stdout} \n\tstderr:\n\n{stderr}"
+                \n\tstdout:\n\n{completed_process.stdout} \n\tstderr:\n\n{completed_process.stderr}"
         )
         exit(1)
 
     if arguments["--verbose"]:
         logger.info("fink-mm joining stream spark application ended normally")
         print()
-        logger.info(f"job logs:\n\n{stdout}")
+        logger.info(f"job logs:\n\n{completed_process.stdout}")
     return
 
 

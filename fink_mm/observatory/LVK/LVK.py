@@ -1,5 +1,6 @@
 import os.path as path
 import io
+from hdfs import InsecureClient
 import numpy as np
 import pandas as pd
 import astropy.units as u
@@ -15,6 +16,7 @@ from healpy.pixelfunc import pix2ang, ang2pix
 from fink_mm.observatory import OBSERVATORY_PATH
 from fink_mm.observatory.observatory import Observatory
 from fink_mm.test.hypothesis.observatory_schema import voevent_df_schema
+from fink_mm.utils.fun_utils import gcn_from_hdfs
 
 
 class LVK(Observatory):
@@ -40,7 +42,7 @@ class LVK(Observatory):
         """
         super().__init__(path.join(OBSERVATORY_PATH, "LVK", "lvk.json"), notice)
 
-    def get_skymap(self) -> QTable:
+    def get_skymap(self, **kwargs) -> QTable:
         """
         Decode and return the skymap
 
@@ -54,7 +56,18 @@ class LVK(Observatory):
         >>> np.array(lvk_initial.get_skymap()["UNIQ"])
         array([  1285,   1287,   1296, ..., 162369, 162370, 162371])
         """
-        skymap_str = self.voevent["event"]["skymap"]
+        if "skymap" in self.voevent["event"]:
+            skymap_str = self.voevent["event"]["skymap"]
+        else:
+            hdfs_adress = kwargs['hdfs_adress']
+            hdfs_client = InsecureClient(f'http://{hdfs_adress}:50070', user='hdfs', root="/user/julien.peloton")
+            triggerId = self.get_trigger_id()
+            gcn_status = kwargs["gcn_status"]
+            last_day = kwargs["last_day"]
+            end_day = kwargs["end_day"]
+            gcn_pdf = gcn_from_hdfs(hdfs_client, triggerId, gcn_status, last_day, end_day)
+            skymap_str = json.loads(gcn_pdf["raw_event"].iloc[0])["event"]["skymap"]
+        
         # Decode and parse skymap
         skymap_bytes = b64decode(skymap_str)
         skymap = QTable.read(io.BytesIO(skymap_bytes))
@@ -349,7 +362,7 @@ class LVK(Observatory):
         return np.unique(ang2pix(NSIDE, theta, phi)).tolist()
 
     def association_proba(
-        self, ztf_ra: float, ztf_dec: float, jdstarthist: float
+        self, ztf_ra: float, ztf_dec: float, jdstarthist: float, **kwargs
     ) -> float:
         """
         return the probability density at a known sky position for this gw event.
@@ -362,6 +375,17 @@ class LVK(Observatory):
             ztf declination
         jdstarthist: float
             first time the alert varied
+        kwargs: dict
+            used to get the gw skymap from hdfs, need the following keys:
+            - hdfs_adress: HDFS adress used to instanciate the hdfs client from the hdfs package
+            - gcn_status: used to distinguish gcn with the same triggerId (account the gcn update)
+            - last_day: the last day to make the search on hdfs
+            - end_day: the end day to make the search on hdfs (the gcn will be search between last day and end day)
+            if not provided, get the skymap from the gcn stored in the current object.
+
+        Can raise key not found if the skymap has been remove from the current object.
+        Can raise FileNotFound if the search on hdfs doesn't found the gcn with the current triggerId
+
 
         Returns
         -------
@@ -375,7 +399,11 @@ class LVK(Observatory):
         >>> lvk_initial.association_proba(95.712890625, -10.958863307027668, 0)
         0.0054008620296433045
         """
-        skymap = self.get_skymap()
+        if "hdfs_adress" in kwargs and "gcn_status" in kwargs and "last_day" in kwargs and "end_day" in kwargs:
+            skymap = self.get_skymap(kwargs)
+        else:
+            skymap = self.get_skymap()
+
         max_level = 29
         max_nside = ah.level_to_nside(max_level)
         level, ipix = ah.uniq_to_level_ipix(skymap["UNIQ"])
