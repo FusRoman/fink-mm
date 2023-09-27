@@ -419,7 +419,7 @@ def get_association_proba(
                 z_ra,
                 z_dec,
                 z_trigger_time,
-                hdfs_adress=hdfs_adress,
+                hdfs_adress=hdfs_adress.values[0],
                 gcn_status=gcn_status,
                 last_day=globals["last_time_broadcast"].value,
                 end_day=globals["end_time_broadcast"].value,
@@ -799,7 +799,7 @@ def join_post_process(
             df_grb["ztf_ra"],
             df_grb["ztf_dec"],
             df_grb["{}".format("start_vartime" if with_rate else "jdstarthist")],
-            hdfs_adress,
+            F.lit(hdfs_adress),
             df_grb["gcn_status"],
         ),
     )
