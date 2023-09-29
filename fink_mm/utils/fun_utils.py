@@ -420,12 +420,12 @@ def get_association_proba(
                 z_dec,
                 z_trigger_time,
                 hdfs_adress=hdfs_adress.values[0],
-                gcn_status=gcn_status,
+                gcn_status=status,
                 last_day=globals["last_time_broadcast"].value,
                 end_day=globals["end_time_broadcast"].value,
             )
-            for obs, event, z_ra, z_dec, z_trigger_time in zip(
-                obsname, rawEvent, ztf_ra, ztf_dec, jdstarthist
+            for obs, event, z_ra, z_dec, z_trigger_time, status in zip(
+                obsname, rawEvent, ztf_ra, ztf_dec, jdstarthist, gcn_status
             )
         ]
     )

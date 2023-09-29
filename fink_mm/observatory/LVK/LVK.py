@@ -60,8 +60,6 @@ def gcn_from_hdfs(client, triggerId, gcn_status, last_day, end_day):
         else:
             return res
 
-
-
 class LVK(Observatory):
     """
     LVK network
