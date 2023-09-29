@@ -4,14 +4,18 @@ warnings.filterwarnings("ignore")
 
 import time
 import subprocess
+from typing import Union, Tuple
 import sys
 import json
 import pandas as pd
 from threading import Timer
+from enum import Enum
 
 from pyspark.sql import functions as F
 from pyspark.sql.functions import explode, col, pandas_udf
 from pyspark.sql.types import StringType
+from pyspark.sql import SparkSession, DataFrame
+
 
 from astropy.time import Time
 from datetime import timedelta
@@ -28,9 +32,16 @@ from fink_mm.utils.fun_utils import (
     read_additional_spark_options,
     read_grb_admin_options,
 )
+from fink_mm.init import LoggerNewLine
 import fink_mm.utils.application as apps
 from fink_mm.init import get_config, init_logging, return_verbose_level
 from fink_mm.utils.fun_utils import get_pixels
+
+from fink_filters.filter_mm_module.filter import (
+    f_grb_bronze_events,
+    f_grb_silver_events,
+    f_gw_bronze_events,
+)
 
 
 def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist):
@@ -161,21 +172,262 @@ def remove_skymap(obsname: pd.Series, rawEvent: pd.Series) -> pd.Series:
     )
 
 
-def ztf_join_gcn_stream(
-    ztf_datapath_prefix,
-    gcn_datapath_prefix,
-    grb_datapath_prefix,
-    night,
-    NSIDE,
-    exit_after,
-    tinterval,
-    hdfs_adress,
-    ast_dist,
-    pansstar_dist,
-    pansstar_star_score,
-    gaia_dist,
-    logs=False,
-    test=False
+class DataMode(Enum):
+    STREAMING = "streaming"
+    OFFLINE = "offline"
+
+
+def load_dataframe(
+    spark: SparkSession,
+    ztf_path: str,
+    gcn_path: str,
+    night: str,
+    time_window: int,
+    load_mode: DataMode,
+) -> Tuple[DataFrame, DataFrame, Time, Time]:
+    if load_mode == DataMode.STREAMING:
+        # connection to the ztf science stream
+        ztf_alert = connect_to_raw_database(
+            ztf_path
+            + "/online/science/year={}/month={}/day={}".format(
+                night[0:4], night[4:6], night[6:8]
+            ),
+            ztf_path
+            + "/online/science/year={}/month={}/day={}".format(
+                night[0:4], night[4:6], night[6:8]
+            ),
+            latestfirst=False,
+        )
+
+        userschema = spark.read.option("mergeSchema", True).parquet(gcn_path).schema
+        gcn_alert = (
+            spark.readStream.format("parquet")
+            .schema(userschema)
+            .option("basePath", gcn_path)
+            .option(
+                "path",
+                gcn_path + "/year={}/month={}/day=*?*".format(night[0:4], night[4:6]),
+            )
+            .option("latestFirst", True)
+            .option("mergeSchema", True)
+            .load()
+        )
+        # keep gcn emitted during the day time until the end of the stream (17:00 Paris Time)
+        cur_time = Time(f"{night[0:4]}-{night[4:6]}-{night[6:8]}")
+        last_time = cur_time - timedelta(hours=7)  # 17:00 Paris time yesterday
+        end_time = cur_time + timedelta(hours=17)  # 17:00 Paris time today
+
+    elif load_mode == DataMode.OFFLINE:
+        ztf_alert = (
+            spark.read.format("parquet")
+            .option("mergeSchema", True)
+            .load(
+                ztf_path
+                + "/archive/science/year={}/month={}/day={}".format(
+                    night[0:4], night[4:6], night[6:8]
+                )
+            )
+        )
+
+        gcn_alert = (
+            spark.read.format("parquet").option("mergeSchema", True).load(gcn_path)
+        )
+        cur_time = Time(f"{night[0:4]}-{night[4:6]}-{night[6:8]}")
+        last_time = cur_time - timedelta(
+            days=time_window, hours=7
+        )  # 17:00 Paris time yesterday
+        end_time = cur_time + timedelta(hours=17)  # 17:00 Paris time today
+
+    gcn_alert = gcn_alert.filter(
+        f"triggerTimejd >= {last_time.jd} and triggerTimejd < {end_time.jd}"
+    )
+    return ztf_alert, gcn_alert, last_time, end_time
+
+
+def write_dataframe(
+    spark: SparkSession,
+    df_join: DataFrame,
+    write_path: str,
+    logger: LoggerNewLine,
+    tinterval: int,
+    exit_after: int,
+    logs: bool,
+    test: bool,
+    write_mode: DataMode,
+):
+    if write_mode == DataMode.STREAMING:
+        grbdatapath = write_path + "/online"
+        checkpointpath_grb_tmp = write_path + "/online_checkpoint"
+
+        query_grb = (
+            df_join.writeStream.outputMode("append")
+            .format("parquet")
+            .option("checkpointLocation", checkpointpath_grb_tmp)
+            .option("path", grbdatapath)
+            .partitionBy("year", "month", "day")
+            .trigger(processingTime="{} seconds".format(tinterval))
+            .start()
+        )
+        logger.info("Stream launching successfull")
+
+        class RepeatTimer(Timer):
+            def run(self):
+                while not self.finished.wait(self.interval):
+                    self.function(*self.args, **self.kwargs)
+
+        def print_logs():
+            if logs and not test:  # pragma: no cover
+                logger.newline()
+                logger.info(f"last progress : {query_grb.lastProgress}")
+                logger.newline(2)
+                logger.info(f"recent progress : {query_grb.recentProgress}")
+                logger.newline(2)
+                logger.info(f"query status : {query_grb.status}")
+                logger.newline()
+
+        logs_thread = RepeatTimer(int(tinterval) / 2, print_logs)
+        logs_thread.start()
+        # Keep the Streaming running until something or someone ends it!
+        if exit_after is not None:
+            time.sleep(int(exit_after))
+            query_grb.stop()
+            logs_thread.cancel()
+            logger.info("Exiting the science2grb streaming subprocess normally...")
+            return
+        else:  # pragma: no cover
+            # Wait for the end of queries
+            spark.streams.awaitAnyTermination()
+            return
+
+    elif write_mode == DataMode.OFFLINE:
+        df_grb = df_grb.withColumn(
+            "is_grb_bronze",
+            f_grb_bronze_events(
+                df_grb["fink_class"], df_grb["observatory"], df_grb["rb"]
+            ),
+        )
+
+        df_grb = df_grb.withColumn(
+            "is_grb_silver",
+            f_grb_silver_events(
+                df_grb["fink_class"],
+                df_grb["observatory"],
+                df_grb["rb"],
+                df_grb["p_assoc"],
+            ),
+        )
+
+        df_grb = df_grb.withColumn(
+            "is_gw_bronze",
+            f_gw_bronze_events(
+                df_grb["fink_class"], df_grb["observatory"], df_grb["rb"]
+            ),
+        )
+
+        grbxztf_write_path = write_path + "/offline"
+
+        df_grb.write.mode("append").partitionBy("year", "month", "day").parquet(
+            grbxztf_write_path
+        )
+        return
+
+
+def ztf_pre_join(
+    ztf_dataframe: DataFrame,
+    ast_dist: float,
+    pansstar_dist: float,
+    pansstar_star_score: float,
+    gaia_dist: float,
+    NSIDE: int,
+) -> DataFrame:
+    ztf_dataframe = ztf_dataframe.select(
+        "objectId",
+        "candid",
+        "candidate",
+        "prv_candidates",
+        "cdsxmatch",
+        "DR3Name",
+        "Plx",
+        "e_Plx",
+        "gcvs",
+        "vsx",
+        "x3hsp",
+        "x4lac",
+        "mangrove",
+        "roid",
+        "rf_snia_vs_nonia",
+        "snn_snia_vs_nonia",
+        "snn_sn_vs_all",
+        "mulens",
+        "nalerthist",
+        "rf_kn_vs_nonkn",
+        "t2",
+        "anomaly_score",
+        "lc_features_g",
+        "lc_features_r",
+    )
+
+    ztf_dataframe = ztf_grb_filter(
+        ztf_dataframe, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist
+    )
+
+    # compute pixels for ztf alerts
+    ztf_dataframe = ztf_dataframe.withColumn(
+        "hpix",
+        ang2pix(ztf_dataframe.candidate.ra, ztf_dataframe.candidate.dec, F.lit(NSIDE)),
+    )
+
+    ztf_dataframe = ztf_dataframe.withColumn("ztf_ra", col("candidate.ra")).withColumn(
+        "ztf_dec", col("candidate.dec")
+    )
+    return ztf_dataframe
+
+
+def gcn_pre_join(
+    gcn_dataframe: DataFrame,
+    NSIDE: int,
+    test: bool,
+) -> DataFrame:
+    # compute pixels for gcn alerts
+    gcn_dataframe = gcn_dataframe.withColumn(
+        "hpix_circle",
+        get_pixels(gcn_dataframe.observatory, gcn_dataframe.raw_event, F.lit(NSIDE)),
+    )
+
+    if not test:
+        # remove the gw skymap to save memory before the join
+        gcn_dataframe = gcn_dataframe.withColumn(
+            "tmpRaw", remove_skymap(gcn_dataframe.observatory, gcn_dataframe.raw_event)
+        )
+        gcn_dataframe = gcn_dataframe.drop("raw_event").withColumnRenamed(
+            "tmpRaw", "raw_event"
+        )
+
+    gcn_dataframe = gcn_dataframe.withColumn("hpix", explode("hpix_circle"))
+
+    gcn_dataframe = gcn_dataframe.withColumnRenamed("ra", "gcn_ra").withColumnRenamed(
+        "dec", "gcn_dec"
+    )
+    return gcn_dataframe
+
+
+def ztf_join_gcn(
+    mm_mode: DataMode,
+    ztf_datapath_prefix: str,
+    gcn_datapath_prefix: str,
+    join_datapath_prefix: str,
+    night: str,
+    NSIDE: int,
+    exit_after: int,
+    tinterval: int,
+    time_window: int,
+    hdfs_adress: str,
+    ast_dist: float,
+    pansstar_dist: float,
+    pansstar_star_score: float,
+    gaia_dist: float,
+    logs: bool = False,
+    test: bool = False,
 ):
     """
     Join the ztf alerts stream and the gcn stream to find the counterparts of the gcn alerts
@@ -187,7 +439,7 @@ def ztf_join_gcn_stream(
         the prefix path where are stored the ztf alerts.
     gcn_datapath_prefix : string
         the prefix path where are stored the gcn alerts.
-    grb_datapath_prefix : string
+    join_datapath_prefix : string
         the prefix path to save GRB join ZTF outputs.
     night : string
         the processing night
@@ -244,190 +496,60 @@ def ztf_join_gcn_stream(
         "science2mm_online_{}{}{}".format(night[0:4], night[4:6], night[6:8])
     )
 
-    scidatapath = ztf_datapath_prefix + "/science"
-
-    # connection to the ztf science stream
-    df_ztf_stream = connect_to_raw_database(
-        scidatapath
-        + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
-        scidatapath
-        + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
-        latestfirst=False,
+    ztf_dataframe, gcn_dataframe, last_time, end_time = load_dataframe(
+        spark, ztf_datapath_prefix, gcn_datapath_prefix, night, time_window, mm_mode
     )
-    df_ztf_stream = df_ztf_stream.select(
-        "objectId",
-        "candid",
-        "candidate",
-        "prv_candidates",
-        "cdsxmatch",
-        "DR3Name",
-        "Plx",
-        "e_Plx",
-        "gcvs",
-        "vsx",
-        "x3hsp",
-        "x4lac",
-        "mangrove",
-        "roid",
-        "rf_snia_vs_nonia",
-        "snn_snia_vs_nonia",
-        "snn_sn_vs_all",
-        "mulens",
-        "nalerthist",
-        "rf_kn_vs_nonkn",
-        "t2",
-        "anomaly_score",
-        "lc_features_g",
-        "lc_features_r",
+    ztf_dataframe = ztf_pre_join(
+        ztf_dataframe, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist, NSIDE
     )
-
-    df_ztf_stream = ztf_grb_filter(
-        df_ztf_stream, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist
-    )
-
-    gcn_rawdatapath = gcn_datapath_prefix
-
-    # Create a DF from the database
-    userschema = spark.read.option("mergeSchema", True).parquet(gcn_rawdatapath).schema
-
-    df_grb_stream = (
-        spark.readStream.format("parquet")
-        .schema(userschema)
-        .option("basePath", gcn_rawdatapath)
-        .option(
-            "path",
-            gcn_rawdatapath
-            + "/year={}/month={}/day=*?*".format(night[0:4], night[4:6]),
-        )
-        .option("latestFirst", True)
-        .option("mergeSchema", True)
-        .load()
-    )
-
-    # keep gcn emitted during the day time until the end of the stream (17:00 Paris Time)
-    cur_time = Time(f"{night[0:4]}-{night[4:6]}-{night[6:8]}")
-    last_time = cur_time - timedelta(hours=7)  # 17:00 Paris time yesterday
-    end_time = cur_time + timedelta(hours=17)  # 17:00 Paris time today
-    df_grb_stream = df_grb_stream.filter(
-        f"triggerTimejd >= {last_time.jd} and triggerTimejd < {end_time.jd}"
-    )
-
-    if logs:  # pragma: no cover
-        logger.info("connection to the database successfull")
+    gcn_dataframe = gcn_pre_join(gcn_dataframe, NSIDE, test)
 
     # compute healpix column for each streaming df
-
-    # compute pixels for ztf alerts
-    df_ztf_stream = df_ztf_stream.withColumn(
-        "hpix",
-        ang2pix(df_ztf_stream.candidate.ra, df_ztf_stream.candidate.dec, F.lit(NSIDE)),
-    )
-
-    # compute pixels for gcn alerts
-    df_grb_stream = df_grb_stream.withColumn(
-        "hpix_circle",
-        get_pixels(df_grb_stream.observatory, df_grb_stream.raw_event, F.lit(NSIDE)),
-    )
-
-    if not test:
-        # remove the gw skymap to save memory before the join
-        df_grb_stream = df_grb_stream.withColumn(
-            "tmpRaw", remove_skymap(df_grb_stream.observatory, df_grb_stream.raw_event)
-        )
-        df_grb_stream = df_grb_stream.drop("raw_event").withColumnRenamed(
-            "tmpRaw", "raw_event"
-        )
-
-    df_grb_stream = df_grb_stream.withColumn("hpix", explode("hpix_circle"))
-
-    if logs:  # pragma: no cover
-        logger.info("Healpix columns computing successfull")
-
-    df_ztf_stream = df_ztf_stream.withColumn("ztf_ra", col("candidate.ra")).withColumn(
-        "ztf_dec", col("candidate.dec")
-    )
-
-    df_grb_stream = df_grb_stream.withColumnRenamed("ra", "gcn_ra").withColumnRenamed(
-        "dec", "gcn_dec"
-    )
 
     # join the two streams according to the healpix columns.
     # A pixel id will be assign to each alerts / gcn according to their position in the sky.
     # Each alerts / gcn with the same pixel id are in the same area of the sky.
     join_condition = [
-        df_ztf_stream.hpix == df_grb_stream.hpix,
-        df_ztf_stream.candidate.jdstarthist > df_grb_stream.triggerTimejd,
+        ztf_dataframe.hpix == gcn_dataframe.hpix,
+        ztf_dataframe.candidate.jdstarthist > gcn_dataframe.triggerTimejd,
     ]
-    # df_grb = df_ztf_stream.join(F.broadcast(df_grb_stream), join_condition, "inner")
-    df_grb = df_grb_stream.join(F.broadcast(df_ztf_stream), join_condition, "inner")
+    # df_join_mm = df_ztf_stream.join(F.broadcast(df_grb_stream), join_condition, "inner")
+    df_join_mm = gcn_dataframe.join(F.broadcast(ztf_dataframe), join_condition, "inner")
 
     last_time_str = f"{last_time.datetime.year:04d}{last_time.datetime.month:02d}{last_time.datetime.day:02d}"
     end_time_str = f"{end_time.datetime.year:04d}{end_time.datetime.month:02d}{end_time.datetime.day:02d}"
 
-    df_grb = join_post_process(
-        df_grb, hdfs_adress, last_time_str, end_time_str
-    )
+    df_join_mm = join_post_process(df_join_mm, hdfs_adress, last_time_str, end_time_str)
 
     # re-create partitioning columns if needed.
     timecol = "jd"
     converter = lambda x: convert_to_datetime(x)  # noqa: E731
-    if "timestamp" not in df_grb.columns:
-        df_grb = df_grb.withColumn("timestamp", converter(df_grb[timecol]))
+    if "timestamp" not in df_join_mm.columns:
+        df_join_mm = df_join_mm.withColumn("timestamp", converter(df_join_mm[timecol]))
 
-    if "year" not in df_grb.columns:
-        df_grb = df_grb.withColumn("year", F.date_format("timestamp", "yyyy"))
+    if "year" not in df_join_mm.columns:
+        df_join_mm = df_join_mm.withColumn("year", F.date_format("timestamp", "yyyy"))
 
-    if "month" not in df_grb.columns:
-        df_grb = df_grb.withColumn("month", F.date_format("timestamp", "MM"))
+    if "month" not in df_join_mm.columns:
+        df_join_mm = df_join_mm.withColumn("month", F.date_format("timestamp", "MM"))
 
-    if "day" not in df_grb.columns:
-        df_grb = df_grb.withColumn("day", F.date_format("timestamp", "dd"))
+    if "day" not in df_join_mm.columns:
+        df_join_mm = df_join_mm.withColumn("day", F.date_format("timestamp", "dd"))
 
-    grbdatapath = grb_datapath_prefix + "/online"
-    checkpointpath_grb_tmp = grb_datapath_prefix + "/online_checkpoint"
-
-    query_grb = (
-        df_grb.writeStream.outputMode("append")
-        .format("parquet")
-        .option("checkpointLocation", checkpointpath_grb_tmp)
-        .option("path", grbdatapath)
-        .partitionBy("year", "month", "day")
-        .trigger(processingTime="{} seconds".format(tinterval))
-        .start()
+    write_dataframe(
+        spark,
+        df_join_mm,
+        join_datapath_prefix,
+        logger,
+        tinterval,
+        exit_after,
+        logs,
+        test,
+        mm_mode,
     )
-    logger.info("Stream launching successfull")
-
-    class RepeatTimer(Timer):
-        def run(self):
-            while not self.finished.wait(self.interval):
-                self.function(*self.args, **self.kwargs)
-
-    def print_logs():
-        if logs and not test:  # pragma: no cover
-            print("-----------------")
-            logger.info(f"last progress : {query_grb.lastProgress}")
-            print()
-            print()
-            logger.info(f"recent progress : {query_grb.recentProgress}")
-            print()
-            print()
-            logger.info(f"query status : {query_grb.status}")
-            print("-----------------")
-
-    logs_thread = RepeatTimer(int(tinterval) / 2, print_logs)
-    logs_thread.start()
-    # Keep the Streaming running until something or someone ends it!
-    if exit_after is not None:
-        time.sleep(int(exit_after))
-        query_grb.stop()
-        logs_thread.cancel()
-        logger.info("Exiting the science2grb streaming subprocess normally...")
-    else:  # pragma: no cover
-        # Wait for the end of queries
-        spark.streams.awaitAnyTermination()
 
 
-def launch_joining_stream(arguments, test=False):
+def launch_joining_stream(arguments: dict, test: bool = False):
     """
     Launch the joining stream job.
 
@@ -463,7 +585,7 @@ def launch_joining_stream(arguments, test=False):
     config = get_config(arguments)
     logger = init_logging()
 
-    verbose = return_verbose_level(config, logger)
+    verbose, debug = return_verbose_level(config, logger)
 
     spark_submit = read_and_build_spark_submit(config, logger)
 
@@ -509,10 +631,11 @@ def launch_joining_stream(arguments, test=False):
         gaia_dist=gaia_dist,
         logs=verbose,
         hdfs_adress=hdfs_adress,
-        is_test=test
+        is_test=test,
     )
 
-    logger.debug(application)
+    if debug:
+        logger.debug(f"application command = {application}")
 
     spark_submit = build_spark_submit(
         spark_submit,
@@ -523,11 +646,10 @@ def launch_joining_stream(arguments, test=False):
         external_files,
     )
 
-    completed_process = subprocess.run(
-        spark_submit,
-        shell=True,
-        capture_output=True
-    )
+    if debug:
+        logger.debug(f"spark-submit command = {spark_submit}")
+
+    completed_process = subprocess.run(spark_submit, shell=True, capture_output=True)
 
     if completed_process.returncode != 0:  # pragma: no cover
         logger.error(

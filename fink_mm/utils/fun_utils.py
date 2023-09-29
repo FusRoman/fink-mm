@@ -5,6 +5,7 @@ import io
 from pyarrow import fs
 
 import pyspark.sql.functions as F
+from pyspark.sql import DataFrame
 
 from pyspark.sql.functions import pandas_udf, col
 from pyspark.sql.types import DoubleType, ArrayType, IntegerType
@@ -720,13 +721,13 @@ def format_rate_results(spark_df, rate_column):
 
 
 def join_post_process(
-    df_grb,
-    hdfs_adress,
-    last_time,
-    end_time,
-    with_rate=True,
-    from_hbase=False,
-):
+    df_grb: DataFrame,
+    hdfs_adress: str,
+    last_time: str,
+    end_time: str,
+    with_rate: bool = True,
+    from_hbase: bool = False,
+) -> DataFrame:
     """
     Post processing after the join, used by offline and online
 
@@ -734,6 +735,11 @@ def join_post_process(
     ----------
     df_grb: PySpark DataFrame
         the dataframe return by the gcn join ztf.
+    hdfs_adress: str
+        used to instantiate the hdfs client
+    last_time, end_time: str
+        gcn from hdfs will be queried between last_time and end_time,
+        date are string in the format 'YYYYMMDD'
     with_rate: boolean
         if True, compute the rate.
         should be True only when historical data are available in the alert packets.

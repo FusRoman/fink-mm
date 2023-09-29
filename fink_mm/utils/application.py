@@ -194,7 +194,7 @@ class Application(Flag):
                 pansstar_star_score,
                 gaia_dist,
                 logs,
-                is_test
+                is_test,
             )
 
         elif self == Application.DISTRIBUTION:

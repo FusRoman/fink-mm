@@ -268,6 +268,20 @@ def spark_offline(
 
     df_grb = join_post_process(join_ztf_grb, with_rate=False, from_hbase=True)
 
+    timecol = "jd"
+    converter = lambda x: convert_to_datetime(x)  # noqa: E731
+    if "timestamp" not in df_grb.columns:
+        df_grb = df_grb.withColumn("timestamp", converter(df_grb[timecol]))
+
+    if "year" not in df_grb.columns:
+        df_grb = df_grb.withColumn("year", F.date_format("timestamp", "yyyy"))
+
+    if "month" not in df_grb.columns:
+        df_grb = df_grb.withColumn("month", F.date_format("timestamp", "MM"))
+
+    if "day" not in df_grb.columns:
+        df_grb = df_grb.withColumn("day", F.date_format("timestamp", "dd"))
+
     df_grb = df_grb.withColumn(
         "is_grb_bronze",
         f_grb_bronze_events(df_grb["fink_class"], df_grb["observatory"], df_grb["rb"]),
@@ -287,20 +301,6 @@ def spark_offline(
         "is_gw_bronze",
         f_gw_bronze_events(df_grb["fink_class"], df_grb["observatory"], df_grb["rb"]),
     )
-
-    timecol = "jd"
-    converter = lambda x: convert_to_datetime(x)  # noqa: E731
-    if "timestamp" not in df_grb.columns:
-        df_grb = df_grb.withColumn("timestamp", converter(df_grb[timecol]))
-
-    if "year" not in df_grb.columns:
-        df_grb = df_grb.withColumn("year", F.date_format("timestamp", "yyyy"))
-
-    if "month" not in df_grb.columns:
-        df_grb = df_grb.withColumn("month", F.date_format("timestamp", "MM"))
-
-    if "day" not in df_grb.columns:
-        df_grb = df_grb.withColumn("day", F.date_format("timestamp", "dd"))
 
     grbxztf_write_path = grbxztf_write_path + "/offline"
 
