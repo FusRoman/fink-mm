@@ -7,14 +7,13 @@ from logging import Logger
 # from importlib.resources import files
 from importlib_resources import files
 import logging
-import types
 import pathlib
 from typing import Tuple
 
 import fink_mm
 
 
-def return_verbose_level(argument, config, logger: Logger)-> Tuple[bool, bool]:
+def return_verbose_level(argument, config, logger: Logger) -> Tuple[bool, bool]:
     """
     Get the verbose level from the config file and return it.
 

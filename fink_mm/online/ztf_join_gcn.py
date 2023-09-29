@@ -4,7 +4,7 @@ warnings.filterwarnings("ignore")
 
 import time
 import subprocess
-from typing import Union, Tuple
+from typing import Tuple
 import sys
 import json
 import pandas as pd
@@ -300,33 +300,33 @@ def write_dataframe(
             return
 
     elif write_mode == DataMode.OFFLINE:
-        df_grb = df_grb.withColumn(
+        df_join = df_join.withColumn(
             "is_grb_bronze",
             f_grb_bronze_events(
-                df_grb["fink_class"], df_grb["observatory"], df_grb["rb"]
+                df_join["fink_class"], df_join["observatory"], df_join["rb"]
             ),
         )
 
-        df_grb = df_grb.withColumn(
+        df_join = df_join.withColumn(
             "is_grb_silver",
             f_grb_silver_events(
-                df_grb["fink_class"],
-                df_grb["observatory"],
-                df_grb["rb"],
-                df_grb["p_assoc"],
+                df_join["fink_class"],
+                df_join["observatory"],
+                df_join["rb"],
+                df_join["p_assoc"],
             ),
         )
 
-        df_grb = df_grb.withColumn(
+        df_join = df_join.withColumn(
             "is_gw_bronze",
             f_gw_bronze_events(
-                df_grb["fink_class"], df_grb["observatory"], df_grb["rb"]
+                df_join["fink_class"], df_join["observatory"], df_join["rb"]
             ),
         )
 
         grbxztf_write_path = write_path + "/offline"
 
-        df_grb.write.mode("append").partitionBy("year", "month", "day").parquet(
+        df_join.write.mode("append").partitionBy("year", "month", "day").parquet(
             grbxztf_write_path
         )
         return
