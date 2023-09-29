@@ -358,7 +358,8 @@ def ztf_join_gcn_stream(
         df_ztf_stream.hpix == df_grb_stream.hpix,
         df_ztf_stream.candidate.jdstarthist > df_grb_stream.triggerTimejd,
     ]
-    df_grb = df_ztf_stream.join(F.broadcast(df_grb_stream), join_condition, "inner")
+    # df_grb = df_ztf_stream.join(F.broadcast(df_grb_stream), join_condition, "inner")
+    df_grb = df_grb_stream.join(F.broadcast(df_ztf_stream), join_condition, "inner")
 
     last_time_str = f"{last_time.datetime.year:04d}{last_time.datetime.month:02d}{last_time.datetime.day:02d}"
     end_time_str = f"{end_time.datetime.year:04d}{end_time.datetime.month:02d}{end_time.datetime.day:02d}"
