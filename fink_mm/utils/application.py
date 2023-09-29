@@ -95,6 +95,12 @@ class Application(Flag):
                 application += " " + kwargs["gaia_dist"]
                 application += " " + str(True) if kwargs["logs"] else " " + str(False)
                 application += " " + kwargs["hdfs_adress"]
+
+                if kwargs["is_test"]:
+                    application += " " + str(True)
+                else:
+                    application += " " + str(False)
+
             except Exception as e:
                 logger.error("Parameter not found \n\t {}\n\t{}".format(e, kwargs))
                 exit(1)
@@ -172,6 +178,7 @@ class Application(Flag):
             gaia_dist = float(sys.argv[12])
             logs = True if sys.argv[13] == "True" else False
             hdfs_adress = sys.argv[14]
+            is_test = True if sys.argv[15] == "True" else False
 
             online.ztf_join_gcn_stream(
                 ztf_datapath_prefix,
@@ -187,6 +194,7 @@ class Application(Flag):
                 pansstar_star_score,
                 gaia_dist,
                 logs,
+                is_test
             )
 
         elif self == Application.DISTRIBUTION:

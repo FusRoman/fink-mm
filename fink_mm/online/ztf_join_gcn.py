@@ -175,6 +175,7 @@ def ztf_join_gcn_stream(
     pansstar_star_score,
     gaia_dist,
     logs=False,
+    test=False
 ):
     """
     Join the ztf alerts stream and the gcn stream to find the counterparts of the gcn alerts
@@ -224,7 +225,7 @@ def ztf_join_gcn_stream(
     ...     gcn_datatest,
     ...     grb_dataoutput,
     ...     "20190903",
-    ...     4, 100, 5, 5, 2, 0, 5
+    ...     4, 100, 5, "127.0.0.1", 5, 2, 0, 5, False, True
     ... )
 
     >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
@@ -328,13 +329,14 @@ def ztf_join_gcn_stream(
         get_pixels(df_grb_stream.observatory, df_grb_stream.raw_event, F.lit(NSIDE)),
     )
 
-    # remove the gw skymap to save memory before the join
-    df_grb_stream = df_grb_stream.withColumn(
-        "tmpRaw", remove_skymap(df_grb_stream.observatory, df_grb_stream.raw_event)
-    )
-    df_grb_stream = df_grb_stream.drop("raw_event").withColumnRenamed(
-        "tmpRaw", "raw_event"
-    )
+    if not test:
+        # remove the gw skymap to save memory before the join
+        df_grb_stream = df_grb_stream.withColumn(
+            "tmpRaw", remove_skymap(df_grb_stream.observatory, df_grb_stream.raw_event)
+        )
+        df_grb_stream = df_grb_stream.drop("raw_event").withColumnRenamed(
+            "tmpRaw", "raw_event"
+        )
 
     df_grb_stream = df_grb_stream.withColumn("hpix", explode("hpix_circle"))
 
@@ -358,13 +360,11 @@ def ztf_join_gcn_stream(
     ]
     df_grb = df_ztf_stream.join(F.broadcast(df_grb_stream), join_condition, "inner")
 
-    last_time_broadcast = spark.sparkContext.broadcast(last_time.datetime)
-    end_time_broadcast = spark.sparkContext.broadcast(end_time.datetime)
-    globals()["last_time_broadcast"] = last_time_broadcast
-    globals()["end_time_broadcast"] = end_time_broadcast
+    last_time_str = f"{last_time.datetime.year:04d}{last_time.datetime.month:02d}{last_time.datetime.day:02d}"
+    end_time_str = f"{end_time.datetime.year:04d}{end_time.datetime.month:02d}{end_time.datetime.day:02d}"
 
     df_grb = join_post_process(
-        df_grb, hdfs_adress
+        df_grb, hdfs_adress, last_time_str, end_time_str
     )
 
     # re-create partitioning columns if needed.
@@ -402,7 +402,7 @@ def ztf_join_gcn_stream(
                 self.function(*self.args, **self.kwargs)
 
     def print_logs():
-        if logs:  # pragma: no cover
+        if logs and not test:  # pragma: no cover
             print("-----------------")
             logger.info(f"last progress : {query_grb.lastProgress}")
             print()
@@ -426,7 +426,7 @@ def ztf_join_gcn_stream(
         spark.streams.awaitAnyTermination()
 
 
-def launch_joining_stream(arguments):
+def launch_joining_stream(arguments, test=False):
     """
     Launch the joining stream job.
 
@@ -446,7 +446,7 @@ def launch_joining_stream(arguments):
     ...     "--night" : "20190903",
     ...     "--exit_after" : 100,
     ...     "--verbose" : False
-    ... })
+    ... }, True)
 
     >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
     >>> datajoin = pd.read_parquet("fink_mm/test/test_output/online").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
@@ -508,7 +508,10 @@ def launch_joining_stream(arguments):
         gaia_dist=gaia_dist,
         logs=verbose,
         hdfs_adress=hdfs_adress,
+        is_test=test
     )
+
+    logger.debug(application)
 
     spark_submit = build_spark_submit(
         spark_submit,
@@ -522,6 +525,7 @@ def launch_joining_stream(arguments):
     completed_process = subprocess.run(
         spark_submit,
         shell=True,
+        capture_output=True
     )
 
     if completed_process.returncode != 0:  # pragma: no cover

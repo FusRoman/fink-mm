@@ -23,15 +23,11 @@ def gcn_from_hdfs(client, triggerId, gcn_status, last_day, end_day):
     root = "/user/julien.peloton/fink_mm/gcn_storage/raw"
     path_last = os.path.join(
         root,
-        "year={:04d}/month={:02d}/day={:02d}".format(
-            last_day.datetime.year, last_day.datetime.month, last_day.datetime.day
-        ),
+        f"year={last_day[:4]:04d}/month={last_day[4:6]:02d}/day={last_day[6:8]:02d}",
     )
     path_end = os.path.join(
         root,
-        "year={:04d}/month={:02d}/day={:02d}".format(
-            end_day.datetime.year, end_day.datetime.month, end_day.datetime.day
-        ),
+        f"year={end_day[:4]:04d}/month={end_day[4:6]:02d}/day={end_day[6:8]:02d}",
     )
     all_gcn = []
     for parquet_path in [path_last, path_end]:
