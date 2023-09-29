@@ -446,7 +446,7 @@ class LVK(Observatory):
             and "last_day" in kwargs
             and "end_day" in kwargs
         ):
-            skymap = self.get_skymap(kwargs)
+            skymap = self.get_skymap(**kwargs)
         else:
             skymap = self.get_skymap()
 
