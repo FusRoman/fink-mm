@@ -459,8 +459,6 @@ def ztf_join_gcn(
     >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/online").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
 
-    >>> datajoin.to_parquet(join_data_test)
-    
     >>> datatest = datatest.drop("t2", axis=1)
     >>> datajoin = datajoin.drop("t2", axis=1)
 
@@ -505,10 +503,10 @@ def ztf_join_gcn(
     df_join_mm = join_post_process(df_join_mm, hdfs_adress, last_time_str, end_time_str)
 
     # re-create partitioning columns if needed.
-    # timecol = "jd"
-    # converter = lambda x: convert_to_datetime(x)  # noqa: E731
-    # if "timestamp" not in df_join_mm.columns:
-    #     df_join_mm = df_join_mm.withColumn("timestamp", converter(df_join_mm[timecol]))
+    timecol = "jd"
+    converter = lambda x: convert_to_datetime(x)  # noqa: E731
+    if "timestamp" not in df_join_mm.columns:
+        df_join_mm = df_join_mm.withColumn("timestamp", converter(df_join_mm[timecol]))
 
     if "year" not in df_join_mm.columns:
         df_join_mm = df_join_mm.withColumn("year", F.date_format("timestamp", "yyyy"))
