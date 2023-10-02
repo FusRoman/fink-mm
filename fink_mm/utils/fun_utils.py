@@ -7,7 +7,7 @@ from pyarrow import fs
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
 
-from pyspark.sql.functions import pandas_udf, col
+from pyspark.sql.functions import pandas_udf
 from pyspark.sql.types import DoubleType, ArrayType, IntegerType
 
 from fink_filters.classification import extract_fink_classification
@@ -837,7 +837,7 @@ def join_post_process(
         "ivorn",
         "hpix_circle",
         "candid",
-        "triggerTimejd"
+        "triggerTimejd",
     ]
     cols_fink = [i for i in df_grb.columns if i not in cols_to_remove]
     cols_extra = [

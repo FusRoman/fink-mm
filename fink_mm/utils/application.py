@@ -38,18 +38,16 @@ class Application(Flag):
             command line application to append to a spark-submit
         """
         if self == Application.JOIN:
+            application = os.path.join(
+                os.path.dirname(fink_mm.__file__),
+                "online",
+                "ztf_join_gcn.py",
+            )
+
             if data_mode == DataMode.OFFLINE:
-                application = os.path.join(
-                    os.path.dirname(fink_mm.__file__),
-                    "offline",
-                    "ztf_join_gcn.py offline",
-                )
+                application += " offline"
             elif data_mode == DataMode.STREAMING:
-                application = os.path.join(
-                    os.path.dirname(fink_mm.__file__),
-                    "online",
-                    "ztf_join_gcn.py streaming",
-                )
+                application += " streaming"
             else:
                 raise Exception(f"data_mode not exist: {data_mode}")
 

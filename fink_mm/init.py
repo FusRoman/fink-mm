@@ -42,7 +42,9 @@ def return_verbose_level(argument, config, logger: Logger) -> Tuple[bool, bool]:
         logs = argument["--verbose"]
     except Exception:
         logger.error(
-            f"error when reading config file or cli argument \n\t config = {config}\n\tcli argument = {argument}\n\tsetting verbose and debug to True by default", exc_info=1)
+            f"error when reading config file or cli argument \n\t config = {config}\n\tcli argument = {argument}\n\tsetting verbose and debug to True by default",
+            exc_info=1,
+        )
         logs = True
         debug = True
 
@@ -145,6 +147,7 @@ class EnvInterpolation(configparser.BasicInterpolation):
     def before_get(self, parser, section, option, value, defaults):
         value = super().before_get(parser, section, option, value, defaults)
         return os.path.expandvars(value)
+
 
 class CustomTZFormatter(logging.Formatter):  # pragma: no cover
     """override logging.Formatter to use an aware datetime object"""

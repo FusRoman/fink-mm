@@ -9,7 +9,6 @@ import sys
 import json
 import pandas as pd
 from threading import Timer
-from enum import Enum
 
 from pyspark.sql import functions as F
 from pyspark.sql.functions import explode, col, pandas_udf
@@ -171,6 +170,7 @@ def remove_skymap(obsname: pd.Series, rawEvent: pd.Series) -> pd.Series:
             for obs, raw in zip(obsname, rawEvent)
         ]
     )
+
 
 def load_dataframe(
     spark: SparkSession,
@@ -467,6 +467,20 @@ def ztf_join_gcn(
     >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
 
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
+
+    >>> ztf_join_gcn(
+    ...     DataMode.OFFLINE,
+    ...     ztf_datatest,
+    ...     gcn_datatest,
+    ...     grb_dataoutput,
+    ...     "20190903",
+    ...     4, 100, 5, 7, "127.0.0.1", 5, 2, 0, 5, False, True
+    ... )
+
+    >>> datajoin = pd.read_parquet(grb_dataoutput + "/offline").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
+    >>> datajoin = datajoin.drop("t2", axis=1)
+    >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
+    >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
     logger = init_logging()
 
@@ -560,6 +574,18 @@ def launch_join(arguments: dict, data_mode, test: bool = False):
 
     >>> datatest["gcn_status"] = "initial"
     >>> datatest = datatest.reindex(sorted(datatest.columns), axis=1)
+    >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
+    >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
+
+    >>> launch_join({
+    ...     "--config" : None,
+    ...     "--night" : "20190903",
+    ...     "--exit_after" : 100,
+    ...     "--verbose" : False
+    ... }, DataMode.OFFLINE, True)
+
+    >>> datajoin = pd.read_parquet("fink_mm/test/test_output/offline").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
+    >>> datajoin = datajoin.drop("t2", axis=1)
     >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
