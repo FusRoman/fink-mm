@@ -3,7 +3,7 @@ import os
 from enum import Flag, auto
 
 import fink_mm
-import fink_mm.online.ztf_join_gcn as online
+import fink_mm.ztf_join_gcn as online
 import fink_mm.distribution.distribution as distrib
 from fink_mm.utils.fun_utils import DataMode
 from fink_mm.init import LoggerNewLine
