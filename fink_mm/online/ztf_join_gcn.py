@@ -34,6 +34,7 @@ from fink_mm.utils.fun_utils import (
 )
 from fink_mm.init import LoggerNewLine
 import fink_mm.utils.application as apps
+from fink_mm.utils.fun_utils import DataMode
 from fink_mm.init import get_config, init_logging, return_verbose_level
 from fink_mm.utils.fun_utils import get_pixels
 
@@ -171,12 +172,6 @@ def remove_skymap(obsname: pd.Series, rawEvent: pd.Series) -> pd.Series:
         ]
     )
 
-
-class DataMode(Enum):
-    STREAMING = "streaming"
-    OFFLINE = "offline"
-
-
 def load_dataframe(
     spark: SparkSession,
     ztf_path: str,
@@ -236,7 +231,7 @@ def load_dataframe(
         last_time = cur_time - timedelta(
             days=time_window, hours=7
         )  # 17:00 Paris time yesterday
-        end_time = cur_time + timedelta(hours=17)  # 17:00 Paris time today
+        end_time = cur_time + timedelta(hours=18)  # 18:00 Paris time today
 
     gcn_alert = gcn_alert.filter(
         f"triggerTimejd >= {last_time.jd} and triggerTimejd < {end_time.jd}"
@@ -340,31 +335,13 @@ def ztf_pre_join(
     gaia_dist: float,
     NSIDE: int,
 ) -> DataFrame:
-    ztf_dataframe = ztf_dataframe.select(
-        "objectId",
+    ztf_dataframe = ztf_dataframe.drop(
         "candid",
-        "candidate",
-        "prv_candidates",
-        "cdsxmatch",
-        "DR3Name",
-        "Plx",
-        "e_Plx",
-        "gcvs",
-        "vsx",
-        "x3hsp",
-        "x4lac",
-        "mangrove",
-        "roid",
-        "rf_snia_vs_nonia",
-        "snn_snia_vs_nonia",
-        "snn_sn_vs_all",
-        "mulens",
-        "nalerthist",
-        "rf_kn_vs_nonkn",
-        "t2",
-        "anomaly_score",
-        "lc_features_g",
-        "lc_features_r",
+        "schemavsn",
+        "publisher",
+        "cutoutScience",
+        "cutoutTemplate",
+        "cutoutDifference",
     )
 
     ztf_dataframe = ztf_grb_filter(
@@ -397,10 +374,8 @@ def gcn_pre_join(
     if not test:
         # remove the gw skymap to save memory before the join
         gcn_dataframe = gcn_dataframe.withColumn(
-            "tmpRaw", remove_skymap(gcn_dataframe.observatory, gcn_dataframe.raw_event)
-        )
-        gcn_dataframe = gcn_dataframe.drop("raw_event").withColumnRenamed(
-            "tmpRaw", "raw_event"
+            "raw_event",
+            remove_skymap(gcn_dataframe.observatory, gcn_dataframe.raw_event),
         )
 
     gcn_dataframe = gcn_dataframe.withColumn("hpix", explode("hpix_circle"))
@@ -472,28 +447,38 @@ def ztf_join_gcn(
     --------
     >>> grb_dataoutput_dir = tempfile.TemporaryDirectory()
     >>> grb_dataoutput = grb_dataoutput_dir.name
-    >>> ztf_join_gcn_stream(
+    >>> ztf_join_gcn(
+    ...     DataMode.STREAMING,
     ...     ztf_datatest,
     ...     gcn_datatest,
     ...     grb_dataoutput,
     ...     "20190903",
-    ...     4, 100, 5, "127.0.0.1", 5, 2, 0, 5, False, True
+    ...     4, 100, 5, 7, "127.0.0.1", 5, 2, 0, 5, False, True
     ... )
 
     >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/online").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
 
+    >>> datajoin.to_parquet(join_data_test)
+    
     >>> datatest = datatest.drop("t2", axis=1)
     >>> datajoin = datajoin.drop("t2", axis=1)
 
     >>> datatest["gcn_status"] = "initial"
     >>> datatest = datatest.reindex(sorted(datatest.columns), axis=1)
     >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
+
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
     logger = init_logging()
+
+    if DataMode.OFFLINE:
+        job_name = "offline"
+    elif DataMode.STREAMING:
+        job_name = "online"
+
     spark = init_sparksession(
-        "science2mm_online_{}{}{}".format(night[0:4], night[4:6], night[6:8])
+        "science2mm_{}_{}{}{}".format(job_name, night[0:4], night[4:6], night[6:8])
     )
 
     ztf_dataframe, gcn_dataframe, last_time, end_time = load_dataframe(
@@ -503,8 +488,6 @@ def ztf_join_gcn(
         ztf_dataframe, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist, NSIDE
     )
     gcn_dataframe = gcn_pre_join(gcn_dataframe, NSIDE, test)
-
-    # compute healpix column for each streaming df
 
     # join the two streams according to the healpix columns.
     # A pixel id will be assign to each alerts / gcn according to their position in the sky.
@@ -522,10 +505,10 @@ def ztf_join_gcn(
     df_join_mm = join_post_process(df_join_mm, hdfs_adress, last_time_str, end_time_str)
 
     # re-create partitioning columns if needed.
-    timecol = "jd"
-    converter = lambda x: convert_to_datetime(x)  # noqa: E731
-    if "timestamp" not in df_join_mm.columns:
-        df_join_mm = df_join_mm.withColumn("timestamp", converter(df_join_mm[timecol]))
+    # timecol = "jd"
+    # converter = lambda x: convert_to_datetime(x)  # noqa: E731
+    # if "timestamp" not in df_join_mm.columns:
+    #     df_join_mm = df_join_mm.withColumn("timestamp", converter(df_join_mm[timecol]))
 
     if "year" not in df_join_mm.columns:
         df_join_mm = df_join_mm.withColumn("year", F.date_format("timestamp", "yyyy"))
@@ -549,7 +532,7 @@ def ztf_join_gcn(
     )
 
 
-def launch_joining_stream(arguments: dict, test: bool = False):
+def launch_join(arguments: dict, data_mode, test: bool = False):
     """
     Launch the joining stream job.
 
@@ -564,12 +547,12 @@ def launch_joining_stream(arguments: dict, test: bool = False):
 
     Examples
     --------
-    >>> launch_joining_stream({
+    >>> launch_join({
     ...     "--config" : None,
     ...     "--night" : "20190903",
     ...     "--exit_after" : 100,
     ...     "--verbose" : False
-    ... }, True)
+    ... }, DataMode.STREAMING, True)
 
     >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
     >>> datajoin = pd.read_parquet("fink_mm/test/test_output/online").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
@@ -585,7 +568,7 @@ def launch_joining_stream(arguments: dict, test: bool = False):
     config = get_config(arguments)
     logger = init_logging()
 
-    verbose, debug = return_verbose_level(config, logger)
+    verbose, debug = return_verbose_level(arguments, config, logger)
 
     spark_submit = read_and_build_spark_submit(config, logger)
 
@@ -610,13 +593,14 @@ def launch_joining_stream(arguments: dict, test: bool = False):
         hdfs_adress,
         NSIDE,
         _,
-        _,
+        time_window,
         _,
         _,
         _,
     ) = read_grb_admin_options(arguments, config, logger)
 
-    application = apps.Application.ONLINE.build_application(
+    application = apps.Application.JOIN.build_application(
+        data_mode,
         logger,
         ztf_datapath_prefix=ztf_datapath_prefix,
         gcn_datapath_prefix=gcn_datapath_prefix,
@@ -625,6 +609,7 @@ def launch_joining_stream(arguments: dict, test: bool = False):
         NSIDE=NSIDE,
         exit_after=exit_after,
         tinterval=tinterval,
+        time_window=time_window,
         ast_dist=ast_dist,
         pansstar_dist=pansstar_dist,
         pansstar_star_score=pansstar_star_score,
@@ -666,5 +651,7 @@ def launch_joining_stream(arguments: dict, test: bool = False):
 
 
 if __name__ == "__main__":
-    if sys.argv[1] == "prod":  # pragma: no cover
-        apps.Application.ONLINE.run_application()
+    if sys.argv[1] == "streaming":  # pragma: no cover
+        apps.Application.JOIN.run_application(DataMode.STREAMING)
+    elif sys.argv[1] == "offline":
+        apps.Application.JOIN.run_application(DataMode.OFFLINE)

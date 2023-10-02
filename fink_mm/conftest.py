@@ -166,11 +166,13 @@ def init_LVK(doctest_namespace):
 @pytest.fixture(autouse=True, scope="session")
 def init_spark(doctest_namespace):
     from astropy.time import Time
+    from fink_mm.utils.application import DataMode
 
     online_output_tempdir = tempfile.TemporaryDirectory()
     doctest_namespace["online_output_tempdir"] = online_output_tempdir
 
     doctest_namespace["Time"] = Time
+    doctest_namespace["DataMode"] = DataMode
 
     grb_data = "fink_mm/test/test_data/gcn_test/raw/year=2019/month=09/day=03"
     gw_data = "fink_mm/test/test_data/S230518h_0_test"
@@ -184,7 +186,7 @@ def init_spark(doctest_namespace):
     doctest_namespace["join_data"] = join_data
     doctest_namespace["alert_data"] = alert_data
 
-    ztf_datatest = "fink_mm/test/test_data/ztf_test/online"
+    ztf_datatest = "fink_mm/test/test_data/ztf_test"
     gcn_datatest = "fink_mm/test/test_data/gcn_test/raw"
     join_data_test = "fink_mm/test/test_data/online"
     offline_join_data_test = "fink_mm/test/test_data/offline_datatest.parquet"

@@ -17,8 +17,14 @@ from fink_mm.observatory import obsname_to_class, INSTR_FORMAT
 from fink_mm.observatory.observatory import Observatory
 from fink_mm.gcn_stream.gcn_reader import load_voevent_from_file, load_json_from_file
 from fink_mm.init import init_logging
+from enum import Enum
 
 # from fink_broker.tracklet_identification import add_tracklet_information
+
+
+class DataMode(Enum):
+    STREAMING = "streaming"
+    OFFLINE = "offline"
 
 
 def get_hdfs_connector(host: str, port: int, user: str):
@@ -725,8 +731,6 @@ def join_post_process(
     hdfs_adress: str,
     last_time: str,
     end_time: str,
-    with_rate: bool = True,
-    from_hbase: bool = False,
 ) -> DataFrame:
     """
     Post processing after the join, used by offline and online
@@ -754,27 +758,26 @@ def join_post_process(
     Examples
     --------
     """
-    if with_rate:
-        df_grb = concat_col(df_grb, "magpsf")
-        df_grb = concat_col(df_grb, "diffmaglim")
-        df_grb = concat_col(df_grb, "jd")
-        df_grb = concat_col(df_grb, "fid")
+    df_grb = concat_col(df_grb, "magpsf")
+    df_grb = concat_col(df_grb, "diffmaglim")
+    df_grb = concat_col(df_grb, "jd")
+    df_grb = concat_col(df_grb, "fid")
 
-        df_grb = df_grb.withColumn(
-            "c_rate",
-            compute_rate(
-                df_grb["{}magpsf".format("" if from_hbase else "candidate.")],
-                df_grb["{}jdstarthist".format("" if from_hbase else "candidate.")],
-                df_grb["{}jd".format("" if from_hbase else "candidate.")],
-                df_grb["{}fid".format("" if from_hbase else "candidate.")],
-                df_grb["cmagpsf"],
-                df_grb["cdiffmaglim"],
-                df_grb["cjd"],
-                df_grb["cfid"],
-            ),
-        )
+    df_grb = df_grb.withColumn(
+        "c_rate",
+        compute_rate(
+            df_grb["candidate.magpsf"],
+            df_grb["candidate.jdstarthist"],
+            df_grb["candidate.jd"],
+            df_grb["candidate.fid"],
+            df_grb["cmagpsf"],
+            df_grb["cdiffmaglim"],
+            df_grb["cjd"],
+            df_grb["cfid"],
+        ),
+    )
 
-        df_grb = format_rate_results(df_grb, "c_rate")
+    df_grb = format_rate_results(df_grb, "c_rate")
 
     # TODO : do something better with satellites
     # df_grb = add_tracklet_information(df_grb)
@@ -790,11 +793,11 @@ def join_post_process(
             df_grb["snn_snia_vs_nonia"],
             df_grb["snn_sn_vs_all"],
             df_grb["rf_snia_vs_nonia"],
-            df_grb["{}ndethist".format("" if from_hbase else "candidate.")],
-            df_grb["{}drb".format("" if from_hbase else "candidate.")],
-            df_grb["{}classtar".format("" if from_hbase else "candidate.")],
-            df_grb["{}jd".format("" if from_hbase else "candidate.")],
-            df_grb["{}jdstarthist".format("" if from_hbase else "candidate.")],
+            df_grb["candidate.ndethist"],
+            df_grb["candidate.drb"],
+            df_grb["candidate.classtar"],
+            df_grb["candidate.jd"],
+            df_grb["candidate.jdstarthist"],
             df_grb["rf_kn_vs_nonkn"],
             df_grb["tracklet"],
         ),
@@ -808,7 +811,7 @@ def join_post_process(
             df_grb["raw_event"],
             df_grb["ztf_ra"],
             df_grb["ztf_dec"],
-            df_grb["{}".format("start_vartime" if with_rate else "jdstarthist")],
+            df_grb["start_vartime"],
             F.lit(hdfs_adress),
             F.lit(last_time),
             F.lit(end_time),
@@ -816,100 +819,35 @@ def join_post_process(
         ),
     )
 
-    fink_added_value = [
-        "cdsxmatch",
-        "DR3Name",
-        "Plx",
-        "e_Plx",
-        "gcvs",
-        "vsx",
-        "x3hsp",
-        "x4lac",
-        "mangrove",
-        "roid",
-        "rf_snia_vs_nonia",
-        "snn_snia_vs_nonia",
-        "snn_sn_vs_all",
-        "mulens",
-        "nalerthist",
-        "rf_kn_vs_nonkn",
-        "t2",
-        "anomaly_score",
-        "lc_features_g",
-        "lc_features_r",
-    ]
-    if from_hbase:
-        fink_added_value = [
-            "DR3Name",
-            "Plx",
-            "anomaly_score",
-            "cdsxmatch",
-            "e_Plx",
-            "gcvs",
-            "mangrove_2MASS_name",
-            "mangrove_HyperLEDA_name",
-            "mangrove_ang_dist",
-            "mangrove_lum_dist",
-            "mulens",
-            "rf_kn_vs_nonkn",
-            "rf_snia_vs_nonia",
-            "roid",
-            "snn_sn_vs_all",
-            "snn_snia_vs_nonia",
-            "t2_AGN",
-            "t2_EB",
-            "t2_KN",
-            "t2_M-dwarf",
-            "t2_Mira",
-            "t2_RRL",
-            "t2_SLSN-I",
-            "t2_SNII",
-            "t2_SNIa",
-            "t2_SNIa-91bg",
-            "t2_SNIax",
-            "t2_SNIbc",
-            "t2_TDE",
-            "t2_mu-Lens-Single",
-            "tracklet",
-            "vsx",
-            "x3hsp",
-            "x4lac",
-        ]
-
-    column_to_return = [
-        "objectId",
+    # select only relevant columns
+    cols_to_remove = [
+        "candidate",
+        "prv_candidates",
+        "timestamp",
+        "hpix",
+        "hpix_circle",
+        "index",
+        "fink_broker_version",
+        "fink_science_version",
+        "cmagpsf",
+        "cdiffmaglim",
+        "cjd",
+        "cfid",
+        "tracklet",
+        "ivorn",
+        "hpix_circle",
         "candid",
-        "ztf_ra",
-        "ztf_dec",
-        "{}fid".format("" if from_hbase else "candidate."),
-        "{}jdstarthist".format("" if from_hbase else "candidate."),
-        "{}rb".format("" if from_hbase else "candidate."),
-        "{}jd".format("" if from_hbase else "candidate."),
-        "instrument",
-        "event",
-        "observatory",
-        "triggerId",
-        "gcn_status",
-        "gcn_ra",
-        "gcn_dec",
-        col("err_arcmin").alias("gcn_loc_error"),
-        "triggerTimeUTC",
-        "p_assoc",
-        "fink_class",
-        "raw_event",
-    ] + fink_added_value
-
-    if with_rate:
-        column_to_return += [
-            "delta_mag",
-            "rate",
-            "from_upper",
-            "start_vartime",
-            "diff_vartime",
-        ]
-
-    # select a subset of columns before the writing
-    df_grb = df_grb.select(column_to_return).filter("p_assoc != -1.0")
+        "triggerTimejd"
+    ]
+    cols_fink = [i for i in df_grb.columns if i not in cols_to_remove]
+    cols_extra = [
+        "candidate.fid",
+        "candidate.jdstarthist",
+        "candidate.rb",
+        "candidate.jd",
+    ]
+    df_grb = df_grb.select(cols_fink + cols_extra).filter("p_assoc != -1.0")
+    df_grb = df_grb.withColumnRenamed("gcn_loc_error", "err_arcmin")
 
     return df_grb
 
