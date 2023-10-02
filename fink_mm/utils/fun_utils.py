@@ -1082,7 +1082,7 @@ def read_grb_admin_options(arguments, config, logger, is_test=False):
         Path where to store the output of fink-grb.
     tinterval: String
         Time interval between batch processing for online mode.
-    hdfs_adress : string
+    hdfs_adress : String
         HDFS adress used to instanciate the hdfs client from the hdfs package
     NSIDE: String
         Healpix map resolution, better if a power of 2

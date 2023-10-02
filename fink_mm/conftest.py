@@ -188,13 +188,13 @@ def init_spark(doctest_namespace):
 
     ztf_datatest = "fink_mm/test/test_data/ztf_test"
     gcn_datatest = "fink_mm/test/test_data/gcn_test/raw"
-    join_data_test = "fink_mm/test/test_data/online"
-    offline_join_data_test = "fink_mm/test/test_data/offline_datatest.parquet"
+    online_data_test = "fink_mm/test/test_data/online"
+    offline_data_test = "fink_mm/test/test_data/offline"
 
     doctest_namespace["ztf_datatest"] = ztf_datatest
     doctest_namespace["gcn_datatest"] = gcn_datatest
-    doctest_namespace["join_data_test"] = join_data_test
-    doctest_namespace["offline_data_test"] = offline_join_data_test
+    doctest_namespace["online_data_test"] = online_data_test
+    doctest_namespace["offline_data_test"] = offline_data_test
 
     fink_home = os.environ["FINK_HOME"]
     hbase_catalog = fink_home + "/catalogs_hbase/ztf.jd.json"

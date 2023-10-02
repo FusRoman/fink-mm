@@ -456,7 +456,7 @@ def ztf_join_gcn(
     ...     4, 100, 5, 7, "127.0.0.1", 5, 2, 0, 5, False, True
     ... )
 
-    >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
+    >>> datatest = pd.read_parquet(online_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/online").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
 
     >>> datatest = datatest.drop("t2", axis=1)
@@ -477,9 +477,16 @@ def ztf_join_gcn(
     ...     4, 100, 5, 7, "127.0.0.1", 5, 2, 0, 5, False, True
     ... )
 
+    >>> datatest = pd.read_parquet(offline_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/offline").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
+
+    >>> datatest = datatest.drop("t2", axis=1)
     >>> datajoin = datajoin.drop("t2", axis=1)
+
+    >>> datatest["gcn_status"] = "initial"
+    >>> datatest = datatest.reindex(sorted(datatest.columns), axis=1)
     >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
+
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
     logger = init_logging()
@@ -494,7 +501,7 @@ def ztf_join_gcn(
     )
 
     ztf_dataframe, gcn_dataframe, last_time, end_time = load_dataframe(
-        spark, ztf_datapath_prefix, gcn_datapath_prefix, night, time_window, mm_mode
+        spark, ztf_datapath_prefix, gcn_datapath_prefix, night, int(time_window), mm_mode
     )
     ztf_dataframe = ztf_pre_join(
         ztf_dataframe, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist, NSIDE
@@ -566,7 +573,7 @@ def launch_join(arguments: dict, data_mode, test: bool = False):
     ...     "--verbose" : False
     ... }, DataMode.STREAMING, True)
 
-    >>> datatest = pd.read_parquet(join_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
+    >>> datatest = pd.read_parquet(online_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
     >>> datajoin = pd.read_parquet("fink_mm/test/test_output/online").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
 
     >>> datatest = datatest.drop("t2", axis=1)
@@ -584,8 +591,14 @@ def launch_join(arguments: dict, data_mode, test: bool = False):
     ...     "--verbose" : False
     ... }, DataMode.OFFLINE, True)
 
+    >>> datatest = pd.read_parquet(offline_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
     >>> datajoin = pd.read_parquet("fink_mm/test/test_output/offline").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
+
+    >>> datatest = datatest.drop("t2", axis=1)
     >>> datajoin = datajoin.drop("t2", axis=1)
+
+    >>> datatest["gcn_status"] = "initial"
+    >>> datatest = datatest.reindex(sorted(datatest.columns), axis=1)
     >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
     >>> assert_frame_equal(datatest, datajoin, check_dtype=False, check_column_type=False, check_categorical=False)
     """
