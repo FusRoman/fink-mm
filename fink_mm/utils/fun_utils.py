@@ -391,6 +391,10 @@ def get_association_proba(
     ...         sparkDF["ra"],
     ...         sparkDF["dec"],
     ...         sparkDF["candidate.jdstarthist"],
+    ...         sql_func.lit(""),
+    ...         sql_func.lit(""),
+    ...         sql_func.lit(""),
+    ...         sql_func.lit("")
     ...     ),
     ... )
 
@@ -1108,13 +1112,13 @@ def read_grb_admin_options(arguments, config, logger, is_test=False):
     >>> logger = init_logging()
 
     >>> read_grb_admin_options(arguments, config, logger, False)
-    ('20221014', '120', 'fink_mm/test/test_data/ztf_test/online', 'fink_mm/test/test_data/gcn_test/raw', 'fink_mm/test/test_output', '30', '4', '/home/roman.le-montagner/fink-broker/catalogs_hbase/ztf.jd.json', 7, 'localhost:9092', 'toto', 'tata')
+    ('20221014', '120', 'fink_mm/test/test_data/ztf_test', 'fink_mm/test/test_data/gcn_test/raw', 'fink_mm/test/test_output', '30', '127.0.0.1', '4', '/home/roman.le-montagner/fink-broker/catalogs_hbase/ztf.jd.json', 7, 'localhost:9092', 'toto', 'tata')
 
     >>> res = read_grb_admin_options(arguments, config, logger, True)
 
     >>> fink_home = os.environ["FINK_HOME"]
     >>> expected_res = f'{fink_home}/catalogs_hbase/ztf.jd.json'
-    >>> res[7] == expected_res
+    >>> res[8] == expected_res
     True
     """
     try:

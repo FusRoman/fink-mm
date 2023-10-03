@@ -167,12 +167,14 @@ def init_LVK(doctest_namespace):
 def init_spark(doctest_namespace):
     from astropy.time import Time
     from fink_mm.utils.application import DataMode
+    import pyspark.sql.functions as sql_func
 
     online_output_tempdir = tempfile.TemporaryDirectory()
     doctest_namespace["online_output_tempdir"] = online_output_tempdir
 
     doctest_namespace["Time"] = Time
     doctest_namespace["DataMode"] = DataMode
+    doctest_namespace["sql_func"] = sql_func
 
     grb_data = "fink_mm/test/test_data/gcn_test/raw/year=2019/month=09/day=03"
     gw_data = "fink_mm/test/test_data/S230518h_0_test"
