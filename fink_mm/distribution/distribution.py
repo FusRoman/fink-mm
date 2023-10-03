@@ -231,7 +231,8 @@ def launch_distribution(arguments):
     >>> launch_distribution({
     ... "--config" : "fink_mm/conf/distribute_for_test.conf",
     ... "--night" : "20190903",
-    ... "--exit_after" : 30
+    ... "--exit_after" : 30,
+    ... "--verbose" : False
     ... })
 
     >>> consumer = AlertConsumer(topics, myconfig)
