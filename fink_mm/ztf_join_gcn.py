@@ -656,8 +656,8 @@ def launch_join(arguments: dict, data_mode, test: bool = False):
     ) = read_grb_admin_options(arguments, config, logger)
 
     application = apps.Application.JOIN.build_application(
-        data_mode,
         logger,
+        data_mode=data_mode,
         ztf_datapath_prefix=ztf_datapath_prefix,
         gcn_datapath_prefix=gcn_datapath_prefix,
         grb_datapath_prefix=grb_datapath_prefix,

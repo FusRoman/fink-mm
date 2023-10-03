@@ -13,7 +13,7 @@ class Application(Flag):
     JOIN = auto()
     DISTRIBUTION = auto()
 
-    def build_application(self, data_mode: DataMode, logger: LoggerNewLine, **kwargs) -> str:
+    def build_application(self, logger: LoggerNewLine, data_mode: DataMode = None, **kwargs) -> str:
         """
         Return the command line application
 
@@ -99,7 +99,7 @@ class Application(Flag):
 
             return application
 
-    def run_application(self, data_mode: DataMode):
+    def run_application(self, data_mode: DataMode = None):
         """
         Run the application
         """
