@@ -12,45 +12,6 @@ from typing import Tuple
 
 import fink_mm
 
-
-def return_verbose_level(argument, config, logger: Logger) -> Tuple[bool, bool]:
-    """
-    Get the verbose level from the config file and return it.
-
-    Parameters
-    ----------
-    config : dictionnary
-        dictionnary containing the key values pair from the config file
-    logger : logging object
-        the logger used to print logs
-
-    Returns
-    -------
-    logs : boolean
-        if True, print the logs
-
-    Examples
-    --------
-    >>> c = get_config({"--config" : "fink_mm/conf/fink_mm.conf"})
-    >>> logger = init_logging()
-
-    >>> return_verbose_level(c, logger)
-    False
-    """
-    try:
-        debug = config["ADMIN"]["debug"] == "True"
-        logs = argument["--verbose"]
-    except Exception:
-        logger.error(
-            f"error when reading config file or cli argument \n\t config = {config}\n\tcli argument = {argument}\n\tsetting verbose and debug to True by default",
-            exc_info=1,
-        )
-        logs = True
-        debug = True
-
-    return logs, debug
-
-
 def init_fink_mm(arguments):
     """
     Initialise the fink_mm environment. Get the config specify by the user with the
@@ -77,7 +38,7 @@ def init_fink_mm(arguments):
     config = get_config(arguments)
     logger = init_logging()
 
-    logs = return_verbose_level(config, logger)
+    logs = return_verbose_level(arguments, config, logger)
 
     gcn_path = config["PATH"]["online_gcn_data_prefix"] + "/raw"
     grb_path = config["PATH"]["online_grb_data_prefix"] + "/grb"
@@ -242,10 +203,52 @@ def init_logging(logger_name=fink_mm.__name__) -> LoggerNewLine:
     --------
     >>> l = init_logging()
     >>> type(l)
-    <class 'logging.Logger'>
+    <class 'fink_mm.init.LoggerNewLine'>
     """
     # create logger
 
     logging.setLoggerClass(LoggerNewLine)
     logger = logging.getLogger(logger_name)
     return logger
+
+
+
+def return_verbose_level(argument: dict, config: dict, logger: LoggerNewLine) -> Tuple[bool, bool]:
+    """
+    Get the verbose level from the config file and return it.
+
+    Parameters
+    ----------
+    config : dictionnary
+        dictionnary containing the key values pair from the config file
+    logger : logging object
+        the logger used to print logs
+
+    Returns
+    -------
+    logs : boolean
+        if True, print the logs
+
+    Examples
+    --------
+    >>> c = get_config({"--config" : "fink_mm/conf/fink_mm.conf"})
+    >>> logger = init_logging()
+
+    >>> return_verbose_level({}, c, logger)
+    (True, True)
+
+    >>> return_verbose_level({"--verbose": True}, c, logger)
+    (True, True)
+    """
+    try:
+        debug = config["ADMIN"]["debug"] == "True"
+        logs = argument["--verbose"]
+    except Exception:
+        logger.error(
+            f"error when reading config file or cli argument \n\t config = {config}\n\tcli argument = {argument}\n\tsetting verbose and debug to True by default",
+            exc_info=1,
+        )
+        logs = True
+        debug = True
+
+    return logs, debug
