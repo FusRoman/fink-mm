@@ -2,7 +2,6 @@ import os
 import configparser
 import datetime
 import pytz
-from logging import Logger
 
 # from importlib.resources import files
 from importlib_resources import files
@@ -11,6 +10,7 @@ import pathlib
 from typing import Tuple
 
 import fink_mm
+
 
 def init_fink_mm(arguments):
     """
@@ -212,8 +212,9 @@ def init_logging(logger_name=fink_mm.__name__) -> LoggerNewLine:
     return logger
 
 
-
-def return_verbose_level(argument: dict, config: dict, logger: LoggerNewLine) -> Tuple[bool, bool]:
+def return_verbose_level(
+    argument: dict, config: dict, logger: LoggerNewLine
+) -> Tuple[bool, bool]:
     """
     Get the verbose level from the config file and return it.
 

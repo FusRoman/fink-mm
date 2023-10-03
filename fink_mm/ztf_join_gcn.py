@@ -501,7 +501,12 @@ def ztf_join_gcn(
     )
 
     ztf_dataframe, gcn_dataframe, last_time, end_time = load_dataframe(
-        spark, ztf_datapath_prefix, gcn_datapath_prefix, night, int(time_window), mm_mode
+        spark,
+        ztf_datapath_prefix,
+        gcn_datapath_prefix,
+        night,
+        int(time_window),
+        mm_mode,
     )
     ztf_dataframe = ztf_pre_join(
         ztf_dataframe, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist, NSIDE
