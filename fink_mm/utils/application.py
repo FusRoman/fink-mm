@@ -41,7 +41,6 @@ class Application(Flag):
         if self == Application.JOIN:
             application = os.path.join(
                 os.path.dirname(fink_mm.__file__),
-                "online",
                 "ztf_join_gcn.py",
             )
 
