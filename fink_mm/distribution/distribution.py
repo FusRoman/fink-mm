@@ -251,7 +251,7 @@ def launch_distribution(arguments):
     config = get_config(arguments)
     logger = init_logging()
 
-    verbose = return_verbose_level(config, logger)
+    verbose = return_verbose_level(arguments, config, logger)
 
     spark_submit = read_and_build_spark_submit(config, logger)
 
