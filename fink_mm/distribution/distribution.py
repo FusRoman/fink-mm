@@ -273,6 +273,7 @@ def launch_distribution(arguments):
         _,
         _,
         _,
+        _,
         kafka_broker,
         username_writer,
         password_writer,
