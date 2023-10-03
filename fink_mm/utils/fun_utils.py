@@ -840,7 +840,6 @@ def join_post_process(
         "tracklet",
         "ivorn",
         "hpix_circle",
-        "candid",
         "triggerTimejd",
     ]
     cols_fink = [i for i in df_grb.columns if i not in cols_to_remove]
