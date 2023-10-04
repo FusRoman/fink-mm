@@ -345,6 +345,7 @@ def get_association_proba(
     jdstarthist: pd.Series,
     hdfs_adress: pd.Series,
     gcn_status: pd.Series,
+    root_path: pd.Series
 ) -> pd.Series:
     """
     Compute the association probability between the ztf alerts and the gcn events.
@@ -368,8 +369,7 @@ def get_association_proba(
             All raw detections down to a photometric S/N of ~ 3 are included.
     hdfs_adress : HDFS adress used to instanciate the hdfs client, used to search the gw skymap from the gcn stored in hdfs
     gcn_status : used to distinguish gcn with the same triggerId (account the gcn update)
-    last_day : the last day to make the search on hdfs
-    end_day : the end day to make the search on hdfs (the gcn will be search between last day and end day)
+    root_path : the path where are located the gcn in hdfs.
 
     Return
     ------
@@ -389,6 +389,7 @@ def get_association_proba(
     ...         sparkDF["ra"],
     ...         sparkDF["dec"],
     ...         sparkDF["candidate.jdstarthist"],
+    ...         sql_func.lit(""),
     ...         sql_func.lit(""),
     ...         sql_func.lit("")
     ...     ),
@@ -429,10 +430,11 @@ def get_association_proba(
                 z_dec,
                 z_trigger_time,
                 hdfs_adress=hdfs_adress.values[0],
-                gcn_status=status
+                gcn_status=status,
+                root_path=root
             )
-            for obs, event, z_ra, z_dec, z_trigger_time, status in zip(
-                obsname, rawEvent, ztf_ra, ztf_dec, jdstarthist, gcn_status
+            for obs, event, z_ra, z_dec, z_trigger_time, status, root in zip(
+                obsname, rawEvent, ztf_ra, ztf_dec, jdstarthist, gcn_status, root_path
             )
         ]
     )
@@ -727,6 +729,7 @@ def format_rate_results(spark_df, rate_column):
 def join_post_process(
     df_grb: DataFrame,
     hdfs_adress: str,
+    root_path: str
 ) -> DataFrame:
     """
     Post processing after the join, used by offline and online
@@ -737,14 +740,8 @@ def join_post_process(
         the dataframe return by the gcn join ztf.
     hdfs_adress: str
         used to instantiate the hdfs client
-    last_time, end_time: str
-        gcn from hdfs will be queried between last_time and end_time,
-        date are string in the format 'YYYYMMDD'
-    with_rate: boolean
-        if True, compute the rate.
-        should be True only when historical data are available in the alert packets.
-    from_hbase: boolean
-        if True, df_grb has been loaded from hbase
+    root_path: str
+        the path where are located the gcn in hdfs.
 
     Returns
     -------
@@ -810,6 +807,7 @@ def join_post_process(
             df_grb["start_vartime"],
             F.lit(hdfs_adress),
             df_grb["gcn_status"],
+            F.lit(root_path)
         ),
     )
 
