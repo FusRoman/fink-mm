@@ -19,31 +19,26 @@ from fink_mm.observatory.observatory import Observatory
 from fink_mm.test.hypothesis.observatory_schema import voevent_df_schema
 
 
-def gcn_from_hdfs(client, triggerId, gcn_status, last_day, end_day):
+def gcn_from_hdfs(client, triggerId, triggerTime, gcn_status):
     root = "/user/julien.peloton/fink_mm/gcn_storage/raw"
-    path_last = os.path.join(
+    path_date = os.path.join(
         root,
-        f"year={int(last_day[:4]):04d}/month={int(last_day[4:6]):02d}/day={int(last_day[6:8]):02d}",
-    )
-    path_end = os.path.join(
-        root,
-        f"year={int(end_day[:4]):04d}/month={int(end_day[4:6]):02d}/day={int(end_day[6:8]):02d}",
+        f"year={triggerTime.year:04d}/month={triggerTime.month:02d}/day={triggerTime.day:02d}",
     )
     all_gcn = []
-    for parquet_path in [path_last, path_end]:
-        for p, _, files in client.walk(parquet_path):
-            for f in np.sort(files):
-                if triggerId in f:
-                    path_to_load = os.path.join(p, f)
-                    with client.read(path_to_load) as reader:
-                        content = reader.read()
-                        pdf = pd.read_parquet(io.BytesIO(content))
-                        all_gcn.append(pdf)
+    for p, _, files in client.walk(path_date):
+        for f in np.sort(files):
+            if triggerId in f:
+                path_to_load = os.path.join(p, f)
+                with client.read(path_to_load) as reader:
+                    content = reader.read()
+                    pdf = pd.read_parquet(io.BytesIO(content))
+                    all_gcn.append(pdf)
 
     if len(all_gcn) == 0:
         raise FileNotFoundError(
-            "File not found at these locations [{}, {}] with triggerId = {}".format(
-                path_last, path_end, triggerId
+            "File not found at these locations {} with triggerId = {}".format(
+                path_date, triggerId
             )
         )
     else:
@@ -55,6 +50,7 @@ def gcn_from_hdfs(client, triggerId, gcn_status, last_day, end_day):
             )
         else:
             return res
+
 
 class LVK(Observatory):
     """
@@ -102,10 +98,9 @@ class LVK(Observatory):
             )
             triggerId = self.get_trigger_id()
             gcn_status = kwargs["gcn_status"]
-            last_day = kwargs["last_day"]
-            end_day = kwargs["end_day"]
+            t_obs = Time(self.get_trigger_time()[1], format="jd").to_datetime()
             gcn_pdf = gcn_from_hdfs(
-                hdfs_client, triggerId, gcn_status, last_day, end_day
+                hdfs_client, triggerId, t_obs, gcn_status
             )
             skymap_str = json.loads(gcn_pdf["raw_event"].iloc[0])["event"]["skymap"]
 
@@ -148,7 +143,10 @@ class LVK(Observatory):
                 self.voevent["superevent_id"][0] == "S"
                 or self.voevent["superevent_id"][0] == "M"
             )
-        return self.voevent["superevent_id"][0] == "S" and self.voevent["event"]["significant"]
+        return (
+            self.voevent["superevent_id"][0] == "S"
+            and self.voevent["event"]["significant"]
+        )
 
     def is_listened_packets_types(self) -> bool:
         """
@@ -443,8 +441,6 @@ class LVK(Observatory):
         if (
             "hdfs_adress" in kwargs
             and "gcn_status" in kwargs
-            and "last_day" in kwargs
-            and "end_day" in kwargs
         ):
             skymap = self.get_skymap(**kwargs)
         else:

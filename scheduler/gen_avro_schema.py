@@ -14,6 +14,7 @@ from fink_mm import __distribution_schema_version__
 
 SCHEMA_VERSION = __distribution_schema_version__
 
+
 def readschemadata(bytes_io: io._io.BytesIO) -> fastavro._read.reader:
     """Read data that already has an Avro schema.
     Parameters

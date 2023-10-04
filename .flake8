@@ -10,7 +10,7 @@ exclude =
     build,
     dist
 per-file-ignores =
-    ../fink-mm/fink_mm/online/ztf_join_gcn.py:W503,E402
+    ../fink-mm/fink_mm/ztf_join_gcn.py:W503,E402
     ../fink-mm/fink_mm/offline/spark_offline.py:W503,W605
     ../fink-mm/fink_mm/utils/fun_utils.py:F811
     ../fink-mm/fink_mm/distribution/distribution.py:W503
