@@ -163,7 +163,7 @@ class IceCube(Observatory):
         return df
 
     def association_proba(
-        self, ztf_ra: float, ztf_dec: float, jdstarthist: float
+        self, ztf_ra: float, ztf_dec: float, jdstarthist: float, **kwargs
     ) -> float:
         """
         Compute the association probability between the IceCube event and a ztf alerts

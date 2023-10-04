@@ -5,8 +5,9 @@ import io
 from pyarrow import fs
 
 import pyspark.sql.functions as F
+from pyspark.sql import DataFrame
 
-from pyspark.sql.functions import pandas_udf, col
+from pyspark.sql.functions import pandas_udf
 from pyspark.sql.types import DoubleType, ArrayType, IntegerType
 
 from fink_filters.classification import extract_fink_classification
@@ -16,8 +17,14 @@ from fink_mm.observatory import obsname_to_class, INSTR_FORMAT
 from fink_mm.observatory.observatory import Observatory
 from fink_mm.gcn_stream.gcn_reader import load_voevent_from_file, load_json_from_file
 from fink_mm.init import init_logging
+from enum import Enum
 
 # from fink_broker.tracklet_identification import add_tracklet_information
+
+
+class DataMode(Enum):
+    STREAMING = "streaming"
+    OFFLINE = "offline"
 
 
 def get_hdfs_connector(host: str, port: int, user: str):
@@ -336,6 +343,8 @@ def get_association_proba(
     ztf_ra: pd.Series,
     ztf_dec: pd.Series,
     jdstarthist: pd.Series,
+    hdfs_adress: pd.Series,
+    gcn_status: pd.Series,
 ) -> pd.Series:
     """
     Compute the association probability between the ztf alerts and the gcn events.
@@ -357,6 +366,10 @@ def get_association_proba(
             only detections that fell on the same field and readout-channel ID
             where the input candidate was observed are counted.
             All raw detections down to a photometric S/N of ~ 3 are included.
+    hdfs_adress : HDFS adress used to instanciate the hdfs client, used to search the gw skymap from the gcn stored in hdfs
+    gcn_status : used to distinguish gcn with the same triggerId (account the gcn update)
+    last_day : the last day to make the search on hdfs
+    end_day : the end day to make the search on hdfs (the gcn will be search between last day and end day)
 
     Return
     ------
@@ -376,6 +389,8 @@ def get_association_proba(
     ...         sparkDF["ra"],
     ...         sparkDF["dec"],
     ...         sparkDF["candidate.jdstarthist"],
+    ...         sql_func.lit(""),
+    ...         sql_func.lit("")
     ...     ),
     ... )
 
@@ -409,9 +424,15 @@ def get_association_proba(
     """
     return pd.Series(
         [
-            get_observatory(obs, event).association_proba(z_ra, z_dec, z_trigger_time)
-            for obs, event, z_ra, z_dec, z_trigger_time in zip(
-                obsname, rawEvent, ztf_ra, ztf_dec, jdstarthist
+            get_observatory(obs, event).association_proba(
+                z_ra,
+                z_dec,
+                z_trigger_time,
+                hdfs_adress=hdfs_adress.values[0],
+                gcn_status=status
+            )
+            for obs, event, z_ra, z_dec, z_trigger_time, status in zip(
+                obsname, rawEvent, ztf_ra, ztf_dec, jdstarthist, gcn_status
             )
         ]
     )
@@ -703,7 +724,10 @@ def format_rate_results(spark_df, rate_column):
     )
 
 
-def join_post_process(df_grb, with_rate=True, from_hbase=False):
+def join_post_process(
+    df_grb: DataFrame,
+    hdfs_adress: str,
+) -> DataFrame:
     """
     Post processing after the join, used by offline and online
 
@@ -711,6 +735,11 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
     ----------
     df_grb: PySpark DataFrame
         the dataframe return by the gcn join ztf.
+    hdfs_adress: str
+        used to instantiate the hdfs client
+    last_time, end_time: str
+        gcn from hdfs will be queried between last_time and end_time,
+        date are string in the format 'YYYYMMDD'
     with_rate: boolean
         if True, compute the rate.
         should be True only when historical data are available in the alert packets.
@@ -725,27 +754,26 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
     Examples
     --------
     """
-    if with_rate:
-        df_grb = concat_col(df_grb, "magpsf")
-        df_grb = concat_col(df_grb, "diffmaglim")
-        df_grb = concat_col(df_grb, "jd")
-        df_grb = concat_col(df_grb, "fid")
+    df_grb = concat_col(df_grb, "magpsf")
+    df_grb = concat_col(df_grb, "diffmaglim")
+    df_grb = concat_col(df_grb, "jd")
+    df_grb = concat_col(df_grb, "fid")
 
-        df_grb = df_grb.withColumn(
-            "c_rate",
-            compute_rate(
-                df_grb["{}magpsf".format("" if from_hbase else "candidate.")],
-                df_grb["{}jdstarthist".format("" if from_hbase else "candidate.")],
-                df_grb["{}jd".format("" if from_hbase else "candidate.")],
-                df_grb["{}fid".format("" if from_hbase else "candidate.")],
-                df_grb["cmagpsf"],
-                df_grb["cdiffmaglim"],
-                df_grb["cjd"],
-                df_grb["cfid"],
-            ),
-        )
+    df_grb = df_grb.withColumn(
+        "c_rate",
+        compute_rate(
+            df_grb["candidate.magpsf"],
+            df_grb["candidate.jdstarthist"],
+            df_grb["candidate.jd"],
+            df_grb["candidate.fid"],
+            df_grb["cmagpsf"],
+            df_grb["cdiffmaglim"],
+            df_grb["cjd"],
+            df_grb["cfid"],
+        ),
+    )
 
-        df_grb = format_rate_results(df_grb, "c_rate")
+    df_grb = format_rate_results(df_grb, "c_rate")
 
     # TODO : do something better with satellites
     # df_grb = add_tracklet_information(df_grb)
@@ -761,11 +789,11 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
             df_grb["snn_snia_vs_nonia"],
             df_grb["snn_sn_vs_all"],
             df_grb["rf_snia_vs_nonia"],
-            df_grb["{}ndethist".format("" if from_hbase else "candidate.")],
-            df_grb["{}drb".format("" if from_hbase else "candidate.")],
-            df_grb["{}classtar".format("" if from_hbase else "candidate.")],
-            df_grb["{}jd".format("" if from_hbase else "candidate.")],
-            df_grb["{}jdstarthist".format("" if from_hbase else "candidate.")],
+            df_grb["candidate.ndethist"],
+            df_grb["candidate.drb"],
+            df_grb["candidate.classtar"],
+            df_grb["candidate.jd"],
+            df_grb["candidate.jdstarthist"],
             df_grb["rf_kn_vs_nonkn"],
             df_grb["tracklet"],
         ),
@@ -779,104 +807,41 @@ def join_post_process(df_grb, with_rate=True, from_hbase=False):
             df_grb["raw_event"],
             df_grb["ztf_ra"],
             df_grb["ztf_dec"],
-            df_grb["{}".format("start_vartime" if with_rate else "jdstarthist")],
+            df_grb["start_vartime"],
+            F.lit(hdfs_adress),
+            df_grb["gcn_status"],
         ),
     )
 
-    fink_added_value = [
-        "cdsxmatch",
-        "DR3Name",
-        "Plx",
-        "e_Plx",
-        "gcvs",
-        "vsx",
-        "x3hsp",
-        "x4lac",
-        "mangrove",
-        "roid",
-        "rf_snia_vs_nonia",
-        "snn_snia_vs_nonia",
-        "snn_sn_vs_all",
-        "mulens",
-        "nalerthist",
-        "rf_kn_vs_nonkn",
-        "t2",
-        "anomaly_score",
-        "lc_features_g",
-        "lc_features_r",
+    # select only relevant columns
+    cols_to_remove = [
+        "candidate",
+        "prv_candidates",
+        "timestamp",
+        "hpix",
+        "hpix_circle",
+        "index",
+        "fink_broker_version",
+        "fink_science_version",
+        "cmagpsf",
+        "cdiffmaglim",
+        "cjd",
+        "cfid",
+        "tracklet",
+        "ivorn",
+        "hpix_circle",
+        "triggerTimejd",
     ]
-    if from_hbase:
-        fink_added_value = [
-            "DR3Name",
-            "Plx",
-            "anomaly_score",
-            "cdsxmatch",
-            "e_Plx",
-            "gcvs",
-            "mangrove_2MASS_name",
-            "mangrove_HyperLEDA_name",
-            "mangrove_ang_dist",
-            "mangrove_lum_dist",
-            "mulens",
-            "rf_kn_vs_nonkn",
-            "rf_snia_vs_nonia",
-            "roid",
-            "snn_sn_vs_all",
-            "snn_snia_vs_nonia",
-            "t2_AGN",
-            "t2_EB",
-            "t2_KN",
-            "t2_M-dwarf",
-            "t2_Mira",
-            "t2_RRL",
-            "t2_SLSN-I",
-            "t2_SNII",
-            "t2_SNIa",
-            "t2_SNIa-91bg",
-            "t2_SNIax",
-            "t2_SNIbc",
-            "t2_TDE",
-            "t2_mu-Lens-Single",
-            "tracklet",
-            "vsx",
-            "x3hsp",
-            "x4lac",
-        ]
-
-    column_to_return = [
-        "objectId",
-        "candid",
-        "ztf_ra",
-        "ztf_dec",
-        "{}fid".format("" if from_hbase else "candidate."),
-        "{}jdstarthist".format("" if from_hbase else "candidate."),
-        "{}rb".format("" if from_hbase else "candidate."),
-        "{}jd".format("" if from_hbase else "candidate."),
-        "instrument",
-        "event",
-        "observatory",
-        "triggerId",
-        "gcn_status",
-        "gcn_ra",
-        "gcn_dec",
-        col("err_arcmin").alias("gcn_loc_error"),
-        "triggerTimeUTC",
-        "p_assoc",
-        "fink_class",
-        "raw_event",
-    ] + fink_added_value
-
-    if with_rate:
-        column_to_return += [
-            "delta_mag",
-            "rate",
-            "from_upper",
-            "start_vartime",
-            "diff_vartime",
-        ]
-
-    # select a subset of columns before the writing
-    df_grb = df_grb.select(column_to_return).filter("p_assoc != -1.0")
+    cols_fink = [i for i in df_grb.columns if i not in cols_to_remove]
+    cols_extra = [
+        "candidate.candid",
+        "candidate.fid",
+        "candidate.jdstarthist",
+        "candidate.rb",
+        "candidate.jd",
+    ]
+    df_grb = df_grb.select(cols_fink + cols_extra).filter("p_assoc != -1.0")
+    df_grb = df_grb.withColumnRenamed("err_arcmin", "gcn_loc_error")
 
     return df_grb
 
@@ -1111,6 +1076,8 @@ def read_grb_admin_options(arguments, config, logger, is_test=False):
         Path where to store the output of fink-grb.
     tinterval: String
         Time interval between batch processing for online mode.
+    hdfs_adress : String
+        HDFS adress used to instanciate the hdfs client from the hdfs package
     NSIDE: String
         Healpix map resolution, better if a power of 2
     hbase_catalog: String
@@ -1135,13 +1102,13 @@ def read_grb_admin_options(arguments, config, logger, is_test=False):
     >>> logger = init_logging()
 
     >>> read_grb_admin_options(arguments, config, logger, False)
-    ('20221014', '120', 'fink_mm/test/test_data/ztf_test/online', 'fink_mm/test/test_data/gcn_test/raw', 'fink_mm/test/test_output', '30', '4', '/home/roman.le-montagner/fink-broker/catalogs_hbase/ztf.jd.json', 7, 'localhost:9092', 'toto', 'tata')
+    ('20221014', '120', 'fink_mm/test/test_data/ztf_test', 'fink_mm/test/test_data/gcn_test/raw', 'fink_mm/test/test_output', '30', '127.0.0.1', '4', '/home/roman.le-montagner/fink-broker/catalogs_hbase/ztf.jd.json', 7, 'localhost:9092', 'toto', 'tata')
 
     >>> res = read_grb_admin_options(arguments, config, logger, True)
 
     >>> fink_home = os.environ["FINK_HOME"]
     >>> expected_res = f'{fink_home}/catalogs_hbase/ztf.jd.json'
-    >>> res[7] == expected_res
+    >>> res[8] == expected_res
     True
     """
     try:
@@ -1163,6 +1130,7 @@ def read_grb_admin_options(arguments, config, logger, is_test=False):
         gcn_datapath_prefix = config["PATH"]["online_gcn_data_prefix"]
         grb_datapath_prefix = config["PATH"]["online_grb_data_prefix"]
         tinterval = config["STREAM"]["tinterval"]
+        hdfs_adress = config["HDFS"]["host"]
         NSIDE = config["ADMIN"]["NSIDE"]
 
         hbase_catalog = config["PATH"]["hbase_catalog"]
@@ -1191,6 +1159,7 @@ def read_grb_admin_options(arguments, config, logger, is_test=False):
         gcn_datapath_prefix,
         grb_datapath_prefix,
         tinterval,
+        hdfs_adress,
         NSIDE,
         hbase_catalog,
         time_window,

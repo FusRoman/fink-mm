@@ -215,7 +215,7 @@ def start_gcn_stream(arguments):
     config = get_config(arguments)
     logger = init_logging()
 
-    logs = return_verbose_level(config, logger)
+    logs = return_verbose_level(arguments, config, logger)
 
     # keep track of the gcn update
     gcn_tracking = pd.DataFrame(columns=["triggerId", "triggerTimejd", "nb_received"])

@@ -6,47 +6,10 @@ import pytz
 # from importlib.resources import files
 from importlib_resources import files
 import logging
-import types
 import pathlib
+from typing import Tuple
 
 import fink_mm
-
-
-def return_verbose_level(config, logger):
-    """
-    Get the verbose level from the config file and return it.
-
-    Parameters
-    ----------
-    config : dictionnary
-        dictionnary containing the key values pair from the config file
-    logger : logging object
-        the logger used to print logs
-
-    Returns
-    -------
-    logs : boolean
-        if True, print the logs
-
-    Examples
-    --------
-    >>> c = get_config({"--config" : "fink_mm/conf/fink_mm.conf"})
-    >>> logger = init_logging()
-
-    >>> return_verbose_level(c, logger)
-    False
-    """
-    try:
-        logs = config["ADMIN"]["verbose"] == "True"
-    except Exception as e:
-        logger.error(
-            "Config entry not found \n\t {}\n\tsetting verbose to True by default".format(
-                e
-            )
-        )
-        logs = True
-
-    return logs
 
 
 def init_fink_mm(arguments):
@@ -75,7 +38,7 @@ def init_fink_mm(arguments):
     config = get_config(arguments)
     logger = init_logging()
 
-    logs = return_verbose_level(config, logger)
+    logs = return_verbose_level(arguments, config, logger)
 
     gcn_path = config["PATH"]["online_gcn_data_prefix"] + "/raw"
     grb_path = config["PATH"]["online_grb_data_prefix"] + "/grb"
@@ -139,6 +102,14 @@ def get_config(arguments):
     return config
 
 
+class EnvInterpolation(configparser.BasicInterpolation):
+    """Interpolation which expands environment variables in values."""
+
+    def before_get(self, parser, section, option, value, defaults):
+        value = super().before_get(parser, section, option, value, defaults)
+        return os.path.expandvars(value)
+
+
 class CustomTZFormatter(logging.Formatter):  # pragma: no cover
     """override logging.Formatter to use an aware datetime object"""
 
@@ -159,15 +130,63 @@ class CustomTZFormatter(logging.Formatter):  # pragma: no cover
         return s
 
 
-class EnvInterpolation(configparser.BasicInterpolation):
-    """Interpolation which expands environment variables in values."""
+class LoggerNewLine(logging.Logger):
+    """
+    A custom logger class adding only a method to print a newline.
 
-    def before_get(self, parser, section, option, value, defaults):
-        value = super().before_get(parser, section, option, value, defaults)
-        return os.path.expandvars(value)
+    Examples
+    --------
+    logger.newline()
+    """
+
+    def __init__(self, name: str, level: int = 0) -> None:
+        super().__init__(name, level)
+        ch = logging.StreamHandler()
+
+        self.setLevel(logging.DEBUG)
+
+        # create console handler and set level to debug
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
+
+        # create formatter
+        formatter = CustomTZFormatter(
+            "%(asctime)s - %(name)s - %(levelname)s \n\t message: %(message)s"
+        )
+
+        # add formatter to ch
+        ch.setFormatter(formatter)
+
+        # add ch to logger
+        self.addHandler(ch)
+
+        blank_handler = logging.StreamHandler()
+        blank_handler.setLevel(logging.DEBUG)
+        blank_handler.setFormatter(logging.Formatter(fmt=""))
+        self.console_handler = ch
+        self.blank_handler = blank_handler
+
+    def newline(self, how_many_lines=1):
+        """
+        Print blank line using the logger class
+
+        Parameters
+        ----------
+        how_many_lines : int, optional
+            how many blank line to print, by default 1
+        """
+        # Switch handler, output a blank line
+        self.removeHandler(self.console_handler)
+        self.addHandler(self.blank_handler)
+        for _ in range(how_many_lines):
+            self.info("\n")
+
+        # Switch back
+        self.removeHandler(self.blank_handler)
+        self.addHandler(self.console_handler)
 
 
-def init_logging(logger_name=fink_mm.__name__) -> logging.Logger:
+def init_logging(logger_name=fink_mm.__name__) -> LoggerNewLine:
     """
     Initialise a logger for the gcn stream
 
@@ -184,45 +203,53 @@ def init_logging(logger_name=fink_mm.__name__) -> logging.Logger:
     --------
     >>> l = init_logging()
     >>> type(l)
-    <class 'logging.Logger'>
+    <class 'fink_mm.init.LoggerNewLine'>
     """
     # create logger
 
-    def log_newline(self, how_many_lines=1):
-        # Switch handler, output a blank line
-        self.removeHandler(self.console_handler)
-        self.addHandler(self.blank_handler)
-        for i in range(how_many_lines):
-            self.info("\n")
-
-        # Switch back
-        self.removeHandler(self.blank_handler)
-        self.addHandler(self.console_handler)
-
+    logging.setLoggerClass(LoggerNewLine)
     logger = logging.getLogger(logger_name)
-    logger.setLevel(logging.DEBUG)
-
-    # create console handler and set level to debug
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-
-    # create formatter
-    formatter = CustomTZFormatter(
-        "%(asctime)s - %(name)s - %(levelname)s \n\t message: %(message)s"
-    )
-
-    # add formatter to ch
-    ch.setFormatter(formatter)
-
-    # add ch to logger
-    logger.addHandler(ch)
-
-    blank_handler = logging.StreamHandler()
-    blank_handler.setLevel(logging.DEBUG)
-    blank_handler.setFormatter(logging.Formatter(fmt=""))
-
-    logger.console_handler = ch
-    logger.blank_handler = blank_handler
-    logger.newline = types.MethodType(log_newline, logger)
-
     return logger
+
+
+def return_verbose_level(
+    argument: dict, config: dict, logger: LoggerNewLine
+) -> Tuple[bool, bool]:
+    """
+    Get the verbose level from the config file and return it.
+
+    Parameters
+    ----------
+    config : dictionnary
+        dictionnary containing the key values pair from the config file
+    logger : logging object
+        the logger used to print logs
+
+    Returns
+    -------
+    logs : boolean
+        if True, print the logs
+
+    Examples
+    --------
+    >>> c = get_config({"--config" : "fink_mm/conf/fink_mm.conf"})
+    >>> logger = init_logging()
+
+    >>> return_verbose_level({}, c, logger)
+    (True, True)
+
+    >>> return_verbose_level({"--verbose": True}, c, logger)
+    (True, True)
+    """
+    try:
+        debug = config["ADMIN"]["debug"] == "True"
+        logs = argument["--verbose"]
+    except Exception:
+        logger.error(
+            f"error when reading config file or cli argument \n\t config = {config}\n\tcli argument = {argument}\n\tsetting verbose and debug to True by default",
+            exc_info=1,
+        )
+        logs = True
+        debug = True
+
+    return logs, debug

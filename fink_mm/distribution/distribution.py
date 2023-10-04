@@ -231,7 +231,8 @@ def launch_distribution(arguments):
     >>> launch_distribution({
     ... "--config" : "fink_mm/conf/distribute_for_test.conf",
     ... "--night" : "20190903",
-    ... "--exit_after" : 30
+    ... "--exit_after" : 30,
+    ... "--verbose" : False
     ... })
 
     >>> consumer = AlertConsumer(topics, myconfig)
@@ -251,7 +252,7 @@ def launch_distribution(arguments):
     config = get_config(arguments)
     logger = init_logging()
 
-    verbose = return_verbose_level(config, logger)
+    verbose = return_verbose_level(arguments, config, logger)
 
     spark_submit = read_and_build_spark_submit(config, logger)
 
@@ -269,6 +270,7 @@ def launch_distribution(arguments):
         _,
         grb_datapath_prefix,
         tinterval,
+        _,
         _,
         _,
         _,
@@ -297,20 +299,13 @@ def launch_distribution(arguments):
         external_files,
     )
 
-    process = subprocess.Popen(
-        spark_submit,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        universal_newlines=True,
-        shell=True,
-    )
+    completed_process = subprocess.run(spark_submit, shell=True, capture_output=True)
 
-    stdout, stderr = process.communicate()
-    if process.returncode != 0:  # pragma: no cover
+    if completed_process.returncode != 0:  # pragma: no cover
         logger.error(
             "fink-mm distribution stream spark application has ended with a non-zero returncode.\
                 \n\t cause:\n\t\t{}\n\t\t{}\n\n\n{}\n\n".format(
-                stdout, stderr, spark_submit
+                completed_process.stdout, completed_process.stderr, spark_submit
             )
         )
         exit(1)

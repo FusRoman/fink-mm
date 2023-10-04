@@ -45,14 +45,16 @@ def main():
 
     elif arguments["join_stream"]:
         if arguments["online"]:
-            from fink_mm.online.ztf_join_gcn import launch_joining_stream
+            from fink_mm.ztf_join_gcn import launch_join
+            from fink_mm.utils.application import DataMode
 
-            launch_joining_stream(arguments)
+            launch_join(arguments, DataMode.STREAMING)
 
         elif arguments["offline"]:
-            from fink_mm.offline.spark_offline import launch_offline_mode
+            from fink_mm.ztf_join_gcn import launch_join
+            from fink_mm.utils.application import DataMode
 
-            launch_offline_mode(arguments)
+            launch_join(arguments, DataMode.OFFLINE)
 
     elif arguments["distribute"]:
         from fink_mm.distribution.distribution import launch_distribution

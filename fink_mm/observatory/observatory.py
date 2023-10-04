@@ -295,7 +295,7 @@ class Observatory(ABC):
         return ipix_disc
 
     def association_proba(
-        self, ztf_ra: float, ztf_dec: float, jdstarthist: float
+        self, ztf_ra: float, ztf_dec: float, jdstarthist: float, **kwargs
     ) -> float:
         """
         Compute the association probability between a gcn event and a ztf alerts
