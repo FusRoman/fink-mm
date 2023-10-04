@@ -344,8 +344,6 @@ def get_association_proba(
     ztf_dec: pd.Series,
     jdstarthist: pd.Series,
     hdfs_adress: pd.Series,
-    last_time: pd.Series,
-    end_time: pd.Series,
     gcn_status: pd.Series,
 ) -> pd.Series:
     """
@@ -392,8 +390,6 @@ def get_association_proba(
     ...         sparkDF["dec"],
     ...         sparkDF["candidate.jdstarthist"],
     ...         sql_func.lit(""),
-    ...         sql_func.lit(""),
-    ...         sql_func.lit(""),
     ...         sql_func.lit("")
     ...     ),
     ... )
@@ -433,9 +429,7 @@ def get_association_proba(
                 z_dec,
                 z_trigger_time,
                 hdfs_adress=hdfs_adress.values[0],
-                gcn_status=status,
-                last_day=last_time.values[0],
-                end_day=end_time.values[0],
+                gcn_status=status
             )
             for obs, event, z_ra, z_dec, z_trigger_time, status in zip(
                 obsname, rawEvent, ztf_ra, ztf_dec, jdstarthist, gcn_status
@@ -733,8 +727,6 @@ def format_rate_results(spark_df, rate_column):
 def join_post_process(
     df_grb: DataFrame,
     hdfs_adress: str,
-    last_time: str,
-    end_time: str,
 ) -> DataFrame:
     """
     Post processing after the join, used by offline and online
@@ -817,8 +809,6 @@ def join_post_process(
             df_grb["ztf_dec"],
             df_grb["start_vartime"],
             F.lit(hdfs_adress),
-            F.lit(last_time),
-            F.lit(end_time),
             df_grb["gcn_status"],
         ),
     )

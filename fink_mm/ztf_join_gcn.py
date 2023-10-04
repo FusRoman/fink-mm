@@ -40,6 +40,7 @@ from fink_mm.utils.fun_utils import get_pixels
 from fink_filters.filter_mm_module.filter import (
     f_grb_bronze_events,
     f_grb_silver_events,
+    f_grb_gold_events,
     f_gw_bronze_events,
 )
 
@@ -179,7 +180,7 @@ def load_dataframe(
     night: str,
     time_window: int,
     load_mode: DataMode,
-) -> Tuple[DataFrame, DataFrame, Time, Time]:
+) -> Tuple[DataFrame, DataFrame]:
     if load_mode == DataMode.STREAMING:
         # connection to the ztf science stream
         ztf_alert = connect_to_raw_database(
@@ -236,7 +237,7 @@ def load_dataframe(
     gcn_alert = gcn_alert.filter(
         f"triggerTimejd >= {last_time.jd} and triggerTimejd < {end_time.jd}"
     )
-    return ztf_alert, gcn_alert, last_time, end_time
+    return ztf_alert, gcn_alert
 
 
 def write_dataframe(
@@ -309,6 +310,18 @@ def write_dataframe(
                 df_join["observatory"],
                 df_join["rb"],
                 df_join["p_assoc"],
+            ),
+        )
+
+        df_join = df_join.withColumn(
+            "is_grb_gold",
+            f_grb_gold_events(
+                df_join["fink_class"],
+                df_join["observatory"],
+                df_join["rb"],
+                df_join["gcn_loc_error"],
+                df_join["p_assoc"],
+                df_join["rate"]
             ),
         )
 
@@ -506,7 +519,7 @@ def ztf_join_gcn(
         "science2mm_{}_{}{}{}".format(job_name, night[0:4], night[4:6], night[6:8])
     )
 
-    ztf_dataframe, gcn_dataframe, last_time, end_time = load_dataframe(
+    ztf_dataframe, gcn_dataframe = load_dataframe(
         spark,
         ztf_datapath_prefix,
         gcn_datapath_prefix,
@@ -526,13 +539,9 @@ def ztf_join_gcn(
         ztf_dataframe.hpix == gcn_dataframe.hpix,
         ztf_dataframe.candidate.jdstarthist > gcn_dataframe.triggerTimejd,
     ]
-    # df_join_mm = df_ztf_stream.join(F.broadcast(df_grb_stream), join_condition, "inner")
     df_join_mm = gcn_dataframe.join(F.broadcast(ztf_dataframe), join_condition, "inner")
 
-    last_time_str = f"{last_time.datetime.year:04d}{last_time.datetime.month:02d}{last_time.datetime.day:02d}"
-    end_time_str = f"{end_time.datetime.year:04d}{end_time.datetime.month:02d}{end_time.datetime.day:02d}"
-
-    df_join_mm = join_post_process(df_join_mm, hdfs_adress, last_time_str, end_time_str)
+    df_join_mm = join_post_process(df_join_mm, hdfs_adress)
 
     # re-create partitioning columns if needed.
     timecol = "jd"
