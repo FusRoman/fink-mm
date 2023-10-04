@@ -844,13 +844,14 @@ def join_post_process(
     ]
     cols_fink = [i for i in df_grb.columns if i not in cols_to_remove]
     cols_extra = [
+        "candidate.candid",
         "candidate.fid",
         "candidate.jdstarthist",
         "candidate.rb",
         "candidate.jd",
     ]
     df_grb = df_grb.select(cols_fink + cols_extra).filter("p_assoc != -1.0")
-    df_grb = df_grb.withColumnRenamed("gcn_loc_error", "err_arcmin")
+    df_grb = df_grb.withColumnRenamed("err_arcmin", "gcn_loc_error")
 
     return df_grb
 

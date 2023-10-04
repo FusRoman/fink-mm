@@ -299,20 +299,13 @@ def launch_distribution(arguments):
         external_files,
     )
 
-    process = subprocess.Popen(
-        spark_submit,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        universal_newlines=True,
-        shell=True,
-    )
+    completed_process = subprocess.run(spark_submit, shell=True, capture_output=True)
 
-    stdout, stderr = process.communicate()
-    if process.returncode != 0:  # pragma: no cover
+    if completed_process.returncode != 0:  # pragma: no cover
         logger.error(
             "fink-mm distribution stream spark application has ended with a non-zero returncode.\
                 \n\t cause:\n\t\t{}\n\t\t{}\n\n\n{}\n\n".format(
-                stdout, stderr, spark_submit
+                completed_process.stdout, completed_process.stderr, spark_submit
             )
         )
         exit(1)
