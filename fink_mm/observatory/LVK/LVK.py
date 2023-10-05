@@ -24,31 +24,25 @@ def gcn_from_hdfs(client, root_path, triggerId, triggerTime, gcn_status):
         root_path,
         f"year={triggerTime.year:04d}/month={triggerTime.month:02d}/day={triggerTime.day:02d}",
     )
-    all_gcn = []
     for p, _, files in client.walk(path_date):
         for f in np.sort(files):
-            if triggerId in f:
-                path_to_load = os.path.join(p, f)
-                with client.read(path_to_load) as reader:
-                    content = reader.read()
-                    pdf = pd.read_parquet(io.BytesIO(content))
-                    all_gcn.append(pdf)
+            path_to_load = os.path.join(p, f)
+            with client.read(path_to_load) as reader:
+                content = reader.read()
+                pdf = pd.read_parquet(io.BytesIO(content))
+                tmp_triggerId = pdf["triggerId"].values[0]
+                tmp_gcn_status = pdf["gcn_status"].values[0]
+                if triggerId == tmp_triggerId and gcn_status == tmp_gcn_status:
+                    return pdf[
+                        (pdf["triggerId"] == tmp_triggerId)
+                        & (pdf["gcn_status"] == tmp_gcn_status)
+                    ]
 
-    if len(all_gcn) == 0:
-        raise FileNotFoundError(
-            "File not found at these locations {} with triggerId = {}".format(
-                path_date, triggerId
-            )
+    raise FileNotFoundError(
+        "File not found at these locations {} with triggerId = {} and gcn_status = {}".format(
+            path_date, triggerId, gcn_status
         )
-    else:
-        pdf_concat = pd.concat(all_gcn)
-        res = pdf_concat[pdf_concat["gcn_status"] == gcn_status]
-        if len(res) == 0:
-            raise FileNotFoundError(
-                "File not found with this gcn_status = {}".format(gcn_status)
-            )
-        else:
-            return res
+    )
 
 
 class LVK(Observatory):
@@ -436,11 +430,7 @@ class LVK(Observatory):
         >>> lvk_initial.association_proba(95.712890625, -10.958863307027668, 0)
         0.0054008620296433045
         """
-        if (
-            "hdfs_adress" in kwargs
-            and "gcn_status" in kwargs
-            and "root_path" in kwargs
-        ):
+        if "hdfs_adress" in kwargs and "gcn_status" in kwargs and "root_path" in kwargs:
             skymap = self.get_skymap(**kwargs)
         else:
             skymap = self.get_skymap()
