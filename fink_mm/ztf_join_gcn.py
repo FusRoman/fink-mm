@@ -510,9 +510,9 @@ def ztf_join_gcn(
     """
     logger = init_logging()
 
-    if DataMode.OFFLINE:
+    if mm_mode == DataMode.OFFLINE:
         job_name = "offline"
-    elif DataMode.STREAMING:
+    elif mm_mode == DataMode.STREAMING:
         job_name = "online"
 
     spark = init_sparksession(
