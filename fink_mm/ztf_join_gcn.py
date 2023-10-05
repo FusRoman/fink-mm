@@ -321,7 +321,7 @@ def write_dataframe(
                 df_join["rb"],
                 df_join["gcn_loc_error"],
                 df_join["p_assoc"],
-                df_join["rate"]
+                df_join["rate"],
             ),
         )
 

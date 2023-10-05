@@ -13,7 +13,9 @@ class Application(Flag):
     JOIN = auto()
     DISTRIBUTION = auto()
 
-    def build_application(self, logger: LoggerNewLine, data_mode: DataMode = None, **kwargs) -> str:
+    def build_application(
+        self, logger: LoggerNewLine, data_mode: DataMode = None, **kwargs
+    ) -> str:
         """
         Return the command line application
 

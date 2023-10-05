@@ -20,7 +20,7 @@ from fink_mm.test.hypothesis.observatory_schema import voevent_df_schema
 from datetime import datetime
 
 
-def gcn_from_hdfs(client: InsecureClient, root_path: str, triggerId: str, triggerTime: datetime, gcn_status: str)->pd.DataFrame:
+def gcn_from_hdfs(client: InsecureClient, root_path: str, triggerId: str, triggerTime: datetime, gcn_status: str) -> pd.DataFrame:
     path_date = os.path.join(
         root_path,
         f"year={triggerTime.year:04d}/month={triggerTime.month:02d}/day={triggerTime.day:02d}",

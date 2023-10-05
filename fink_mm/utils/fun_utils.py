@@ -345,7 +345,7 @@ def get_association_proba(
     jdstarthist: pd.Series,
     hdfs_adress: pd.Series,
     gcn_status: pd.Series,
-    root_path: pd.Series
+    root_path: pd.Series,
 ) -> pd.Series:
     """
     Compute the association probability between the ztf alerts and the gcn events.
@@ -431,7 +431,7 @@ def get_association_proba(
                 z_trigger_time,
                 hdfs_adress=hdfs_adress.values[0],
                 gcn_status=status,
-                root_path=root
+                root_path=root,
             )
             for obs, event, z_ra, z_dec, z_trigger_time, status, root in zip(
                 obsname, rawEvent, ztf_ra, ztf_dec, jdstarthist, gcn_status, root_path
@@ -726,11 +726,7 @@ def format_rate_results(spark_df, rate_column):
     )
 
 
-def join_post_process(
-    df_grb: DataFrame,
-    hdfs_adress: str,
-    root_path: str
-) -> DataFrame:
+def join_post_process(df_grb: DataFrame, hdfs_adress: str, root_path: str) -> DataFrame:
     """
     Post processing after the join, used by offline and online
 
@@ -807,7 +803,7 @@ def join_post_process(
             df_grb["start_vartime"],
             F.lit(hdfs_adress),
             df_grb["gcn_status"],
-            F.lit(root_path)
+            F.lit(root_path),
         ),
     )
 
