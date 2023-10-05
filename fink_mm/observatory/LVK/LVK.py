@@ -19,10 +19,9 @@ from fink_mm.observatory.observatory import Observatory
 from fink_mm.test.hypothesis.observatory_schema import voevent_df_schema
 
 
-def gcn_from_hdfs(client, triggerId, triggerTime, gcn_status):
-    root = "/user/julien.peloton/fink_mm/gcn_storage/raw"
+def gcn_from_hdfs(client, root_path, triggerId, triggerTime, gcn_status):
     path_date = os.path.join(
-        root,
+        root_path,
         f"year={triggerTime.year:04d}/month={triggerTime.month:02d}/day={triggerTime.day:02d}",
     )
     all_gcn = []
@@ -98,9 +97,10 @@ class LVK(Observatory):
             )
             triggerId = self.get_trigger_id()
             gcn_status = kwargs["gcn_status"]
+            root_path = kwargs["root_path"]
             t_obs = Time(self.get_trigger_time()[1], format="jd").to_datetime()
             gcn_pdf = gcn_from_hdfs(
-                hdfs_client, triggerId, t_obs, gcn_status
+                hdfs_client, root_path, triggerId, t_obs, gcn_status
             )
             skymap_str = json.loads(gcn_pdf["raw_event"].iloc[0])["event"]["skymap"]
 
@@ -441,6 +441,7 @@ class LVK(Observatory):
         if (
             "hdfs_adress" in kwargs
             and "gcn_status" in kwargs
+            and "root_path" in kwargs
         ):
             skymap = self.get_skymap(**kwargs)
         else:

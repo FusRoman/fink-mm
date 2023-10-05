@@ -541,7 +541,7 @@ def ztf_join_gcn(
     ]
     df_join_mm = gcn_dataframe.join(F.broadcast(ztf_dataframe), join_condition, "inner")
 
-    df_join_mm = join_post_process(df_join_mm, hdfs_adress)
+    df_join_mm = join_post_process(df_join_mm, hdfs_adress, gcn_datapath_prefix)
 
     # re-create partitioning columns if needed.
     timecol = "jd"
