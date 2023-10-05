@@ -93,7 +93,7 @@ class LVK(Observatory):
         else:
             hdfs_adress = kwargs["hdfs_adress"]
             hdfs_client = InsecureClient(
-                f"http://{hdfs_adress}:50070", user="hdfs", root="/user/julien.peloton"
+                f"http://{hdfs_adress}:50070", user="hdfs"
             )
             triggerId = self.get_trigger_id()
             gcn_status = kwargs["gcn_status"]
