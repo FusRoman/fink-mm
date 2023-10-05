@@ -92,9 +92,7 @@ class LVK(Observatory):
             skymap_str = self.voevent["event"]["skymap"]
         else:
             hdfs_adress = kwargs["hdfs_adress"]
-            hdfs_client = InsecureClient(
-                f"http://{hdfs_adress}:50070", user="hdfs"
-            )
+            hdfs_client = InsecureClient(f"http://{hdfs_adress}:50070")
             triggerId = self.get_trigger_id()
             gcn_status = kwargs["gcn_status"]
             root_path = kwargs["root_path"]
