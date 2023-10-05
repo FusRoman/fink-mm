@@ -17,9 +17,10 @@ from healpy.pixelfunc import pix2ang, ang2pix
 from fink_mm.observatory import OBSERVATORY_PATH
 from fink_mm.observatory.observatory import Observatory
 from fink_mm.test.hypothesis.observatory_schema import voevent_df_schema
+from datetime import datetime
 
 
-def gcn_from_hdfs(client, root_path, triggerId, triggerTime, gcn_status):
+def gcn_from_hdfs(client: InsecureClient, root_path: str, triggerId: str, triggerTime: datetime, gcn_status: str)->pd.DataFrame:
     path_date = os.path.join(
         root_path,
         f"year={triggerTime.year:04d}/month={triggerTime.month:02d}/day={triggerTime.day:02d}",
@@ -30,7 +31,7 @@ def gcn_from_hdfs(client, root_path, triggerId, triggerTime, gcn_status):
             with client.read(path_to_load) as reader:
                 content = reader.read()
                 pdf = pd.read_parquet(io.BytesIO(content))
-                if triggerId in pdf["triggerId"].values:
+                if triggerId in pdf["triggerId"].values and gcn_status in pdf["gcn_status"].values:
                     return pdf[
                         (pdf["triggerId"] == triggerId)
                         & (pdf["gcn_status"] == gcn_status)
