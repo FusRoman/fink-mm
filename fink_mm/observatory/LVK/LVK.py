@@ -30,12 +30,10 @@ def gcn_from_hdfs(client, root_path, triggerId, triggerTime, gcn_status):
             with client.read(path_to_load) as reader:
                 content = reader.read()
                 pdf = pd.read_parquet(io.BytesIO(content))
-                tmp_triggerId = pdf["triggerId"].values[0]
-                tmp_gcn_status = pdf["gcn_status"].values[0]
-                if triggerId == tmp_triggerId and gcn_status == tmp_gcn_status:
+                if triggerId in pdf["triggerId"].values:
                     return pdf[
-                        (pdf["triggerId"] == tmp_triggerId)
-                        & (pdf["gcn_status"] == tmp_gcn_status)
+                        (pdf["triggerId"] == triggerId)
+                        & (pdf["gcn_status"] == gcn_status)
                     ]
 
     raise FileNotFoundError(
