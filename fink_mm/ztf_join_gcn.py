@@ -355,6 +355,9 @@ def ztf_pre_join(
         "cutoutScience",
         "cutoutTemplate",
         "cutoutDifference",
+        "year",
+        "month",
+        "day"
     )
 
     ztf_dataframe = ztf_grb_filter(
@@ -378,6 +381,8 @@ def gcn_pre_join(
     NSIDE: int,
     test: bool,
 ) -> DataFrame:
+    gcn_dataframe = gcn_dataframe.drop("year").drop("month").drop("day")
+
     # compute pixels for gcn alerts
     gcn_dataframe = gcn_dataframe.withColumn(
         "hpix_circle",
