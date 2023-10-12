@@ -20,6 +20,7 @@ import seaborn as sns
 
 sns.set_context("poster")
 
+from fink_utils.sso.spins import color_correction_to_V
 from fink_filters.filter_mm_module.filter import (
     grb_bronze_events,
     grb_silver_events,
@@ -288,6 +289,85 @@ class DataJoin:
 
         def get_grb_bronze(self):
             return self.gcn_pdf[self.gcn_pdf["is_grb_bronze"]]
+
+        def get_fermi_cat(self):
+            grb_fermi = pd.read_table("fermi_gbm_burst_catalog.txt", sep="|")
+            grb_fermi.columns = [c.strip() for c in grb_fermi.columns]
+            return grb_fermi
+
+        def plot_particular_grb(self, grb_fermi, x_col, y_col, grb_name):
+            grb_to_plot = grb_fermi[grb_fermi["name"] == grb_name]
+            grb_to_plot = grb_fermi[grb_fermi["name"] == grb_name]
+
+            grb_x = pd.to_numeric(grb_to_plot[x_col], errors='coerce')
+            grb_y = pd.to_numeric(grb_to_plot[y_col], errors='coerce')
+            x_err = pd.to_numeric(grb_to_plot[f"{x_col}_error"], errors='coerce')
+            y_err = pd.to_numeric(grb_to_plot[f"{y_col}_error"], errors='coerce')
+            
+
+            plt.errorbar(
+                grb_x,
+                grb_y,
+                xerr=x_err,
+                yerr=y_err,
+                marker="*", color="red"
+            )
+            ax = plt.gca()
+            ax.annotate(grb_name, xy=(grb_x, grb_y), xytext=(grb_x, grb_y), weight="bold", rotation=45)
+
+        def energy_vs_time_distrib(self, grb_name, grb_170817=False, grb_221009=False):
+            grb_fermi = self.get_fermi_cat()
+
+            x_col = "t90"
+            y_col = "fluence"
+
+            plt.scatter(
+                pd.to_numeric(grb_fermi[x_col], errors='coerce'),
+                pd.to_numeric(grb_fermi[y_col], errors='coerce'),
+                color='grey', alpha=0.5, s=50
+            )
+
+            self.plot_particular_grb(grb_fermi, x_col, y_col, grb_name)
+
+            if grb_170817:
+                self.plot_particular_grb(grb_fermi, x_col, y_col, "GRB170817529")
+            if grb_221009:
+                self.plot_particular_grb(grb_fermi, x_col, y_col, "GRB221009553")
+
+            plt.title("Fermi GBM Burst Catalog\n" + r" $Fluence  Vs  T_{90}$" + " distribution")
+            plt.xscale("log")
+            plt.yscale("log")
+            plt.xlabel(r"$T_{90}[s]$")
+            plt.ylabel(r"$Fluence (10-1000 keV)[erg/cm^2]$")
+            plt.show()
+
+        def energy_vs_fluence(self, grb_name, grb_170817=False, grb_221009=False):
+            grb_fermi = self.get_fermi_cat()
+
+            x_col = "fluence"
+            y_col = "flux_1024"
+
+            plt.scatter(
+                pd.to_numeric(grb_fermi[x_col], errors='coerce'),
+                pd.to_numeric(grb_fermi[y_col], errors='coerce'),
+                color='grey', alpha=0.5, s=50
+            )
+
+            self.plot_particular_grb(grb_fermi, x_col, y_col, grb_name)
+
+            if grb_170817:
+                self.plot_particular_grb(grb_fermi, x_col, y_col, "GRB170817529")
+            if grb_221009:
+                self.plot_particular_grb(grb_fermi, x_col, y_col, "GRB221009553")
+
+            plt.title("Fermi GBM Burst Catalog\n" + r" $E_p  Vs  Fluence$" + " distribution")
+            plt.xscale("log")
+            plt.yscale("log")
+            plt.xlabel(r"$Fluence (10-1000 keV)[erg/cm^2]$")
+            plt.ylabel(r"$E_p (10-1000 keV)[erg]$")
+            plt.show()
+
+
 
         def get_grb_silver(self):
             return self.gcn_pdf[self.gcn_pdf["is_grb_silver"] & (self.gcn_pdf["p_assoc"] != -1.0)]
@@ -602,20 +682,23 @@ class DataJoin:
                 mask = pdf_grb['midtimes'] > 1
                 pdf_grb = pdf_grb[mask]
 
-
                 fig, ax = plt.subplots()
                 ax.scatter(pdf_grb["midtimes"], pdf_grb["flux"], color="grey", alpha=0.5, s=5)
 
-                for i in self.fink_data["i:fid"].unique():
-                    tmp_fid = self.fink_data[self.fink_data["i:fid"] == i]
-                    jd_ztf, ztf_mag = tmp_fid["i:jd"], tmp_fid["i:magpsf"]
-                    delay = jd_ztf - self.gcn.gcn_pdf["triggerTimejd"].values[0]
-                    if i == 1:
-                        band = "g band"
-                    elif i == 2:
-                        band = "r band"
-                    ax.scatter(delay * 24 * 3600, ztf_mag, label=band)
+                ztf_jd, ztf_mag, ztf_fid = (
+                    self.fink_data["i:jd"], 
+                    self.fink_data["i:magpsf"], 
+                    self.fink_data["i:fid"]
+                )
 
+
+                delay = ztf_jd - self.gcn.gcn_pdf["triggerTimejd"].values[0]
+
+                g_mask = ztf_fid == 1
+                with pd.option_context("mode.chained_assignment", None):
+                    ztf_mag[g_mask] = (ztf_mag[g_mask] + color_correction_to_V()[1]) - color_correction_to_V()[2]
+
+                ax.scatter(delay * 24 * 3600, ztf_mag, label="r band")
 
                 ax.invert_yaxis()
                 ax.set_xscale("log")
