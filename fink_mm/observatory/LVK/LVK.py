@@ -384,7 +384,7 @@ class LVK(Observatory):
         >>> type(pix[0])
         <class 'int'>
         >>> len(pix)
-        1473
+        266
         """
         skymap_90 = self.find_probability_region(0.9)
         level, ipix = ah.uniq_to_level_ipix(skymap_90["UNIQ"])
