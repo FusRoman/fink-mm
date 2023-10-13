@@ -11,7 +11,6 @@ import astropy.units as u
 from fink_mm.observatory import OBSERVATORY_PATH
 from fink_mm.observatory.observatory import (
     Observatory,
-    BadInstrument,
     voevent_df_schema,
 )
 
@@ -62,26 +61,19 @@ class IceCube(Observatory):
 
     def err_to_arcminute(self):
         """
-        Return the error box of the voevent in arcminute
+        Return the error radius of the voevent in arcminute.
 
         Example
         -------
         >>> icecube_cascade.err_to_arcminute()
         773.778
         >>> icecube_bronze.err_to_arcminute()
-        0.6521
+        39.126
         >>> icecube_gold.err_to_arcminute()
-        0.6596
+        39.576
         """
-        instrument = self.detect_instruments()
         coords = vp.get_event_position(self.voevent)
-
-        if instrument == "BRONZE" or instrument == "GOLD":
-            return coords.err
-        elif instrument == "Cascade":
-            return coords.err * 60
-        else:
-            raise BadInstrument("{} is not a IceCube events".format(instrument))
+        return coords.err * 60
 
     @check_output(voevent_df_schema)
     def voevent_to_df(self):
@@ -118,11 +110,11 @@ class IceCube(Observatory):
 
         >>> icecube_bronze.voevent_to_df()[["triggerId", "observatory", "instrument", "event", "ra", "dec", "err_arcmin"]]
                 triggerId observatory instrument   event        ra      dec  err_arcmin
-        0  13691845252263     ICECUBE             BRONZE  132.3328 -42.7168      0.6521
+        0  13691845252263     ICECUBE             BRONZE  132.3328 -42.7168      39.126
 
         >>> icecube_gold.voevent_to_df()[["triggerId", "observatory", "instrument", "event", "ra", "dec", "err_arcmin"]]
                 triggerId observatory instrument event        ra     dec  err_arcmin
-        0  13746764735045     ICECUBE             GOLD  350.5486  34.711      0.6596
+        0  13746764735045     ICECUBE             GOLD  350.5486  34.711      39.576
         """
 
         ack_time = dt.datetime.now()

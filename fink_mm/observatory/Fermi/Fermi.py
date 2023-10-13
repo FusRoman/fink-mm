@@ -46,7 +46,7 @@ class Fermi(Observatory):
 
     def err_to_arcminute(self):
         """
-        Return the error box of the voevent in arcminute
+        Return the error radius of the voevent in arcminute.
 
         Example
         -------

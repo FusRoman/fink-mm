@@ -217,7 +217,7 @@ class LVK(Observatory):
 
     def err_to_arcminute(self) -> float:
         """
-        Return the 100% error area of the gw event in arcminute
+        Return the 90% error area of the gw event in square arcminute.
 
         Example
         -------
