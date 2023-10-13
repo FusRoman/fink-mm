@@ -12,6 +12,7 @@ from base64 import b64decode
 from pandera import check_output
 import datetime as dt
 import json
+import healpy as hp
 from healpy.pixelfunc import pix2ang, ang2pix
 
 from fink_mm.observatory import OBSERVATORY_PATH
@@ -388,6 +389,7 @@ class LVK(Observatory):
         skymap_90 = self.find_probability_region(0.9)
         level, ipix = ah.uniq_to_level_ipix(skymap_90["UNIQ"])
         nside = ah.level_to_nside(level)
+        ipix = hp.nest2ring(nside, ipix)
         theta, phi = pix2ang(nside, ipix)
         return np.unique(ang2pix(NSIDE, theta, phi)).tolist()
 
