@@ -278,7 +278,7 @@ class Observatory(ABC):
         Examples
         --------
         >>> icecube_bronze.get_pixels(32)
-        array([10349])
+        array([10222, 10223, 10349])
         """
         coords = vp.get_event_position(self.voevent)
         voevent_error = self.err_to_arcminute()
