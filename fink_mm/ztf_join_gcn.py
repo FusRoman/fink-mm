@@ -281,7 +281,7 @@ def write_dataframe(
                 logger.info(f"query status : {query_grb.status}")
                 logger.newline()
 
-        logs_thread = RepeatTimer(int(tinterval) / 2, print_logs)
+        logs_thread = RepeatTimer(1800, print_logs)
         logs_thread.start()
         # Keep the Streaming running until something or someone ends it!
         if exit_after is not None:
