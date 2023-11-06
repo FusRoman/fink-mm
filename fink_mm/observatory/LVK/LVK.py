@@ -137,7 +137,8 @@ class LVK(Observatory):
             )
         return (
             self.voevent["superevent_id"][0] == "S"
-            and self.voevent["event"]["significant"]
+            # comment the significant filter (enable cross-match with 'burst' and subthreshold events)
+            # and self.voevent["event"]["significant"]
         )
 
     def is_listened_packets_types(self) -> bool:
