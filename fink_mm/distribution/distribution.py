@@ -175,6 +175,7 @@ def grb_distribution(
         .drop("day")
         .drop("timestamp")
         .drop("t2")
+        .drop("ackTime")
     )
 
     cnames = df_grb_stream.columns
