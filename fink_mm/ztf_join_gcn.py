@@ -481,7 +481,7 @@ def ztf_join_gcn(
     >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
 
     >>> list(datajoin.columns)
-    ['DR3Name', 'Plx', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_mag', 'diff_vartime', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'jd', 'jdstarthist', 'lc_features_g', 'lc_features_r', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'rate', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 'start_vartime', 'timestamp', 'triggerId', 'triggerTimeUTC', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
+    ['DR3Name', 'Plx', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_mag', 'delta_time', 'diff_vartime', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'jd', 'jd_first_real_det', 'jdstarthist', 'jdstarthist_dt', 'lc_features_g', 'lc_features_r', 'lower_rate', 'mag_rate', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'rate', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'sigma_rate', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 'start_vartime', 'timestamp', 'triggerId', 'triggerTimeUTC', 'upper_rate', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
 
     >>> len(datajoin)
     36
@@ -598,7 +598,7 @@ def launch_join(arguments: dict, data_mode, test: bool = False):
     >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
 
     >>> list(datajoin.columns)
-    ['DR3Name', 'Plx', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_mag', 'diff_vartime', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'jd', 'jdstarthist', 'lc_features_g', 'lc_features_r', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'rate', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 'start_vartime', 'timestamp', 'triggerId', 'triggerTimeUTC', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
+    ['DR3Name', 'Plx', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_mag', 'delta_time', 'diff_vartime', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'jd', 'jd_first_real_det', 'jdstarthist', 'jdstarthist_dt', 'lc_features_g', 'lc_features_r', 'lower_rate', 'mag_rate', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'rate', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'sigma_rate', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 'start_vartime', 'timestamp', 'triggerId', 'triggerTimeUTC', 'upper_rate', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
     >>> len(datajoin)
     36
 
