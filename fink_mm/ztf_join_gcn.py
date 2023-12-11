@@ -474,20 +474,17 @@ def ztf_join_gcn(
     ...     4, 100, 5, 7, "127.0.0.1", 5, 2, 0, 5, False, True
     ... )
 
-    >>> datatest = pd.read_parquet(online_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/online").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
 
-    >>> datatest = datatest.drop("t2", axis=1)
     >>> datajoin = datajoin.drop("t2", axis=1)
 
-    >>> datatest["gcn_status"] = "initial"
-    >>> datatest = datatest.reindex(sorted(datatest.columns), axis=1)
     >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
 
-    >>> list(datatest.columns) == list(datajoin.columns)
-    True
-    >>> len(datatest) == len(datajoin)
-    True
+    >>> list(datajoin.columns)
+    ['DR3Name', 'Plx', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_mag', 'diff_vartime', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'jd', 'jdstarthist', 'lc_features_g', 'lc_features_r', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'rate', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 'start_vartime', 'timestamp', 'triggerId', 'triggerTimeUTC', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
+
+    >>> len(datajoin)
+    36
 
     >>> ztf_join_gcn(
     ...     DataMode.OFFLINE,
@@ -498,20 +495,16 @@ def ztf_join_gcn(
     ...     4, 100, 5, 7, "127.0.0.1", 5, 2, 0, 5, False, True
     ... )
 
-    >>> datatest = pd.read_parquet(offline_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
     >>> datajoin = pd.read_parquet(grb_dataoutput + "/offline").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
 
-    >>> datatest = datatest.drop("t2", axis=1)
     >>> datajoin = datajoin.drop("t2", axis=1)
 
-    >>> datatest["gcn_status"] = "initial"
-    >>> datatest = datatest.reindex(sorted(datatest.columns), axis=1)
     >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
 
-    >>> list(datatest.columns) == list(datajoin.columns)
-    True
-    >>> len(datatest) == len(datajoin)
-    True
+    >>> list(datajoin.columns)
+    ['DR3Name', 'Plx', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_mag', 'diff_vartime', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'is_grb_bronze', 'is_grb_gold', 'is_grb_silver', 'is_gw_bronze', 'jd', 'jdstarthist', 'lc_features_g', 'lc_features_r', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'rate', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 'start_vartime', 'timestamp', 'triggerId', 'triggerTimeUTC', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
+    >>> len(datajoin)
+    72
     """
     logger = init_logging()
 
@@ -598,20 +591,16 @@ def launch_join(arguments: dict, data_mode, test: bool = False):
     ...     "--verbose" : False
     ... }, DataMode.STREAMING, True)
 
-    >>> datatest = pd.read_parquet(online_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
     >>> datajoin = pd.read_parquet("fink_mm/test/test_output/online").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
 
-    >>> datatest = datatest.drop("t2", axis=1)
     >>> datajoin = datajoin.drop("t2", axis=1)
 
-    >>> datatest["gcn_status"] = "initial"
-    >>> datatest = datatest.reindex(sorted(datatest.columns), axis=1)
     >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
 
-    >>> list(datatest.columns) == list(datajoin.columns)
-    True
-    >>> len(datatest) == len(datajoin)
-    True
+    >>> list(datajoin.columns)
+    ['DR3Name', 'Plx', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_mag', 'diff_vartime', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'jd', 'jdstarthist', 'lc_features_g', 'lc_features_r', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'rate', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 'start_vartime', 'timestamp', 'triggerId', 'triggerTimeUTC', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
+    >>> len(datajoin)
+    36
 
     >>> launch_join({
     ...     "--config" : None,
@@ -620,20 +609,16 @@ def launch_join(arguments: dict, data_mode, test: bool = False):
     ...     "--verbose" : False
     ... }, DataMode.OFFLINE, True)
 
-    >>> datatest = pd.read_parquet(offline_data_test).sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
     >>> datajoin = pd.read_parquet("fink_mm/test/test_output/offline").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
 
-    >>> datatest = datatest.drop("t2", axis=1)
     >>> datajoin = datajoin.drop("t2", axis=1)
 
-    >>> datatest["gcn_status"] = "initial"
-    >>> datatest = datatest.reindex(sorted(datatest.columns), axis=1)
     >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
 
-    >>> list(datatest.columns) == list(datajoin.columns)
-    True
-    >>> len(datatest) == len(datajoin)
-    True
+    >>> list(datajoin.columns)
+    ['DR3Name', 'Plx', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_mag', 'diff_vartime', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'is_grb_bronze', 'is_grb_gold', 'is_grb_silver', 'is_gw_bronze', 'jd', 'jdstarthist', 'lc_features_g', 'lc_features_r', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'rate', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 'start_vartime', 'timestamp', 'triggerId', 'triggerTimeUTC', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
+    >>> len(datajoin)
+    72
     """
     config = get_config(arguments)
     logger = init_logging()
