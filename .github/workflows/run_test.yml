@@ -38,7 +38,6 @@ jobs:
         echo "FINK_MM=$GITHUB_WORKSPACE" >> $GITHUB_ENV
         echo "JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))" >> $GITHUB_ENV
 
-
     - name: Set up env [2/3]
       run: |
         echo "PYTHONPATH="${PYTHONPATH}:${SPARKLIB}:${FINK_MM}"" >> $GITHUB_ENV
