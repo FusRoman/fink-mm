@@ -93,6 +93,13 @@ jobs:
       run: |
         fink start merge -c ${FINK_MM}/fink_mm/test/test_data/with_hbase/fink_test.conf --night $NIGHT
 
+    - name: Test preamble
+      run: |
+        echo "PYTHONPATH="${SPARK_HOME}/python/test_coverage:$PYTHONPATH"" >> $GITHUB_ENV
+        echo "COVERAGE_PROCESS_START="${ROOTPATH}/.coveragerc"" >> $GITHUB_ENV
+        python -m pip install . --upgrade
+        pip install -U fink_filters
+
     - name: Push Hbase data
       run: |
         fink start index_archival -c ${FINK_MM}/fink_mm/test/test_data/with_hbase/fink_test.conf --night $NIGHT --index_table jd_objectId
@@ -100,13 +107,6 @@ jobs:
     - name: Check HBase table
       run: |
         echo 'list' | /home/libs/hbase-2.2.7/bin/hbase shell
-
-    - name: Test preamble
-      run: |
-        echo "PYTHONPATH="${SPARK_HOME}/python/test_coverage:$PYTHONPATH"" >> $GITHUB_ENV
-        echo "COVERAGE_PROCESS_START="${ROOTPATH}/.coveragerc"" >> $GITHUB_ENV
-        python -m pip install . --upgrade
-        pip install -U fink_filters
 
     - name: Run test suites
       run: |
