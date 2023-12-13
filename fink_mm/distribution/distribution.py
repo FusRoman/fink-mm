@@ -16,7 +16,7 @@ from fink_mm.utils.fun_utils import build_spark_submit
 from fink_mm.distribution.apply_filters import apply_filters
 
 from fink_utils.spark import schema_converter
-from pyspark.sql.types import StructType
+from pyspark.sql.types import StructType, StringType
 
 
 def format_mangrove_col(userschema: StructType) -> StructType:
@@ -45,25 +45,25 @@ def format_mangrove_col(userschema: StructType) -> StructType:
                     "metadata": {},
                     "name": "HyperLEDA_name",
                     "nullable": True,
-                    "type": "string",
+                    "type": StringType(),
                 },
                 {
                     "metadata": {},
                     "name": "TwoMASS_name",
                     "nullable": True,
-                    "type": "string",
+                    "type": StringType(),
                 },
                 {
                     "metadata": {},
                     "name": "lum_dist",
                     "nullable": True,
-                    "type": "string",
+                    "type": StringType(),
                 },
                 {
                     "metadata": {},
                     "name": "ang_dist",
                     "nullable": True,
-                    "type": "string",
+                    "type": StringType(),
                 },
             ],
             "type": "struct",
