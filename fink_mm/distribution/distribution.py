@@ -2,7 +2,6 @@ import time
 import subprocess
 import sys
 import json
-import os
 
 from fink_utils.broker.sparkUtils import init_sparksession
 
@@ -17,7 +16,7 @@ from fink_mm.utils.fun_utils import build_spark_submit
 from fink_mm.distribution.apply_filters import apply_filters
 
 from fink_utils.spark import schema_converter
-from pyspark.sql.types import StructType, StringType
+from pyspark.sql.types import StructType
 
 
 def format_mangrove_col(userschema: StructType) -> StructType:
@@ -307,7 +306,8 @@ fink-mm distribution stream spark application has ended with a non-zero returnco
 
 - stderr:
 {completed_process.stderr.decode("utf-8")if completed_process.stderr is not None else "no err output"}
-        """)
+        """
+        )
         exit(1)
 
     logger.info("fink-mm distribution stream spark application ended normally")
