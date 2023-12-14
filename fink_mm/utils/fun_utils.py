@@ -986,7 +986,7 @@ def read_additional_spark_options(arguments, config, logger, verbose, is_test):
     True
 
     >>> read_additional_spark_options(arguments, config, logger, True, False)
-    ('', '', 'org.apache.spark:spark-streaming-kafka-0-10-assembly_2.12:3.1.3,org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.3,org.apache.spark:spark-avro_2.12:3.1.3,org.apache.hbase:hbase-shaded-mapreduce:2.2.7', '')
+    ('', '', 'org.apache.spark:spark-streaming-kafka-0-10-assembly_2.12:3.4.1,org.apache.spark:spark-sql-kafka-0-10_2.12:3.4.1,org.apache.spark:spark-avro_2.12:3.4.1,org.apache.hbase:hbase-shaded-mapreduce:2.2.7', '')
     """
     try:
         external_python_libs = config["STREAM"]["external_python_libs"]
