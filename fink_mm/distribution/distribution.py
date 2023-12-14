@@ -2,6 +2,7 @@ import time
 import subprocess
 import sys
 import json
+import os
 
 from fink_utils.broker.sparkUtils import init_sparksession
 
@@ -45,25 +46,25 @@ def format_mangrove_col(userschema: StructType) -> StructType:
                     "metadata": {},
                     "name": "HyperLEDA_name",
                     "nullable": True,
-                    "type": StringType(),
+                    "type": "string",
                 },
                 {
                     "metadata": {},
                     "name": "TwoMASS_name",
                     "nullable": True,
-                    "type": StringType(),
+                    "type": "string",
                 },
                 {
                     "metadata": {},
                     "name": "lum_dist",
                     "nullable": True,
-                    "type": StringType(),
+                    "type": "string",
                 },
                 {
                     "metadata": {},
                     "name": "ang_dist",
                     "nullable": True,
-                    "type": StringType(),
+                    "type": "string",
                 },
             ],
             "type": "struct",
@@ -141,11 +142,11 @@ def grb_distribution(
     grbdatapath += "/online"
 
     # force the mangrove columns to have the struct type
-    userschema = spark.read.parquet(
+    static_df = spark.read.parquet(
         grbdatapath
         + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8])
-    ).schema
-    userschema = format_mangrove_col(userschema)
+    )
+    # userschema = format_mangrove_col(userschema)
 
     basepath = grbdatapath + "/year={}/month={}/day={}".format(
         night[0:4], night[4:6], night[6:8]
@@ -153,21 +154,12 @@ def grb_distribution(
     path = basepath
     df_grb_stream = (
         spark.readStream.format("parquet")
-        .schema(userschema)
+        .schema(static_df.schema)
         .option("basePath", basepath)
         .option("path", path)
         .option("latestFirst", True)
         .load()
     )
-
-    # connection to the grb database
-    # df_grb_stream = connect_to_raw_database(
-    #     grbdatapath
-    #     + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
-    #     grbdatapath
-    #     + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
-    #     latestfirst=True,
-    # )
 
     df_grb_stream = (
         df_grb_stream.drop("year")
@@ -189,10 +181,11 @@ def grb_distribution(
     ] = "cast(triggerTimeUTC as string) as triggerTimeUTC"
     cnames[cnames.index("lc_features_g")] = "struct(lc_features_g.*) as lc_features_g"
     cnames[cnames.index("lc_features_r")] = "struct(lc_features_r.*) as lc_features_r"
-    cnames[cnames.index("mangrove")] = "struct(mangrove.*) as mangrove"
+    # cnames[cnames.index("mangrove")] = "struct(mangrove.*) as mangrove"
     df_grb_stream = df_grb_stream.selectExpr(cnames)
+    static_df = static_df.selectExpr(cnames)
 
-    schema = schema_converter.to_avro(df_grb_stream.coalesce(1).limit(1).schema)
+    schema = schema_converter.to_avro(static_df.coalesce(1).limit(1).schema)
 
     grb_stream_distribute = apply_filters(
         df_grb_stream,
@@ -304,11 +297,17 @@ def launch_distribution(arguments):
 
     if completed_process.returncode != 0:  # pragma: no cover
         logger.error(
-            "fink-mm distribution stream spark application has ended with a non-zero returncode.\
-                \n\t cause:\n\t\t{}\n\t\t{}\n\n\n{}\n\n".format(
-                completed_process.stdout, completed_process.stderr, spark_submit
-            )
-        )
+            f"""
+fink-mm distribution stream spark application has ended with a non-zero returncode.
+- spark submit command:
+{spark_submit}
+
+- stdout:
+{completed_process.stdout.decode("utf-8")if completed_process.stdout is not None else "no std output"}
+
+- stderr:
+{completed_process.stderr.decode("utf-8")if completed_process.stderr is not None else "no err output"}
+        """)
         exit(1)
 
     logger.info("fink-mm distribution stream spark application ended normally")
