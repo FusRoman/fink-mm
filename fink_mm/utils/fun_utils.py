@@ -877,7 +877,8 @@ def read_and_build_spark_submit(config, logger):
         logger.error("Spark Admin config entry not found \n\t {}".format(e))
         exit(1)
 
-    spark_submit = "spark-submit \
+    spark_submit = "source ~/.bash_profile \
+        `which spark-submit` \
         --master {} \
         --conf spark.mesos.principal={} \
         --conf spark.mesos.secret={} \

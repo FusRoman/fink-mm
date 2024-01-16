@@ -689,7 +689,7 @@ def launch_join(arguments: dict, data_mode, test: bool = False):
     if debug:
         logger.debug(f"spark-submit command = {spark_submit}")
 
-    completed_process = subprocess.run(spark_submit, shell=True, capture_output=True)
+    completed_process = subprocess.run(spark_submit, shell=True)
 
     if completed_process.returncode != 0:  # pragma: no cover
         logger.error(
