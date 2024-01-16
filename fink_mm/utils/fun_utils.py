@@ -861,7 +861,7 @@ def read_and_build_spark_submit(config, logger):
     >>> config = get_config({"--config" : "fink_mm/conf/fink_mm.conf"})
     >>> logger = init_logging()
     >>> read_and_build_spark_submit(config, logger)
-    'if test -f '~/.bash_profile'; then         source ~/.bash_profile; fi;         `which spark-submit`         --master local[2]         --conf spark.mesos.principal=         --conf spark.mesos.secret=         --conf spark.mesos.role=         --conf spark.executorEnv.HOME=/path/to/user/         --driver-memory 4G         --executor-memory 8G         --conf spark.cores.max=16         --conf spark.executor.cores=8'
+    "if test -f '~/.bash_profile'; then         source ~/.bash_profile; fi;         `which spark-submit`         --master local[2]         --conf spark.mesos.principal=         --conf spark.mesos.secret=         --conf spark.mesos.role=         --conf spark.executorEnv.HOME=/path/to/user/         --driver-memory 4G         --executor-memory 8G         --conf spark.cores.max=16         --conf spark.executor.cores=8"
     """
     try:
         master_manager = config["STREAM"]["manager"]
