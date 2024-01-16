@@ -878,7 +878,7 @@ def read_and_build_spark_submit(config, logger):
         exit(1)
 
     spark_submit = "if test -f '~/.bash_profile'; then \
-        source ~/.bash_profile fi \
+        source ~/.bash_profile fi; \
         `which spark-submit` \
         --master {} \
         --conf spark.mesos.principal={} \
