@@ -57,6 +57,7 @@ setup(
         "pandera==0.14.5",
         "astropy_healpix==0.7",
         "hdfs==2.7.2",
+        "py4j"
     ],
     entry_points={"console_scripts": ["fink_mm=fink_mm.fink_mm_cli:main"]},
     license="Apache-2.0 License",

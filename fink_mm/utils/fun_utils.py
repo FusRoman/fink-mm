@@ -861,7 +861,7 @@ def read_and_build_spark_submit(config, logger):
     >>> config = get_config({"--config" : "fink_mm/conf/fink_mm.conf"})
     >>> logger = init_logging()
     >>> read_and_build_spark_submit(config, logger)
-    'spark-submit         --master local[2]         --conf spark.mesos.principal=         --conf spark.mesos.secret=         --conf spark.mesos.role=         --conf spark.executorEnv.HOME=/path/to/user/         --driver-memory 4G         --executor-memory 8G         --conf spark.cores.max=16         --conf spark.executor.cores=8'
+    "if test -f '~/.bash_profile'; then         source ~/.bash_profile; fi;         `which spark-submit`         --master local[2]         --conf spark.mesos.principal=         --conf spark.mesos.secret=         --conf spark.mesos.role=         --conf spark.executorEnv.HOME=/path/to/user/         --driver-memory 4G         --executor-memory 8G         --conf spark.cores.max=16         --conf spark.executor.cores=8"
     """
     try:
         master_manager = config["STREAM"]["manager"]
@@ -877,7 +877,9 @@ def read_and_build_spark_submit(config, logger):
         logger.error("Spark Admin config entry not found \n\t {}".format(e))
         exit(1)
 
-    spark_submit = "spark-submit \
+    spark_submit = "if test -f '~/.bash_profile'; then \
+        source ~/.bash_profile; fi; \
+        `which spark-submit` \
         --master {} \
         --conf spark.mesos.principal={} \
         --conf spark.mesos.secret={} \
@@ -986,7 +988,7 @@ def read_additional_spark_options(arguments, config, logger, verbose, is_test):
     True
 
     >>> read_additional_spark_options(arguments, config, logger, True, False)
-    ('', '', 'org.apache.spark:spark-streaming-kafka-0-10-assembly_2.12:3.1.3,org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.3,org.apache.spark:spark-avro_2.12:3.1.3,org.apache.hbase:hbase-shaded-mapreduce:2.2.7', '')
+    ('', '', 'org.apache.spark:spark-streaming-kafka-0-10-assembly_2.12:3.4.1,org.apache.spark:spark-sql-kafka-0-10_2.12:3.4.1,org.apache.spark:spark-avro_2.12:3.4.1,org.apache.hbase:hbase-shaded-mapreduce:2.2.7', '')
     """
     try:
         external_python_libs = config["STREAM"]["external_python_libs"]
