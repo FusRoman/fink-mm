@@ -860,8 +860,13 @@ def read_and_build_spark_submit(config, logger):
     --------
     >>> config = get_config({"--config" : "fink_mm/conf/fink_mm.conf"})
     >>> logger = init_logging()
-    >>> read_and_build_spark_submit(config, logger)
-    "if test -f '~/.bash_profile'; then         source ~/.bash_profile; fi;         `which spark-submit`         --master local[2]         --conf spark.mesos.principal=         --conf spark.mesos.secret=         --conf spark.mesos.role=         --conf spark.executorEnv.HOME=/path/to/user/         --driver-memory 4G         --executor-memory 8G         --conf spark.cores.max=16         --conf spark.executor.cores=8"
+    >>> spark_str = read_and_build_spark_submit(config, logger)
+
+    >>> home_path = os.environ["HOME"]
+    >>> path_bash_profile = os.path.join(home_path, ".bash_profile")
+    >>> test_str = f"if test -f '{path_bash_profile}'; then         source {path_bash_profile}; fi;         `which spark-submit`         --master local[2]         --conf spark.mesos.principal=         --conf spark.mesos.secret=         --conf spark.mesos.role=         --conf spark.executorEnv.HOME=/path/to/user/         --driver-memory 4G         --executor-memory 8G         --conf spark.cores.max=16         --conf spark.executor.cores=8"
+    >>> test_str == spark_str
+    True
     """
     try:
         master_manager = config["STREAM"]["manager"]
@@ -877,8 +882,11 @@ def read_and_build_spark_submit(config, logger):
         logger.error("Spark Admin config entry not found \n\t {}".format(e))
         exit(1)
 
-    spark_submit = "if test -f '~/.bash_profile'; then \
-        source ~/.bash_profile; fi; \
+    home_path = os.environ["HOME"]
+    path_bash_profile = os.path.join(home_path, ".bash_profile")
+
+    spark_submit = "if test -f '{}'; then \
+        source {}; fi; \
         `which spark-submit` \
         --master {} \
         --conf spark.mesos.principal={} \
@@ -889,6 +897,8 @@ def read_and_build_spark_submit(config, logger):
         --executor-memory {}G \
         --conf spark.cores.max={} \
         --conf spark.executor.cores={}".format(
+        path_bash_profile,
+        path_bash_profile,
         master_manager,
         principal_group,
         secret,
