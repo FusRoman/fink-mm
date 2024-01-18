@@ -877,8 +877,11 @@ def read_and_build_spark_submit(config, logger):
         logger.error("Spark Admin config entry not found \n\t {}".format(e))
         exit(1)
 
-    spark_submit = "if test -f '~/.bash_profile'; then \
-        source ~/.bash_profile; fi; \
+    home_path = os.environ["HOME"]
+    path_bash_profile = os.path.join(home_path, ".bash_profile")
+
+    spark_submit = "if test -f '{}'; then \
+        source {}; fi; \
         `which spark-submit` \
         --master {} \
         --conf spark.mesos.principal={} \
@@ -889,6 +892,8 @@ def read_and_build_spark_submit(config, logger):
         --executor-memory {}G \
         --conf spark.cores.max={} \
         --conf spark.executor.cores={}".format(
+        path_bash_profile,
+        path_bash_profile,
         master_manager,
         principal_group,
         secret,
