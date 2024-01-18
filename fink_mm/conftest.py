@@ -19,6 +19,7 @@ logger = init_logging()
 
 @pytest.fixture(autouse=True)
 def init_test(doctest_namespace):
+    doctest_namespace["os"] = os
     doctest_namespace["pd"] = pandas
     doctest_namespace["tempfile"] = tempfile
     doctest_namespace["assert_frame_equal"] = assert_frame_equal
