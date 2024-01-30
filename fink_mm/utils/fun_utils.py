@@ -270,7 +270,7 @@ def sub_compute_rate(
         return abs_rate, norm_rate, first_variation_time, diff_start_hist, from_upper
 
 
-def get_observatory(obsname: str, rawEvent: str): # -> Observatory
+def get_observatory(obsname: str, rawEvent: str):  # -> Observatory
     """
     Get the observatory class from an observatory name and a raw voevent
 
