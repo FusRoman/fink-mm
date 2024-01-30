@@ -14,10 +14,15 @@ from fink_filters.classification import extract_fink_classification
 from fink_utils.spark.utils import concat_col
 
 from fink_mm.observatory import obsname_to_class, INSTR_FORMAT
-from fink_mm.observatory.observatory import Observatory
 from fink_mm.gcn_stream.gcn_reader import load_voevent_from_file, load_json_from_file
 from fink_mm.init import init_logging
 from enum import Enum
+
+# FIXME
+# commented due to a chaining import leading to a pandera import
+# pandera break the spark jobs by adding the SPARK_LOCAL_IP env variable into the environment
+# link to the issue: https://github.com/FusRoman/fink-mm/issues/107#issue-2108208253
+# from fink_mm.observatory.observatory import Observatory
 
 # from fink_broker.tracklet_identification import add_tracklet_information
 
@@ -265,7 +270,7 @@ def sub_compute_rate(
         return abs_rate, norm_rate, first_variation_time, diff_start_hist, from_upper
 
 
-def get_observatory(obsname: str, rawEvent: str) -> Observatory:
+def get_observatory(obsname: str, rawEvent: str): # -> Observatory
     """
     Get the observatory class from an observatory name and a raw voevent
 
