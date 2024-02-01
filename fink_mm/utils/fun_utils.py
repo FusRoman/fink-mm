@@ -757,21 +757,22 @@ def join_post_process(df_grb: DataFrame, hdfs_adress: str, root_path: str) -> Da
     df_grb = concat_col(df_grb, "jd")
     df_grb = concat_col(df_grb, "fid")
 
-    df_grb = df_grb.withColumn(
-        "c_rate",
-        compute_rate(
-            df_grb["candidate.magpsf"],
-            df_grb["candidate.jdstarthist"],
-            df_grb["candidate.jd"],
-            df_grb["candidate.fid"],
-            df_grb["cmagpsf"],
-            df_grb["cdiffmaglim"],
-            df_grb["cjd"],
-            df_grb["cfid"],
-        ),
-    )
-
-    df_grb = format_rate_results(df_grb, "c_rate")
+    # DEPRECATED
+    # computed by the fast transient fink science module
+    # df_grb = df_grb.withColumn(
+    #     "c_rate",
+    #     compute_rate(
+    #         df_grb["candidate.magpsf"],
+    #         df_grb["candidate.jdstarthist"],
+    #         df_grb["candidate.jd"],
+    #         df_grb["candidate.fid"],
+    #         df_grb["cmagpsf"],
+    #         df_grb["cdiffmaglim"],
+    #         df_grb["cjd"],
+    #         df_grb["cfid"],
+    #     ),
+    # )
+    # df_grb = format_rate_results(df_grb, "c_rate")
 
     # TODO : do something better with satellites
     # df_grb = add_tracklet_information(df_grb)
@@ -805,7 +806,7 @@ def join_post_process(df_grb: DataFrame, hdfs_adress: str, root_path: str) -> Da
             df_grb["raw_event"],
             df_grb["ztf_ra"],
             df_grb["ztf_dec"],
-            df_grb["start_vartime"],
+            df_grb["jd_first_real_det"],
             F.lit(hdfs_adress),
             df_grb["gcn_status"],
             F.lit(root_path),

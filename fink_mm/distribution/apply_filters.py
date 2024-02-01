@@ -77,7 +77,7 @@ def apply_filters(
                 df_stream["rb"],
                 df_stream["gcn_loc_error"],
                 df_stream["p_assoc"],
-                df_stream["rate"],
+                df_stream["mag_rate"],
             ),
         )
         .filter("f_gold == True")
