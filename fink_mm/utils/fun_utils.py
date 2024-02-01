@@ -838,6 +838,8 @@ def join_post_process(df_grb: DataFrame, hdfs_adress: str, root_path: str) -> Da
         "candidate.jdstarthist",
         "candidate.rb",
         "candidate.jd",
+        "candidate.magpsf",
+        "candidate.sigmapsf"
     ]
     df_grb = df_grb.select(cols_fink + cols_extra).filter("p_assoc != -1.0")
     df_grb = df_grb.withColumnRenamed("err_arcmin", "gcn_loc_error")
