@@ -21,7 +21,13 @@ from fink_mm.test.hypothesis.observatory_schema import voevent_df_schema
 from datetime import datetime
 
 
-def gcn_from_hdfs(client: InsecureClient, root_path: str, triggerId: str, triggerTime: datetime, gcn_status: str) -> pd.DataFrame:
+def gcn_from_hdfs(
+    client: InsecureClient,
+    root_path: str,
+    triggerId: str,
+    triggerTime: datetime,
+    gcn_status: str,
+) -> pd.DataFrame:
     path_date = os.path.join(
         root_path,
         f"year={triggerTime.year:04d}/month={triggerTime.month:02d}/day={triggerTime.day:02d}",
@@ -32,7 +38,10 @@ def gcn_from_hdfs(client: InsecureClient, root_path: str, triggerId: str, trigge
             with client.read(path_to_load) as reader:
                 content = reader.read()
                 pdf = pd.read_parquet(io.BytesIO(content))
-                if triggerId in pdf["triggerId"].values and gcn_status in pdf["gcn_status"].values:
+                if (
+                    triggerId in pdf["triggerId"].values
+                    and gcn_status in pdf["gcn_status"].values
+                ):
                     return pdf[
                         (pdf["triggerId"] == triggerId)
                         & (pdf["gcn_status"] == gcn_status)
@@ -82,19 +91,22 @@ class LVK(Observatory):
         >>> np.array(lvk_initial.get_skymap()["UNIQ"])
         array([  1285,   1287,   1296, ..., 162369, 162370, 162371])
         """
-        if "skymap" in self.voevent["event"]:
-            skymap_str = self.voevent["event"]["skymap"]
-        else:
-            hdfs_adress = kwargs["hdfs_adress"]
-            hdfs_client = InsecureClient(f"http://{hdfs_adress}:50070")
-            triggerId = self.get_trigger_id()
-            gcn_status = kwargs["gcn_status"]
-            root_path = kwargs["root_path"]
-            t_obs = Time(self.get_trigger_time()[1], format="jd").to_datetime()
-            gcn_pdf = gcn_from_hdfs(
-                hdfs_client, root_path, triggerId, t_obs, gcn_status
-            )
-            skymap_str = json.loads(gcn_pdf["raw_event"].iloc[0])["event"]["skymap"]
+
+        skymap_str = self.voevent["event"]["skymap"]
+
+        # if "skymap" in self.voevent["event"]:
+        #     skymap_str = self.voevent["event"]["skymap"]
+        # else:
+        #     hdfs_adress = kwargs["hdfs_adress"]
+        #     hdfs_client = InsecureClient(f"http://{hdfs_adress}:50070")
+        #     triggerId = self.get_trigger_id()
+        #     gcn_status = kwargs["gcn_status"]
+        #     root_path = kwargs["root_path"]
+        #     t_obs = Time(self.get_trigger_time()[1], format="jd").to_datetime()
+        #     gcn_pdf = gcn_from_hdfs(
+        #         hdfs_client, root_path, triggerId, t_obs, gcn_status
+        #     )
+        #     skymap_str = json.loads(gcn_pdf["raw_event"].iloc[0])["event"]["skymap"]
 
         # Decode and parse skymap
         skymap_bytes = b64decode(skymap_str)
@@ -136,7 +148,8 @@ class LVK(Observatory):
                 or self.voevent["superevent_id"][0] == "M"
             )
         return (
-            self.voevent["superevent_id"][0] == "S"
+            self.voevent["superevent_id"][0]
+            == "S"
             # comment the significant filter (enable cross-match with 'burst' and subthreshold events)
             # and self.voevent["event"]["significant"]
         )
@@ -432,10 +445,13 @@ class LVK(Observatory):
         >>> lvk_initial.association_proba(95.712890625, -10.958863307027668, 0)
         0.0054008620296433045
         """
-        if "hdfs_adress" in kwargs and "gcn_status" in kwargs and "root_path" in kwargs:
-            skymap = self.get_skymap(**kwargs)
-        else:
-            skymap = self.get_skymap()
+
+        skymap = self.get_skymap()
+
+        # if "hdfs_adress" in kwargs and "gcn_status" in kwargs and "root_path" in kwargs:
+        #     skymap = self.get_skymap(**kwargs)
+        # else:
+        #     skymap = self.get_skymap()
 
         max_level = 29
         max_nside = ah.level_to_nside(max_level)

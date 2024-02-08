@@ -63,17 +63,17 @@ def align_ztf(
 
     Examples
     --------
-    >>> path_ztf_raw = ("fink_mm/test/test_data/ztf_test/online/raw/year=2019/month=09/day=03/")
+    >>> path_ztf_raw = ("fink_mm/test/test_data/ztf_test/online/science/year=2024/month=01/day=15/")
     >>> ztf_pdf = pd.read_parquet(path_ztf_raw)
 
     >>> random = np.random.default_rng(0)
     >>> align_ztf(ztf_pdf, 5, 0, 10, random)
 
     >>> ztf_pdf.loc[0]["candidate"]["ra"]
-    289.4610443
+    62.2777961
 
     >>> ztf_pdf.loc[0]["candidate"]["dec"]
-    -11.0504023
+    57.4803954
 
     >>> ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["ra"]
     0
@@ -82,11 +82,11 @@ def align_ztf(
     10
 
     >>> ztf_pdf.loc[0]["candidate"]["jdstarthist"]
-    2458729.6881481
+    2458422.9036806
     >>> ztf_pdf.loc[0]["candidate"]["jd"]
-    2458729.6881481
+    2460324.7135301
     >>> ztf_pdf.loc[0]["prv_candidates"][-1]["jd"]
-    2458725.7316204
+    2460324.6389931
 
     >>> ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["jdstarthist"]
     5.020833333333333
@@ -262,7 +262,7 @@ def align_ztf_and_gcn(
     >>> path_gcn = "fink_mm/test/test_data/683571622_0_test"
     >>> gcn = pd.read_parquet(path_gcn)
 
-    >>> path_ztf_raw = ("fink_mm/test/test_data/ztf_test/online/raw/year=2019/month=09/day=03/")
+    >>> path_ztf_raw = ("fink_mm/test/test_data/ztf_test/online/science/year=2024/month=01/day=15/")
     >>> ztf_pdf = pd.read_parquet(path_ztf_raw)
 
     >>> random = np.random.default_rng(0)

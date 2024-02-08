@@ -9,6 +9,10 @@ exclude =
     old,
     build,
     dist
+    ../fink-mm/test_dir/
+    ../fink-mm/prep_ztf_mm.py
+    ../fink-mm/inspect_data.py
+    ../fink-mm/generate_test_data.py
 per-file-ignores =
     ../fink-mm/fink_mm/ztf_join_gcn.py:W503,E402
     ../fink-mm/fink_mm/offline/spark_offline.py:W503,W605
