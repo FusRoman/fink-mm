@@ -598,7 +598,7 @@ def launch_join(arguments: dict, data_mode, test: bool = False):
     >>> launch_join({
     ...     "--config" : None,
     ...     "--night" : "20240115",
-    ...     "--exit_after" : 100,
+    ...     "--exit_after" : 180,
     ...     "--verbose" : False
     ... }, DataMode.STREAMING, True)
 
@@ -614,7 +614,7 @@ def launch_join(arguments: dict, data_mode, test: bool = False):
     >>> launch_join({
     ...     "--config" : None,
     ...     "--night" : "20240115",
-    ...     "--exit_after" : 100,
+    ...     "--exit_after" : 180,
     ...     "--verbose" : False
     ... }, DataMode.OFFLINE, True)
 
