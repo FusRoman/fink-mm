@@ -85,13 +85,13 @@ jobs:
         source scripts/start_services.sh --kafka-version ${KAFKA_VERSION} --hbase-version ${HBASE_VERSION}
         cd $FINK_MM
 
-    # - name: Call raw2science
-    #   run: |
-    #     fink start raw2science -c ${FINK_MM}/fink_mm/test/test_data/with_hbase/fink_test.conf --night $NIGHT --exit_after 90
+# - name: Call raw2science
+#   run: |
+#     fink start raw2science -c ${FINK_MM}/fink_mm/test/test_data/with_hbase/fink_test.conf --night $NIGHT --exit_after 90
 
-    # - name: Merge data
-    #   run: |
-    #     fink start merge -c ${FINK_MM}/fink_mm/test/test_data/with_hbase/fink_test.conf --night $NIGHT
+# - name: Merge data
+#   run: |
+#     fink start merge -c ${FINK_MM}/fink_mm/test/test_data/with_hbase/fink_test.conf --night $NIGHT
 
     - name: Test preamble
       run: |
