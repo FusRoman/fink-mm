@@ -177,11 +177,11 @@ def init_spark(doctest_namespace):
     doctest_namespace["DataMode"] = DataMode
     doctest_namespace["sql_func"] = sql_func
 
-    grb_data = "fink_mm/test/test_data/gcn_test/raw/year=2019/month=09/day=03"
+    grb_data = "fink_mm/test/test_data/gcn_test/raw/year=2024/month=01/day=15"
     gw_data = "fink_mm/test/test_data/S230518h_0_test"
     join_data = "fink_mm/test/test_data/join_raw_datatest.parquet"
     alert_data = (
-        "fink_mm/test/test_data/ztf_test/online/science/year=2019/month=09/day=03/"
+        "fink_mm/test/test_data/ztf_test/online/science/year=2024/month=01/day=15/"
     )
 
     doctest_namespace["grb_data"] = grb_data

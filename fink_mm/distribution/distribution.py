@@ -110,7 +110,7 @@ def grb_distribution(
     --------
     >>> grb_distribution(
     ... ztfxgcn_test,
-    ... "20190903",
+    ... "20240115",
     ... 30, 40,
     ... "localhost:9092",
     ... "toto", "tata"
@@ -124,7 +124,8 @@ def grb_distribution(
     ... topic,
     ... alert["objectId"],
     ... alert["fink_class"],
-    ... alert["rate"]
+    ... alert["mag_rate"],
+    ... alert["sigma_rate"]
     ... ]]
 
     >>> len(table)
@@ -223,7 +224,7 @@ def launch_distribution(arguments):
     --------
     >>> launch_distribution({
     ... "--config" : "fink_mm/conf/distribute_for_test.conf",
-    ... "--night" : "20190903",
+    ... "--night" : "20240115",
     ... "--exit_after" : 30,
     ... "--verbose" : False
     ... })
@@ -236,7 +237,8 @@ def launch_distribution(arguments):
     ... topic,
     ... alert["objectId"],
     ... alert["fink_class"],
-    ... alert["rate"]
+    ... alert["mag_rate"],
+    ... alert["sigma_rate"]
     ... ]]
 
     >>> len(table)

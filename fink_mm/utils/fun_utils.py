@@ -287,7 +287,7 @@ def get_observatory(obsname: str, rawEvent: str):  # -> Observatory
     -------
     >>> pdf = pd.read_parquet(grb_data)
     >>> type(get_observatory(pdf["observatory"].iloc[0], pdf["raw_event"].iloc[0]))
-    <class 'Fermi.Fermi'>
+    <class 'Integral.Integral'>
     >>> pdf = pd.read_parquet(gw_data)
     >>> type(get_observatory(pdf["observatory"].iloc[0], pdf["raw_event"].iloc[0]))
     <class 'LVK.LVK'>
@@ -331,7 +331,7 @@ def get_pixels(obsname: pd.Series, rawEvent: pd.Series, NSIDE: pd.Series) -> pd.
     >>> grb_pixs.withColumn("hpix", explode("hpix_circle"))\
           .orderBy(["triggerId", "hpix"])\
                .select(["triggerId", "hpix"]).head(5)
-    [Row(triggerId='683476673', hpix=42), Row(triggerId='683476673', hpix=42), Row(triggerId='683476673', hpix=62), Row(triggerId='683476673', hpix=62), Row(triggerId='683476673', hpix=63)]
+    [Row(triggerId='10472', hpix=609), Row(triggerId='727009399', hpix=177), Row(triggerId='727009399', hpix=177), Row(triggerId='727009399', hpix=177), Row(triggerId='727009399', hpix=178)]
     """
     return pd.Series(
         [
@@ -757,21 +757,22 @@ def join_post_process(df_grb: DataFrame, hdfs_adress: str, root_path: str) -> Da
     df_grb = concat_col(df_grb, "jd")
     df_grb = concat_col(df_grb, "fid")
 
-    df_grb = df_grb.withColumn(
-        "c_rate",
-        compute_rate(
-            df_grb["candidate.magpsf"],
-            df_grb["candidate.jdstarthist"],
-            df_grb["candidate.jd"],
-            df_grb["candidate.fid"],
-            df_grb["cmagpsf"],
-            df_grb["cdiffmaglim"],
-            df_grb["cjd"],
-            df_grb["cfid"],
-        ),
-    )
-
-    df_grb = format_rate_results(df_grb, "c_rate")
+    # DEPRECATED
+    # computed by the fast transient fink science module
+    # df_grb = df_grb.withColumn(
+    #     "c_rate",
+    #     compute_rate(
+    #         df_grb["candidate.magpsf"],
+    #         df_grb["candidate.jdstarthist"],
+    #         df_grb["candidate.jd"],
+    #         df_grb["candidate.fid"],
+    #         df_grb["cmagpsf"],
+    #         df_grb["cdiffmaglim"],
+    #         df_grb["cjd"],
+    #         df_grb["cfid"],
+    #     ),
+    # )
+    # df_grb = format_rate_results(df_grb, "c_rate")
 
     # TODO : do something better with satellites
     # df_grb = add_tracklet_information(df_grb)
@@ -805,7 +806,7 @@ def join_post_process(df_grb: DataFrame, hdfs_adress: str, root_path: str) -> Da
             df_grb["raw_event"],
             df_grb["ztf_ra"],
             df_grb["ztf_dec"],
-            df_grb["start_vartime"],
+            df_grb["jd_first_real_det"],
             F.lit(hdfs_adress),
             df_grb["gcn_status"],
             F.lit(root_path),
@@ -838,6 +839,8 @@ def join_post_process(df_grb: DataFrame, hdfs_adress: str, root_path: str) -> Da
         "candidate.jdstarthist",
         "candidate.rb",
         "candidate.jd",
+        "candidate.magpsf",
+        "candidate.sigmapsf"
     ]
     df_grb = df_grb.select(cols_fink + cols_extra).filter("p_assoc != -1.0")
     df_grb = df_grb.withColumnRenamed("err_arcmin", "gcn_loc_error")
@@ -869,7 +872,7 @@ def read_and_build_spark_submit(config, logger):
 
     >>> home_path = os.environ["HOME"]
     >>> path_bash_profile = os.path.join(home_path, ".bash_profile")
-    >>> test_str = f"if test -f '{path_bash_profile}'; then         source {path_bash_profile}; fi;         `which spark-submit`         --master local[2]         --conf spark.mesos.principal=         --conf spark.mesos.secret=         --conf spark.mesos.role=         --conf spark.executorEnv.HOME=/path/to/user/         --driver-memory 4G         --executor-memory 8G         --conf spark.cores.max=16         --conf spark.executor.cores=8"
+    >>> test_str = f"if test -f '{path_bash_profile}'; then         source {path_bash_profile}; fi;         `which spark-submit`         --master local[8]         --conf spark.mesos.principal=         --conf spark.mesos.secret=         --conf spark.mesos.role=         --conf spark.executorEnv.HOME=/path/to/user/         --driver-memory 4G         --executor-memory 8G         --conf spark.cores.max=16         --conf spark.executor.cores=8"
     >>> test_str == spark_str
     True
     """

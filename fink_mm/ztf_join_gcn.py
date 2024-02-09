@@ -79,7 +79,7 @@ def ztf_grb_filter(spark_ztf, ast_dist, pansstar_dist, pansstar_star_score, gaia
     >>> spark_filter = ztf_grb_filter(sparkDF, 5, 2, 0, 5)
 
     >>> spark_filter.count()
-    32
+    53
     """
     spark_filter = (
         spark_ztf.filter(
@@ -321,7 +321,7 @@ def write_dataframe(
                 df_join["rb"],
                 df_join["gcn_loc_error"],
                 df_join["p_assoc"],
-                df_join["rate"],
+                df_join["mag_rate"],
             ),
         )
 
@@ -357,7 +357,7 @@ def ztf_pre_join(
         "cutoutDifference",
         "year",
         "month",
-        "day"
+        "day",
     )
 
     ztf_dataframe = ztf_grb_filter(
@@ -380,7 +380,7 @@ def gcn_pre_join(
     gcn_dataframe: DataFrame,
     NSIDE: int,
     test: bool,
-) -> DataFrame:
+) -> Tuple[DataFrame, DataFrame]:
     gcn_dataframe = gcn_dataframe.drop("year").drop("month").drop("day")
 
     # compute pixels for gcn alerts
@@ -396,12 +396,20 @@ def gcn_pre_join(
             remove_skymap(gcn_dataframe.observatory, gcn_dataframe.raw_event),
         )
 
+    gcn_rawevent = gcn_dataframe.select(["triggerId", "raw_event"]).withColumnRenamed(
+        "triggerId", "gcn_trigId"
+    )
+    gcn_dataframe = gcn_dataframe.select(
+        [col for col in gcn_dataframe.columns if col != "raw_event"]
+    )
+
     gcn_dataframe = gcn_dataframe.withColumn("hpix", explode("hpix_circle"))
 
     gcn_dataframe = gcn_dataframe.withColumnRenamed("ra", "gcn_ra").withColumnRenamed(
         "dec", "gcn_dec"
     )
-    return gcn_dataframe
+
+    return gcn_dataframe, gcn_rawevent
 
 
 def ztf_join_gcn(
@@ -470,41 +478,36 @@ def ztf_join_gcn(
     ...     ztf_datatest,
     ...     gcn_datatest,
     ...     grb_dataoutput,
-    ...     "20190903",
+    ...     "20240115",
     ...     4, 100, 5, 7, "127.0.0.1", 5, 2, 0, 5, False, True
     ... )
 
-    >>> datajoin = pd.read_parquet(grb_dataoutput + "/online").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
-
-    >>> datajoin = datajoin.drop("t2", axis=1)
-
+    >>> datajoin = pd.read_parquet(grb_dataoutput + "/online")
     >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
 
     >>> list(datajoin.columns)
-    ['DR3Name', 'Plx', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_mag', 'delta_time', 'diff_vartime', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'jd', 'jd_first_real_det', 'jdstarthist', 'jdstarthist_dt', 'lc_features_g', 'lc_features_r', 'lower_rate', 'mag_rate', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'rate', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'sigma_rate', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 'start_vartime', 'timestamp', 'triggerId', 'triggerTimeUTC', 'upper_rate', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
+    ['DR3Name', 'Plx', 'ackTime', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_time', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'jd', 'jd_first_real_det', 'jdstarthist', 'jdstarthist_dt', 'lc_features_g', 'lc_features_r', 'lower_rate', 'mag_rate', 'magpsf', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'sigma_rate', 'sigmapsf', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 't2', 'timestamp', 'triggerId', 'triggerTimeUTC', 'upper_rate', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
 
     >>> len(datajoin)
-    36
+    204
 
     >>> ztf_join_gcn(
     ...     DataMode.OFFLINE,
     ...     ztf_datatest,
     ...     gcn_datatest,
     ...     grb_dataoutput,
-    ...     "20190903",
+    ...     "20240115",
     ...     4, 100, 5, 7, "127.0.0.1", 5, 2, 0, 5, False, True
     ... )
 
-    >>> datajoin = pd.read_parquet(grb_dataoutput + "/offline").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
-
-    >>> datajoin = datajoin.drop("t2", axis=1)
-
+    >>> datajoin = pd.read_parquet(grb_dataoutput + "/offline")
     >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
 
     >>> list(datajoin.columns)
-    ['DR3Name', 'Plx', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_mag', 'delta_time', 'diff_vartime', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'is_grb_bronze', 'is_grb_gold', 'is_grb_silver', 'is_gw_bronze', 'jd', 'jd_first_real_det', 'jdstarthist', 'jdstarthist_dt', 'lc_features_g', 'lc_features_r', 'lower_rate', 'mag_rate', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'rate', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'sigma_rate', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 'start_vartime', 'timestamp', 'triggerId', 'triggerTimeUTC', 'upper_rate', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
+    ['DR3Name', 'Plx', 'ackTime', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_time', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'is_grb_bronze', 'is_grb_gold', 'is_grb_silver', 'is_gw_bronze', 'jd', 'jd_first_real_det', 'jdstarthist', 'jdstarthist_dt', 'lc_features_g', 'lc_features_r', 'lower_rate', 'mag_rate', 'magpsf', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'sigma_rate', 'sigmapsf', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 't2', 'timestamp', 'triggerId', 'triggerTimeUTC', 'upper_rate', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
+
     >>> len(datajoin)
-    72
+    382
     """
     logger = init_logging()
 
@@ -528,7 +531,7 @@ def ztf_join_gcn(
     ztf_dataframe = ztf_pre_join(
         ztf_dataframe, ast_dist, pansstar_dist, pansstar_star_score, gaia_dist, NSIDE
     )
-    gcn_dataframe = gcn_pre_join(gcn_dataframe, NSIDE, test)
+    gcn_dataframe, gcn_rawevent = gcn_pre_join(gcn_dataframe, NSIDE, test)
 
     # join the two streams according to the healpix columns.
     # A pixel id will be assign to each alerts / gcn according to their position in the sky.
@@ -537,7 +540,15 @@ def ztf_join_gcn(
         ztf_dataframe.hpix == gcn_dataframe.hpix,
         ztf_dataframe.candidate.jdstarthist > gcn_dataframe.triggerTimejd,
     ]
+    # multi_messenger join to combine optical stream with other streams
     df_join_mm = gcn_dataframe.join(F.broadcast(ztf_dataframe), join_condition, "inner")
+
+    # combine the multi-messenger join with the raw_event removed previously to save memory
+    df_join_mm = gcn_rawevent.join(
+        F.broadcast(df_join_mm),
+        [df_join_mm.triggerId == gcn_rawevent.gcn_trigId],
+        "inner",
+    ).drop("gcn_trigId").dropDuplicates(["objectId", "triggerId", "gcn_status"])
 
     df_join_mm = join_post_process(df_join_mm, hdfs_adress, gcn_datapath_prefix)
 
@@ -586,39 +597,35 @@ def launch_join(arguments: dict, data_mode, test: bool = False):
     --------
     >>> launch_join({
     ...     "--config" : None,
-    ...     "--night" : "20190903",
-    ...     "--exit_after" : 100,
+    ...     "--night" : "20240115",
+    ...     "--exit_after" : 180,
     ...     "--verbose" : False
     ... }, DataMode.STREAMING, True)
 
-    >>> datajoin = pd.read_parquet("fink_mm/test/test_output/online").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
-
-    >>> datajoin = datajoin.drop("t2", axis=1)
-
+    >>> datajoin = pd.read_parquet("fink_mm/test/test_output/online")
     >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
 
     >>> list(datajoin.columns)
-    ['DR3Name', 'Plx', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_mag', 'delta_time', 'diff_vartime', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'jd', 'jd_first_real_det', 'jdstarthist', 'jdstarthist_dt', 'lc_features_g', 'lc_features_r', 'lower_rate', 'mag_rate', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'rate', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'sigma_rate', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 'start_vartime', 'timestamp', 'triggerId', 'triggerTimeUTC', 'upper_rate', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
+    ['DR3Name', 'Plx', 'ackTime', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_time', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'jd', 'jd_first_real_det', 'jdstarthist', 'jdstarthist_dt', 'lc_features_g', 'lc_features_r', 'lower_rate', 'mag_rate', 'magpsf', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'sigma_rate', 'sigmapsf', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 't2', 'timestamp', 'triggerId', 'triggerTimeUTC', 'upper_rate', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
+
     >>> len(datajoin)
-    36
+    204
 
     >>> launch_join({
     ...     "--config" : None,
-    ...     "--night" : "20190903",
-    ...     "--exit_after" : 100,
+    ...     "--night" : "20240115",
+    ...     "--exit_after" : 180,
     ...     "--verbose" : False
     ... }, DataMode.OFFLINE, True)
 
-    >>> datajoin = pd.read_parquet("fink_mm/test/test_output/offline").sort_values(["objectId", "triggerId", "gcn_ra"]).reset_index(drop=True).sort_index(axis=1)
-
-    >>> datajoin = datajoin.drop("t2", axis=1)
-
+    >>> datajoin = pd.read_parquet("fink_mm/test/test_output/offline")
     >>> datajoin = datajoin.reindex(sorted(datajoin.columns), axis=1)
 
     >>> list(datajoin.columns)
-    ['DR3Name', 'Plx', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_mag', 'delta_time', 'diff_vartime', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'is_grb_bronze', 'is_grb_gold', 'is_grb_silver', 'is_gw_bronze', 'jd', 'jd_first_real_det', 'jdstarthist', 'jdstarthist_dt', 'lc_features_g', 'lc_features_r', 'lower_rate', 'mag_rate', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'rate', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'sigma_rate', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 'start_vartime', 'timestamp', 'triggerId', 'triggerTimeUTC', 'upper_rate', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
+    ['DR3Name', 'Plx', 'ackTime', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_time', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'is_grb_bronze', 'is_grb_gold', 'is_grb_silver', 'is_gw_bronze', 'jd', 'jd_first_real_det', 'jdstarthist', 'jdstarthist_dt', 'lc_features_g', 'lc_features_r', 'lower_rate', 'mag_rate', 'magpsf', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'sigma_rate', 'sigmapsf', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 't2', 'timestamp', 'triggerId', 'triggerTimeUTC', 'upper_rate', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
+
     >>> len(datajoin)
-    72
+    382
     """
     config = get_config(arguments)
     logger = init_logging()
