@@ -608,6 +608,14 @@ def ztf_join_gcn(
     """
     logger = init_logging()
 
+    if mm_mode == DataMode.OFFLINE:
+        job_name = "offline"
+    elif mm_mode == DataMode.STREAMING:
+        job_name = "online"
+    spark = init_sparksession(
+        "science2mm_{}_{}{}{}".format(job_name, night[0:4], night[4:6], night[6:8])
+    )
+
     ztf_dataframe, gcn_dataframe = load_dataframe(
         spark,
         ztf_datapath_prefix,
