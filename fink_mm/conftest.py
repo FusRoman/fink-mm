@@ -189,7 +189,8 @@ def init_spark(doctest_namespace):
     doctest_namespace["join_data"] = join_data
     doctest_namespace["alert_data"] = alert_data
 
-    ztf_datatest = "fink_mm/test/test_data/ztf_test/online/science"
+    ztf_datatest = "fink_mm/test/test_data/ztf_test"
+
     gcn_datatest = "fink_mm/test/test_data/gcn_test/raw"
     online_data_test = "fink_mm/test/test_data/online"
     offline_data_test = "fink_mm/test/test_data/offline"

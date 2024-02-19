@@ -3,6 +3,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 import time
+import os
 import subprocess
 from typing import Tuple
 import sys
@@ -184,10 +185,8 @@ def load_dataframe(
     if load_mode == DataMode.STREAMING:
         # connection to the ztf science stream
         ztf_alert = connect_to_raw_database(
-            ztf_path
-            + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
-            ztf_path
-            + "/year={}/month={}/day={}".format(night[0:4], night[4:6], night[6:8]),
+            os.path.join(ztf_path, f"/online/science/{night}"),
+            os.path.join(ztf_path, f"/online/science/{night}"),
             latestfirst=False,
         )
 
@@ -207,9 +206,9 @@ def load_dataframe(
             spark.read.format("parquet")
             .option("mergeSchema", True)
             .load(
-                ztf_path
-                + "/archive/science/year={}/month={}/day={}".format(
-                    night[0:4], night[4:6], night[6:8]
+                os.path.join(
+                    ztf_path,
+                    f"/archive/science/year={night[0:4]}/month={night[4:6]}/day={night[6:8]}",
                 )
             )
         )
