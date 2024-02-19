@@ -35,12 +35,12 @@ def init_test(doctest_namespace):
 
 @pytest.fixture(autouse=True)
 def init_fermi(doctest_namespace):
-    doctest_namespace[
-        "fermi_gbm_voevent_path"
-    ] = "fink_mm/test/test_data/VODB/fermi/voevent_number=193.xml"
-    doctest_namespace[
-        "fermi_lat_voevent_path"
-    ] = "fink_mm/test/test_data/VODB/fermi/voevent_number=2842.xml"
+    doctest_namespace["fermi_gbm_voevent_path"] = (
+        "fink_mm/test/test_data/VODB/fermi/voevent_number=193.xml"
+    )
+    doctest_namespace["fermi_lat_voevent_path"] = (
+        "fink_mm/test/test_data/VODB/fermi/voevent_number=2842.xml"
+    )
 
     fermi_gbm = voevent_to_class(
         load_voevent_from_path(doctest_namespace["fermi_gbm_voevent_path"], logger)
@@ -55,15 +55,15 @@ def init_fermi(doctest_namespace):
 
 @pytest.fixture(autouse=True)
 def init_swift(doctest_namespace):
-    doctest_namespace[
-        "swift_bat_voevent_path"
-    ] = "fink_mm/test/test_data/VODB/swift/voevent_number=392.xml"
-    doctest_namespace[
-        "swift_xrt_voevent_path"
-    ] = "fink_mm/test/test_data/VODB/swift/voevent_number=4554.xml"
-    doctest_namespace[
-        "swift_uvot_voevent_path"
-    ] = "fink_mm/test/test_data/VODB/swift/voevent_number=8582.xml"
+    doctest_namespace["swift_bat_voevent_path"] = (
+        "fink_mm/test/test_data/VODB/swift/voevent_number=392.xml"
+    )
+    doctest_namespace["swift_xrt_voevent_path"] = (
+        "fink_mm/test/test_data/VODB/swift/voevent_number=4554.xml"
+    )
+    doctest_namespace["swift_uvot_voevent_path"] = (
+        "fink_mm/test/test_data/VODB/swift/voevent_number=8582.xml"
+    )
 
     swift_bat = voevent_to_class(
         load_voevent_from_path(doctest_namespace["swift_bat_voevent_path"], logger)
@@ -82,15 +82,15 @@ def init_swift(doctest_namespace):
 
 @pytest.fixture(autouse=True)
 def init_integral(doctest_namespace):
-    doctest_namespace[
-        "integral_weak_voevent_path"
-    ] = "fink_mm/test/test_data/VODB/integral/voevent_number=737.xml"
-    doctest_namespace[
-        "integral_wakeup_voevent_path"
-    ] = "fink_mm/test/test_data/VODB/integral/voevent_number=18790.xml"
-    doctest_namespace[
-        "integral_refined_voevent_path"
-    ] = "fink_mm/test/test_data/VODB/integral/voevent_number=18791.xml"
+    doctest_namespace["integral_weak_voevent_path"] = (
+        "fink_mm/test/test_data/VODB/integral/voevent_number=737.xml"
+    )
+    doctest_namespace["integral_wakeup_voevent_path"] = (
+        "fink_mm/test/test_data/VODB/integral/voevent_number=18790.xml"
+    )
+    doctest_namespace["integral_refined_voevent_path"] = (
+        "fink_mm/test/test_data/VODB/integral/voevent_number=18791.xml"
+    )
 
     integral_weak = voevent_to_class(
         load_voevent_from_path(doctest_namespace["integral_weak_voevent_path"], logger)
@@ -113,15 +113,15 @@ def init_integral(doctest_namespace):
 
 @pytest.fixture(autouse=True)
 def init_icecube(doctest_namespace):
-    doctest_namespace[
-        "icecube_cascade_voevent_path"
-    ] = "fink_mm/test/test_data/VODB/icecube/voevent_number=825.xml"
-    doctest_namespace[
-        "icecube_bronze_voevent_path"
-    ] = "fink_mm/test/test_data/VODB/icecube/voevent_number=3028.xml"
-    doctest_namespace[
-        "icecube_gold_voevent_path"
-    ] = "fink_mm/test/test_data/VODB/icecube/voevent_number=45412.xml"
+    doctest_namespace["icecube_cascade_voevent_path"] = (
+        "fink_mm/test/test_data/VODB/icecube/voevent_number=825.xml"
+    )
+    doctest_namespace["icecube_bronze_voevent_path"] = (
+        "fink_mm/test/test_data/VODB/icecube/voevent_number=3028.xml"
+    )
+    doctest_namespace["icecube_gold_voevent_path"] = (
+        "fink_mm/test/test_data/VODB/icecube/voevent_number=45412.xml"
+    )
 
     icecube_cascade = voevent_to_class(
         load_voevent_from_path(
@@ -142,9 +142,9 @@ def init_icecube(doctest_namespace):
 
 @pytest.fixture(autouse=True)
 def init_LVK(doctest_namespace):
-    doctest_namespace[
-        "lvk_initial_path"
-    ] = "fink_mm/test/test_data/VODB/lvk/initial.txt"
+    doctest_namespace["lvk_initial_path"] = (
+        "fink_mm/test/test_data/VODB/lvk/initial.txt"
+    )
     doctest_namespace["lvk_update_path"] = "fink_mm/test/test_data/VODB/lvk/update.txt"
     doctest_namespace["lvk_test_path"] = "fink_mm/test/test_data/VODB/lvk/test.txt"
 
@@ -189,7 +189,7 @@ def init_spark(doctest_namespace):
     doctest_namespace["join_data"] = join_data
     doctest_namespace["alert_data"] = alert_data
 
-    ztf_datatest = "fink_mm/test/test_data/ztf_test"
+    ztf_datatest = "fink_mm/test/test_data/ztf_test/online/science"
     gcn_datatest = "fink_mm/test/test_data/gcn_test/raw"
     online_data_test = "fink_mm/test/test_data/online"
     offline_data_test = "fink_mm/test/test_data/offline"

@@ -1116,7 +1116,7 @@ def read_grb_admin_options(arguments, config, logger, is_test=False):
     >>> logger = init_logging()
 
     >>> read_grb_admin_options(arguments, config, logger, False)
-    ('20221014', '120', 'fink_mm/test/test_data/ztf_test', 'fink_mm/test/test_data/gcn_test/raw', 'fink_mm/test/test_output', '30', '127.0.0.1', '4', '/home/roman.le-montagner/fink-broker/catalogs_hbase/ztf.jd.json', 7, 'localhost:9092', 'toto', 'tata')
+    ('20221014', '120', 'fink_mm/test/test_data/ztf_test/online/science', 'fink_mm/test/test_data/gcn_test/raw', 'fink_mm/test/test_output', '30', '127.0.0.1', '4', '/home/roman.le-montagner/fink-broker/catalogs_hbase/ztf.jd.json', 7, 'localhost:9092', 'toto', 'tata')
 
     >>> res = read_grb_admin_options(arguments, config, logger, True)
 
