@@ -185,8 +185,8 @@ def load_dataframe(
     if load_mode == DataMode.STREAMING:
         # connection to the ztf science stream
         ztf_alert = connect_to_raw_database(
-            os.path.join(ztf_path, f"/online/science/{night}"),
-            os.path.join(ztf_path, f"/online/science/{night}"),
+            os.path.join(ztf_path, f"online/science/{night}"),
+            os.path.join(ztf_path, f"online/science/{night}"),
             latestfirst=False,
         )
 
@@ -208,7 +208,7 @@ def load_dataframe(
             .load(
                 os.path.join(
                     ztf_path,
-                    f"/archive/science/year={night[0:4]}/month={night[4:6]}/day={night[6:8]}",
+                    f"archive/science/year={night[0:4]}/month={night[4:6]}/day={night[6:8]}",
                 )
             )
         )
