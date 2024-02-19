@@ -181,7 +181,7 @@ def init_spark(doctest_namespace):
     gw_data = "fink_mm/test/test_data/S230518h_0_test"
     join_data = "fink_mm/test/test_data/join_raw_datatest.parquet"
     alert_data = (
-        "fink_mm/test/test_data/ztf_test/online/science/year=2024/month=01/day=15/"
+        "fink_mm/test/test_data/ztf_test/online/science/20240115"
     )
 
     doctest_namespace["grb_data"] = grb_data
