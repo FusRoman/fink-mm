@@ -377,19 +377,17 @@ def gcn_pre_join(
         get_pixels(gcn_dataframe.observatory, gcn_dataframe.raw_event, F.lit(NSIDE)),
     )
 
-    if not test:
-        # remove the gw skymap to save memory before the join
-        gcn_dataframe = gcn_dataframe.withColumn(
-            "raw_event",
-            remove_skymap(gcn_dataframe.observatory, gcn_dataframe.raw_event),
-        )
+    # if not test:
+    #     # remove the gw skymap to save memory before the join
+    #     gcn_dataframe = gcn_dataframe.withColumn(
+    #         "raw_event",
+    #         remove_skymap(gcn_dataframe.observatory, gcn_dataframe.raw_event),
+    #     )
 
     gcn_rawevent = gcn_dataframe.select(["triggerId", "raw_event"]).withColumnRenamed(
         "triggerId", "gcn_trigId"
     )
-    gcn_dataframe = gcn_dataframe.select(
-        [col for col in gcn_dataframe.columns if col != "raw_event"]
-    )
+    gcn_dataframe = gcn_dataframe.drop("raw_event")
 
     gcn_dataframe = gcn_dataframe.withColumn("hpix", explode("hpix_circle"))
 
