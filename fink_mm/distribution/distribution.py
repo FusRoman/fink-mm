@@ -78,6 +78,55 @@ def format_mangrove_col(userschema: StructType) -> StructType:
     return userschema
 
 
+def grb_distribution_stream(
+    df_grb_stream,
+    static_df,
+    checkpointpath_grb,
+    tinterval,
+    kafka_broker_server,
+    username,
+    password,
+):
+
+    df_grb_stream = (
+        df_grb_stream.drop("year")
+        .drop("month")
+        .drop("day")
+        .drop("timestamp")
+        .drop("t2")
+        .drop("ackTime")
+    )
+
+    cnames = df_grb_stream.columns
+    cnames[cnames.index("fid")] = "cast(fid as int) as fid"
+    cnames[cnames.index("rb")] = "cast(rb as double) as rb"
+    cnames[cnames.index("candid")] = "cast(candid as int) as candid"
+    cnames[cnames.index("Plx")] = "cast(Plx as double) as Plx"
+    cnames[cnames.index("e_Plx")] = "cast(e_Plx as double) as e_Plx"
+    cnames[cnames.index("triggerTimeUTC")] = (
+        "cast(triggerTimeUTC as string) as triggerTimeUTC"
+    )
+    cnames[cnames.index("lc_features_g")] = "struct(lc_features_g.*) as lc_features_g"
+    cnames[cnames.index("lc_features_r")] = "struct(lc_features_r.*) as lc_features_r"
+    # cnames[cnames.index("mangrove")] = "struct(mangrove.*) as mangrove"
+    df_grb_stream = df_grb_stream.selectExpr(cnames)
+    static_df = static_df.selectExpr(cnames)
+
+    schema = schema_converter.to_avro(static_df.coalesce(1).limit(1).schema)
+
+    stream_distribute_list = apply_filters(
+        df_grb_stream,
+        schema,
+        tinterval,
+        checkpointpath_grb,
+        kafka_broker_server,
+        username,
+        password,
+    )
+
+    return stream_distribute_list
+
+
 def grb_distribution(
     grbdatapath, night, tinterval, exit_after, kafka_broker_server, username, password
 ):
@@ -161,37 +210,11 @@ def grb_distribution(
         .load()
     )
 
-    df_grb_stream = (
-        df_grb_stream.drop("year")
-        .drop("month")
-        .drop("day")
-        .drop("timestamp")
-        .drop("t2")
-        .drop("ackTime")
-    )
-
-    cnames = df_grb_stream.columns
-    cnames[cnames.index("fid")] = "cast(fid as int) as fid"
-    cnames[cnames.index("rb")] = "cast(rb as double) as rb"
-    cnames[cnames.index("candid")] = "cast(candid as int) as candid"
-    cnames[cnames.index("Plx")] = "cast(Plx as double) as Plx"
-    cnames[cnames.index("e_Plx")] = "cast(e_Plx as double) as e_Plx"
-    cnames[
-        cnames.index("triggerTimeUTC")
-    ] = "cast(triggerTimeUTC as string) as triggerTimeUTC"
-    cnames[cnames.index("lc_features_g")] = "struct(lc_features_g.*) as lc_features_g"
-    cnames[cnames.index("lc_features_r")] = "struct(lc_features_r.*) as lc_features_r"
-    # cnames[cnames.index("mangrove")] = "struct(mangrove.*) as mangrove"
-    df_grb_stream = df_grb_stream.selectExpr(cnames)
-    static_df = static_df.selectExpr(cnames)
-
-    schema = schema_converter.to_avro(static_df.coalesce(1).limit(1).schema)
-
-    grb_stream_distribute = apply_filters(
+    stream_distribute_list = grb_distribution_stream(
         df_grb_stream,
-        schema,
-        tinterval,
+        static_df,
         checkpointpath_grb,
+        tinterval,
         kafka_broker_server,
         username,
         password,
@@ -200,7 +223,8 @@ def grb_distribution(
     # Keep the Streaming running until something or someone ends it!
     if exit_after is not None:
         time.sleep(int(exit_after))
-        grb_stream_distribute.stop()
+        for stream in stream_distribute_list:
+            stream.stop()
         logger.info("Exiting the science2grb distribution subprocess normally...")
     else:  # pragma: no cover
         # Wait for the end of queries

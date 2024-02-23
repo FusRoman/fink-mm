@@ -63,7 +63,7 @@ def align_ztf(
 
     Examples
     --------
-    >>> path_ztf_raw = ("fink_mm/test/test_data/ztf_test/online/science/year=2024/month=01/day=15/")
+    >>> path_ztf_raw = ("fink_mm/test/test_data/ztf_test/online/science/20240115/")
     >>> ztf_pdf = pd.read_parquet(path_ztf_raw)
 
     >>> random = np.random.default_rng(0)
@@ -262,7 +262,7 @@ def align_ztf_and_gcn(
     >>> path_gcn = "fink_mm/test/test_data/683571622_0_test"
     >>> gcn = pd.read_parquet(path_gcn)
 
-    >>> path_ztf_raw = ("fink_mm/test/test_data/ztf_test/online/science/year=2024/month=01/day=15/")
+    >>> path_ztf_raw = ("fink_mm/test/test_data/ztf_test/online/science/20240115/")
     >>> ztf_pdf = pd.read_parquet(path_ztf_raw)
 
     >>> random = np.random.default_rng(0)
