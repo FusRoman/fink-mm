@@ -40,7 +40,7 @@ def apply_filters(
 
     Returns
     -------
-    spark streaming dataframe
+    spark streaming dataframe list
         same as input but filtered by the user defined filters
     """
     df_grb_bronze = (
@@ -95,6 +95,7 @@ def apply_filters(
         .drop("f_bronze")
     )
 
+    res_query = []
     for df_filter, topicname in [
         (df_grb_bronze, "fink_grb_bronze"),
         (df_grb_silver, "fink_grb_silver"),
@@ -112,5 +113,6 @@ def apply_filters(
             checkpointpath_topic,
             tinterval,
         )
+        res_query.append(grb_stream_distribute)
 
-    return grb_stream_distribute
+    return res_query
