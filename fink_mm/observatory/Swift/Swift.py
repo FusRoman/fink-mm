@@ -60,7 +60,7 @@ class Swift(Observatory):
         instrument = self.detect_instruments()
         coords = vp.get_event_position(self.voevent)
 
-        err = 1 / 60 if coords.err == 0.0 else coords.err
+        err = 1 / 60 if coords.err == 0.0 else coords.err * 60
 
         if instrument in ["XRT", "UVOT", "BAT", "FOM"]:
             return err
