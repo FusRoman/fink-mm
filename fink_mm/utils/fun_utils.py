@@ -878,6 +878,7 @@ def read_and_build_spark_submit(config, logger):
     """
     try:
         master_manager = config["STREAM"]["manager"]
+        driver_host = config["STREAM"]["driver_host"]
         principal_group = config["STREAM"]["principal"]
         secret = config["STREAM"]["secret"]
         role = config["STREAM"]["role"]
@@ -897,6 +898,7 @@ def read_and_build_spark_submit(config, logger):
         source {}; fi; \
         `which spark-submit` \
         --master {} \
+        --conf spark.driver.host={} \
         --conf spark.mesos.principal={} \
         --conf spark.mesos.secret={} \
         --conf spark.mesos.role={} \
@@ -908,6 +910,7 @@ def read_and_build_spark_submit(config, logger):
         path_bash_profile,
         path_bash_profile,
         master_manager,
+        driver_host,
         principal_group,
         secret,
         role,
