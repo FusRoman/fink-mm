@@ -872,7 +872,7 @@ def read_and_build_spark_submit(config, logger):
 
     >>> home_path = os.environ["HOME"]
     >>> path_bash_profile = os.path.join(home_path, ".bash_profile")
-    >>> test_str = f"if test -f '{path_bash_profile}'; then         source {path_bash_profile}; fi;         `which spark-submit`         --master local[8]         --conf spark.mesos.principal=         --conf spark.mesos.secret=         --conf spark.mesos.role=         --conf spark.executorEnv.HOME=/path/to/user/         --driver-memory 4G         --executor-memory 8G         --conf spark.cores.max=16         --conf spark.executor.cores=8"
+    >>> test_str = f"if test -f '{path_bash_profile}'; then         source {path_bash_profile}; fi;         `which spark-submit`         --master local[8]         --conf spark.driver.host=lmont-Precision-3561         --conf spark.mesos.principal=         --conf spark.mesos.secret=         --conf spark.mesos.role=         --conf spark.executorEnv.HOME=/path/to/user/         --driver-memory 4G         --executor-memory 8G         --conf spark.cores.max=16         --conf spark.executor.cores=8"
     >>> test_str == spark_str
     True
     """

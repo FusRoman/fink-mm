@@ -51,11 +51,11 @@ class Swift(Observatory):
         Example
         -------
         >>> swift_bat.err_to_arcminute()
-        0.05
+        3.0
         >>> swift_xrt.err_to_arcminute()
-        0.0016
+        0.096
         >>> swift_uvot.err_to_arcminute()
-        0.0001
+        0.006
         """
         instrument = self.detect_instruments()
         coords = vp.get_event_position(self.voevent)
