@@ -481,7 +481,7 @@ def ztf_join_gcn_stream(
             "inner",
         )
         .drop("gcn_trigId")
-        .dropDuplicates(["objectId", "triggerId", "gcn_status"])
+        .dropDuplicates(["objectId", "triggerId", "gcn_status"]) # makes the inner join a natural join
     )
 
     df_join_mm = join_post_process(df_join_mm, hdfs_adress, gcn_datapath_prefix)
