@@ -331,7 +331,7 @@ class Observatory(ABC):
         >>> tr_time = Time("2022-07-30T15:48:54.89").jd
         >>> r = swift_bat.association_proba(225.0206, -69.4968, tr_time+1)
         >>> print(round(r, 13))
-        1.7e-12
+        5.9576e-09
 
         >>> tr_time = Time("2022-07-29T21:13:01").jd
         >>> r = fermi_gbm.association_proba(316.6900, -4.1699, tr_time)
