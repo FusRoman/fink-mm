@@ -583,7 +583,7 @@ def ztf_join_gcn(
     ['DR3Name', 'Plx', 'ackTime', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_time', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'jd', 'jd_first_real_det', 'jdstarthist', 'jdstarthist_dt', 'lc_features_g', 'lc_features_r', 'lower_rate', 'mag_rate', 'magpsf', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'sigma_rate', 'sigmapsf', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 't2', 'timestamp', 'triggerId', 'triggerTimeUTC', 'upper_rate', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
 
     >>> len(datajoin)
-    204
+    212
 
     >>> ztf_join_gcn(
     ...     DataMode.OFFLINE,
@@ -679,7 +679,7 @@ def launch_join(arguments: dict, data_mode, test: bool = False):
     ['DR3Name', 'Plx', 'ackTime', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_time', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'jd', 'jd_first_real_det', 'jdstarthist', 'jdstarthist_dt', 'lc_features_g', 'lc_features_r', 'lower_rate', 'mag_rate', 'magpsf', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'sigma_rate', 'sigmapsf', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 't2', 'timestamp', 'triggerId', 'triggerTimeUTC', 'upper_rate', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
 
     >>> len(datajoin)
-    204
+    212
 
     >>> launch_join({
     ...     "--config" : None,
