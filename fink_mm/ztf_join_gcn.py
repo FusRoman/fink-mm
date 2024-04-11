@@ -601,7 +601,7 @@ def ztf_join_gcn(
     ['DR3Name', 'Plx', 'ackTime', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_time', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'is_grb_bronze', 'is_grb_gold', 'is_grb_silver', 'is_gw_bronze', 'jd', 'jd_first_real_det', 'jdstarthist', 'jdstarthist_dt', 'lc_features_g', 'lc_features_r', 'lower_rate', 'mag_rate', 'magpsf', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'sigma_rate', 'sigmapsf', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 't2', 'timestamp', 'triggerId', 'triggerTimeUTC', 'upper_rate', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
 
     >>> len(datajoin)
-    382
+    390
     """
     logger = init_logging()
 
@@ -695,7 +695,7 @@ def launch_join(arguments: dict, data_mode, test: bool = False):
     ['DR3Name', 'Plx', 'ackTime', 'anomaly_score', 'candid', 'cdsxmatch', 'day', 'delta_time', 'e_Plx', 'event', 'fid', 'fink_class', 'from_upper', 'gcn_dec', 'gcn_loc_error', 'gcn_ra', 'gcn_status', 'gcvs', 'instrument', 'is_grb_bronze', 'is_grb_gold', 'is_grb_silver', 'is_gw_bronze', 'jd', 'jd_first_real_det', 'jdstarthist', 'jdstarthist_dt', 'lc_features_g', 'lc_features_r', 'lower_rate', 'mag_rate', 'magpsf', 'mangrove', 'month', 'mulens', 'nalerthist', 'objectId', 'observatory', 'p_assoc', 'raw_event', 'rb', 'rf_kn_vs_nonkn', 'rf_snia_vs_nonia', 'roid', 'sigma_rate', 'sigmapsf', 'snn_sn_vs_all', 'snn_snia_vs_nonia', 't2', 'timestamp', 'triggerId', 'triggerTimeUTC', 'upper_rate', 'vsx', 'x3hsp', 'x4lac', 'year', 'ztf_dec', 'ztf_ra']
 
     >>> len(datajoin)
-    382
+    390
     """
     config = get_config(arguments)
     logger = init_logging()
