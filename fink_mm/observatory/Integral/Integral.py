@@ -53,16 +53,16 @@ class Integral(Observatory):
         Example
         -------
         >>> integral_weak.err_to_arcminute()
-        0.0656
+        3.9360000000000004
         >>> integral_wakeup.err_to_arcminute()
-        0.0489
+        2.934
         >>> integral_refined.err_to_arcminute()
-        0.0431
+        2.586
         """
         instrument = self.detect_instruments()
         coords = vp.get_event_position(self.voevent)
 
         if instrument == "Weak" or instrument == "Wakeup" or instrument == "Refined":
-            return coords.err
+            return coords.err * 60
         else:
-            raise BadInstrument("{} is not a IceCube events".format(instrument))
+            raise BadInstrument("{} is not a Integral events".format(instrument))
