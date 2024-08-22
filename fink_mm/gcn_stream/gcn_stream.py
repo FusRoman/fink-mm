@@ -14,8 +14,23 @@ import fink_mm.gcn_stream.gcn_reader as gr
 from fink_mm.init import get_config, init_logging, return_verbose_level
 from fink_mm.utils.fun_utils import get_hdfs_connector
 from fink_mm.observatory import TOPICS, TOPICS_FORMAT
-from fink_client.scripts.fink_datatransfer import my_assign
 from astropy.time import Time
+
+
+def my_assign(consumer, partitions):
+    """Function to reset offsets when (re)polling
+    It must be passed when subscribing to a topic:
+        `consumer.subscribe(topics, on_assign=my_assign)`
+    Parameters
+    ----------
+    consumer: confluent_kafka.Consumer
+        Kafka consumer
+    partitions: Kafka partitions
+        Internal object to deal with partitions
+    """
+    for p in partitions:
+        p.offset = 0
+    consumer.assign(partitions)
 
 
 def signal_handler(signal, frame):  # pragma: no cover

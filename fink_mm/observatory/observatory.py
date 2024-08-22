@@ -18,7 +18,7 @@ from fink_utils.science.utils import ra2phi, dec2theta
 
 from fink_mm.observatory import OBSERVATORY_JSON_SCHEMA_PATH
 from fink_mm.test.hypothesis.observatory_schema import voevent_df_schema
-from fink_mm.utils.grb_prob import p_ser_grb_vect
+from fink_mm.utils.grb_prob import serendipitous_association_proba
 
 
 class BadInstrument(Exception):
@@ -331,17 +331,17 @@ class Observatory(ABC):
         >>> tr_time = Time("2022-07-30T15:48:54.89").jd
         >>> r = swift_bat.association_proba(225.0206, -69.4968, tr_time+1)
         >>> print(round(r, 13))
-        5.9576e-09
+        0.999999998715
 
         >>> tr_time = Time("2022-07-29T21:13:01").jd
         >>> r = fermi_gbm.association_proba(316.6900, -4.1699, tr_time)
         >>> print(round(r, 6))
-        0.000387
+        0.999925
 
         >>> tr_time = Time("2022-09-26T10:38:37").jd
         >>> r = integral_refined.association_proba(273.9549, -37.2418, tr_time+10)
         >>> print(round(r, 12))
-        6.9143e-08
+        0.999999994283
         """
 
         # grb detection rate (detection/year) for the self observatory
@@ -371,15 +371,11 @@ class Observatory(ABC):
             delay_year = delay / 365.25
 
             # compute serendipitous probability
-            p_ser = p_ser_grb_vect(
-                grb_error / 60,
-                delay_year,
+            return serendipitous_association_proba(
                 grb_det_rate,
+                delay_year,
+                grb_error / 60
             )
-
-            grb_proba = p_ser[0]
-
-            return grb_proba
 
         else:
             return -1.0

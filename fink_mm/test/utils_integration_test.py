@@ -286,7 +286,7 @@ def align_ztf_and_gcn(
     >>> ztf_jdstarthist = ztf_pdf.loc[len(ztf_pdf)-1]["candidate"]["jdstarthist"]
 
     >>> grb_proba = obs.association_proba(ztf_ra, ztf_dec, ztf_jdstarthist)
-    >>> (1 - grb_proba) > special.erf(5 / sqrt(2))
+    >>> grb_proba > special.erf(5 / sqrt(2))
     True
     """
     ra = random.uniform(0, 360)

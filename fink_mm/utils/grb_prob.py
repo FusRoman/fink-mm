@@ -10,234 +10,243 @@ from astropy.coordinates import SkyCoord
 import astropy.units as u
 from astropy.time import Time
 
+# From statistics computed on fink database
+mean_ztf_transient_area = 31  # mean number of ztf transient per night per square degree
+mean_ztf_transient_night = 141994  # mean number of ztf transient per night
 
-def p_ser_grb_vect(
-    error_radius: np.ndarray, size_time_window: np.ndarray, r_grb: np.ndarray
-) -> list:
+
+####### PROB SERENDIPITOUS #######
+# All constante necessary data for the grb proba
+
+mu_fermi = 250  # mean rate of grb detection by fermi (250 GRB/year)
+mu_swift = 100  # mean rate of grb detection by swift (100 GRB/year)
+mu_integral = 60  # mean rate of grb detection by integral (60 GRB/year)
+
+ztf_cadence = 3750  # square degrees/hour (source: https://indico.cern.ch/event/848390/contributions/3614278/attachments/1964747/3266729/ZTF_LSST__KM3NET.pdf)
+
+# we consider that ztf surveys the sky 4 hours per night
+ztf_night_area = 3750 * 4
+full_sky_area = (4 * np.pi) * (180 / np.pi) ** 2  # square degree
+ztf_sky_fraction = ztf_night_area / full_sky_area
+
+# mean rate of GRB detected for each instruments view by ZTF
+mu_fermi_ztf = mu_fermi * ztf_sky_fraction
+mu_swift_ztf = mu_swift * ztf_sky_fraction
+mu_integral_ztf = mu_integral * ztf_sky_fraction
+
+
+def mean_transient_in_grb_loc_area(
+    grb_area: float,
+) -> float:  # grb area -> radius error in degree
     """
-    Created on Mon Oct  4 10:34:09 2021
-
-    @author: Damien Turpin : damien.turpin@cea.fr
-
-    function that gives the chance probability of having a positive spatial and
-    temporal match between a GRB and a ZTF transient candidate
+    Compute the mean number of ZTF transient in a gamma ray burst (GRB) circle error area.
 
     Parameters
     ----------
-    error_radius : array
-        error radius of the GRB localization region in degree
-    size_time_window: array
-        size of the searching time window in year
-    r_grb: array
-        GRB detection rate for a set of satellites in events/year
+    grb_area : float
+        the GRB error radius in degree
 
     Returns
     -------
-    p_ser : list
-        Serendipituous probabilities for a GRB/ZTF candidate association.
-        The first items correspond to the association probability with a GRB in general, the second correspond
-        to the association with a long GRB and finally, the last items correspond to the associations with a
-        short GRB.
+    float
+        the mean number of transient that ZTF could detect in a GRB error circle.
 
     Examples
     --------
 
-    # alerts from the object ZTF21aagwbjr
-    >>> ztf_alerts = pd.read_parquet("fink_mm/test/test_data/ztf_alerts_sample.parquet")
+    >>> '%.6f' % mean_transient_in_grb_loc_area(1)
+    '97.389372'
 
-    # gcn contains the notice 634112970 (GRB210204270)
-    >>> grb_alerts = pd.read_parquet("fink_mm/test/test_data/grb_samples.parquet")
+    >>> '%.6f' % mean_transient_in_grb_loc_area(10)
+    '9738.937226'
 
-    >>> proba = grb_alerts.apply(
-    ... lambda x: p_ser_grb_vect(
-    ...     x["gm_error"],
-    ...     (ztf_alerts["i:jdstarthist"].values - Time(x["Trig Time"].to_datetime64(), format="datetime64").jd) / 365.25,
-    ...     250)[0][0],
-    ... axis=1
-    ... )
+    >>> '%.6f' % mean_transient_in_grb_loc_area(40)
+    '155822.995618'
 
-    >>> (1 - proba.values[1]) > special.erf(5 / sqrt(2))
-    True
+    >>> '%.6f' % mean_transient_in_grb_loc_area(38.635267)
+    '145371.543736'
     """
-
-    # omega = 2*pi*(1-cos(radians(error_radius))) # solid angle in steradians
-    grb_loc_area = pi * np.power(error_radius, 2)  # in square degrees
-    allsky_area = 4 * pi * (180 / pi) ** 2  # in square degrees
-    ztf_coverage_rate = 3750  # sky coverage rate of ZTF in square degrees per hour
-    limit_survey_time = 4  # duration (in hour) during which ZTF will cover individual parts of the sky in a night
-
-    # short and long GRB detection rate
-    r_sgrb = np.divide(r_grb, 3)
-    r_lgrb = r_grb - r_sgrb
-
-    # Poisson probability of detecting a GRB during a searching time window
-    p_grb_detect_ser = 1 - poisson.cdf(1, r_grb * size_time_window)
-    p_lgrb_detect_ser = 1 - poisson.cdf(1, r_lgrb * size_time_window)
-    p_sgrb_detect_ser = 1 - poisson.cdf(1, r_sgrb * size_time_window)
-
-    # we limit the fraction of the sky ZTF is able to cover to 4 hours of continuous survey
-    # we consider that every day (during several days only) ZTF will cover the same part of
-    # the sky with individual shots (so no revisit) during 4 hours
-
-    #     if size_time_window*365.25*24 <= limit_survey_time:
-    #         ztf_sky_frac_area = (ztf_coverage_rate*size_time_window*365.25*24)
-    #     else:
-    #         ztf_sky_frac_area = ztf_coverage_rate*limit_survey_time
-
-    ztf_sky_frac_area = np.where(
-        size_time_window * 365.25 * 24 <= limit_survey_time,
-        (ztf_coverage_rate * size_time_window * 365.25 * 24),
-        ztf_coverage_rate * limit_survey_time,
-    )
-
-    # probability of finding a GRB within the region area paved by ZTF during a given amount of time
-    p_grb_in_ztf_survey = (ztf_sky_frac_area / allsky_area) * p_grb_detect_ser
-    p_lgrb_in_ztf_survey = (ztf_sky_frac_area / allsky_area) * p_lgrb_detect_ser
-    p_sgrb_in_ztf_survey = (ztf_sky_frac_area / allsky_area) * p_sgrb_detect_ser
-
-    # probability of finding a ZTF transient candidate inside the GRB error box
-    # knowing the GRB is in the region area paved by ZTF during a given amount of time
-
-    p_ser_grb = p_grb_in_ztf_survey * (grb_loc_area / ztf_sky_frac_area)
-
-    p_ser_lgrb = p_lgrb_in_ztf_survey * (grb_loc_area / ztf_sky_frac_area)
-
-    p_ser_sgrb = p_sgrb_in_ztf_survey * (grb_loc_area / ztf_sky_frac_area)
-
-    p_sers = [p_ser_grb, p_ser_lgrb, p_ser_sgrb]
-
-    return p_sers
+    grb_area_square_degree = np.pi * grb_area**2
+    return mean_ztf_transient_area * grb_area_square_degree  # number of transient
 
 
-@pandas_udf(DoubleType())
-def grb_assoc(
-    ztf_ra: pd.Series,
-    ztf_dec: pd.Series,
-    jdstarthist: pd.Series,
-    platform: pd.Series,
-    trigger_time: pd.Series,
-    grb_ra: pd.Series,
-    grb_dec: pd.Series,
-    grb_error: pd.Series,
-) -> pd.Series:
+def proba_transient_in_grb_loc_area(grb_area: float) -> float:
     """
-    @DEPRECATED
-
-    Find the ztf alerts falling in the error box of the notices and emits after the trigger time.
-    Then, Compute an association serendipitous probability for each of them and return it.
+    Probability of finding a ZTF optical transient in the error circle of a GRB.
 
     Parameters
     ----------
-    ztf_ra : double spark column
-        right ascension coordinates of the ztf alerts
-    ztf_dec : double spark column
-        declination coordinates of the ztf alerts
-    jdstarthist : double spark column
-        Earliest Julian date of epoch corresponding to ndethist [days]
-        ndethist : Number of spatially-coincident detections falling within 1.5 arcsec
-            going back to beginning of survey;
-            only detections that fell on the same field and readout-channel ID
-            where the input candidate was observed are counted.
-            All raw detections down to a photometric S/N of ~ 3 are included.
-    platform : string spark column
-        voevent emitting platform
-    trigger_time : double spark column
-        grb trigger time (UTC)
-    grb_ra : double spark column
-        grb right ascension
-    grb_dec : double spark column
-        grb declination
-    grb_error : double spark column
-        grb error radius (in arcminute)
+    grb_area : float
+        radius of the GRB circle error region in degree
 
     Returns
     -------
-    grb_proba : pandas Series
-        the serendipitous probability for each ztf alerts.
+    float
+        transient probability within the error region
 
     Examples
     --------
+    >>> '%.6f' % proba_transient_in_grb_loc_area(0)
+    '0.000000'
 
-    >>> sparkDF = spark.read.format('parquet').load(join_data)
+    >>> '%.6f' % proba_transient_in_grb_loc_area(1)
+    '0.000686'
 
-    >>> df_grb = sparkDF.withColumn(
-    ... "grb_proba",
-    ... grb_assoc(
-    ...    sparkDF.candidate.ra,
-    ...     sparkDF.candidate.dec,
-    ...     sparkDF.candidate.jdstarthist,
-    ...     sparkDF.observatory,
-    ...     sparkDF.timeUTC,
-    ...     sparkDF.ra,
-    ...     sparkDF.dec,
-    ...     sparkDF.err
-    ...  ),
-    ... )
+    >>> '%.6f' % proba_transient_in_grb_loc_area(10)
+    '0.068587'
 
-    >>> df_grb = df_grb.select([
-    ... "objectId",
-    ... "candid",
-    ... col("candidate.ra").alias("ztf_ra"),
-    ... col("candidate.dec").alias("ztf_dec"),
-    ... "candidate.jd",
-    ... "observatory",
-    ... "instrument",
-    ... "triggerId",
-    ... col("ra").alias("grb_ra"),
-    ... col("dec").alias("grb_dec"),
-    ... col("err_arcmin").alias("grb_loc_error"),
-    ... "timeUTC",
-    ... "grb_proba"
-    ... ])
+    >>> '%.6f' % proba_transient_in_grb_loc_area(40)
+    '1.097391'
 
-    >>> grb_prob = df_grb.toPandas()
-    >>> grb_prob.to_parquet("fink_mm/test/test_data/grb_prob_test.parquet")
-    >>> grb_test = pd.read_parquet("fink_mm/test/test_data/grb_prob_test.parquet")
-    >>> assert_frame_equal(grb_prob, grb_test)
+    >>> '%.6f' % proba_transient_in_grb_loc_area(38.635267)
+    '1.023787'
     """
-    grb_proba = np.ones_like(ztf_ra.values, dtype=float) * -1.0
-    platform = platform.values
+    return mean_transient_in_grb_loc_area(grb_area) / mean_ztf_transient_night
 
-    # array of events detection rates in events/years
-    # depending of the instruments
-    condition = [
-        np.equal(platform, "Fermi"),
-        np.equal(platform, "SWIFT"),
-        np.equal(platform, "INTEGRAL"),
-        np.equal(platform, "ICECUBE"),
-    ]
-    choice_grb_rate = [250, 100, 60, 8]
-    grb_det_rate = np.select(condition, choice_grb_rate)
 
-    # array of error box
-    grb_error = grb_error.values
+def lambda_poisson(time_interval: float, grb_rate: float) -> float:
+    """
+    Lambda Parameter of the Poisson probability distribution.
+    The mean number of GRB during the time interval.
 
-    trigger_time = Time(
-        pd.to_datetime(trigger_time.values, utc=True), format="datetime"
-    ).jd
+    Parameters
+    ----------
+    time_interval : float
+        time interval in days between a ZTF optical transient and a GRB
+    grb_rate : float
+        the GRB detection rate of an instrument (mu_fermi_ztf, mu_swift_ztf or mu_integral_ztf)
 
-    # alerts emits after the grb
-    delay = jdstarthist - trigger_time
-    time_condition = delay > 0
+    Returns
+    -------
+    float
+        the mean number of GRB that could occurs during the time interval
 
-    ztf_coords = SkyCoord(ztf_ra, ztf_dec, unit=u.degree)
-    grb_coord = SkyCoord(grb_ra, grb_dec, unit=u.degree)
+    Examples
+    --------
+    >>> '%.6f' % lambda_poisson(1, mu_fermi_ztf)
+    '0.248878'
 
-    # alerts falling within the grb_error_box
-    spatial_condition = (
-        ztf_coords.separation(grb_coord).arcminute < 1.5 * grb_error
-    )  # 63.5 * grb_error
+    >>> '%.6f' % lambda_poisson(1, mu_swift_ztf)
+    '0.099551'
 
-    # convert the delay in year
-    delay_year = delay[time_condition & spatial_condition] / 365.25
+    >>> '%.6f' % lambda_poisson(1, mu_integral_ztf)
+    '0.059731'
 
-    # compute serendipitous probability
-    p_ser = p_ser_grb_vect(
-        grb_error[time_condition & spatial_condition] / 60,
-        delay_year.values,
-        grb_det_rate[time_condition & spatial_condition],
+    >>> '%.6f' % lambda_poisson(5, mu_fermi_ztf)
+    '1.244388'
+
+    >>> '%.6f' % lambda_poisson(5, mu_swift_ztf)
+    '0.497755'
+
+    >>> '%.6f' % lambda_poisson(5, mu_integral_ztf)
+    '0.298653'
+
+    >>> '%.6f' % lambda_poisson(10, mu_fermi_ztf)
+    '2.488777'
+
+    >>> '%.6f' % lambda_poisson(10, mu_swift_ztf)
+    '0.995511'
+
+    >>> '%.6f' % lambda_poisson(10, mu_integral_ztf)
+    '0.597306'
+    """
+    # time_interval in days
+    return grb_rate * (
+        time_interval / 365.25
+    )  # grb/year in the time interval given in days
+
+
+def grb_proba_cdf(time_interval: float, grb_rate: float) -> float:
+    """
+    Compute the probability of having at least one grb in the given time delay
+
+    Parameters
+    ----------
+    time_interval : float
+        time interval in days between a ZTF optical transient and a GRB
+    grb_rate : float
+        the GRB detection rate of an instrument (mu_fermi_ztf, mu_swift_ztf or mu_integral_ztf)
+
+    Returns
+    -------
+    float
+        probability of having at least one grb in the given time delay
+    
+    Examples
+    --------
+    >>> '%.6f' % grb_proba_cdf(1, mu_fermi_ztf)
+    '0.220325'
+
+    >>> '%.6f' % grb_proba_cdf(1, mu_swift_ztf)
+    '0.094756'
+
+    >>> '%.6f' % grb_proba_cdf(1, mu_integral_ztf)
+    '0.057982'
+
+    >>> '%.6f' % grb_proba_cdf(5, mu_fermi_ztf)
+    '0.711883'
+
+    >>> '%.6f' % grb_proba_cdf(5, mu_swift_ztf)
+    '0.392106'
+
+    >>> '%.6f' % grb_proba_cdf(5, mu_integral_ztf)
+    '0.258183'
+
+    >>> '%.6f' % grb_proba_cdf(10, mu_fermi_ztf)
+    '0.916989'
+
+    >>> '%.6f' % grb_proba_cdf(10, mu_swift_ztf)
+    '0.630465'
+
+    >>> '%.6f' % grb_proba_cdf(10, mu_integral_ztf)
+    '0.449708'
+    """
+    return 1 - poisson.cdf(
+        0, lambda_poisson(time_interval, grb_rate)
+    )  # probability of having at least one grb in the given delay
+
+
+def serendipitous_association_proba(
+    grb_rate: float, delay: float, grb_loc_area: float
+) -> float:
+    """
+    Probability of having a GRB in the given time delay between the ZTF
+    optical transient and having a ZTF optical transient in the GRB error circle.
+
+    Parameters
+    ----------
+    grb_rate : float
+        the GRB detection rate of an instrument (mu_fermi_ztf, mu_swift_ztf or mu_integral_ztf)
+        unit: detection per year
+    delay : float
+        time interval in days between a ZTF optical transient and a GRB
+        unit: day
+    grb_loc_area : float
+        radius of the GRB circle error region in degree
+        unit: degree
+
+    Returns
+    -------
+    float
+        serendipitous probability of having a GRB in the delay and 
+        an optical transient in the circle error region.
+    
+    Examples
+    --------
+    ZTF21aagwbjr / GRB210204A
+    >>> '%.6f' % serendipitous_association_proba(mu_fermi_ztf, 1.03, 3.1)
+    '0.998510'
+
+    ZTF21aakruew / GRB210212B
+    >>> '%.6f' % serendipitous_association_proba(mu_fermi_ztf, 0.29, 36.327284855876584)
+    '0.936975'
+
+    ZTF23abaanxz / GRB230827B
+    >>> '%.6f' % serendipitous_association_proba(mu_fermi_ztf, 0.083279, 2.17)
+    '0.999934'
+    """
+    # proba of having a grb in a such delay between the optical alert and the trigger time
+    # and having a ztf optical transient in the grb location area
+    return 1 - proba_transient_in_grb_loc_area(grb_loc_area) * grb_proba_cdf(
+        delay, grb_rate
     )
-
-    grb_proba[time_condition & spatial_condition] = p_ser[0]
-
-    return pd.Series(grb_proba)
