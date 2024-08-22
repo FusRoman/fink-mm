@@ -16,7 +16,6 @@ env:
   SECRET_ID: ${{ secrets.GCN_ID }}
   SECRET_SECRET: ${{ secrets.GCN_SECRET }}
 
-
 jobs:
   run-unit-test:
     name: run-unit-test
