@@ -16,7 +16,6 @@ env:
   SECRET_ID: ${{ secrets.GCN_ID }}
   SECRET_SECRET: ${{ secrets.GCN_SECRET }}
 
-
 jobs:
   run-unit-test:
     name: run-unit-test
@@ -24,7 +23,7 @@ jobs:
 
     strategy:
       matrix:
-        container: ["julienpeloton/fink-ci:dev"]
+        container: ["julienpeloton/fink-ci:latest"]
 
     container:
       image: ${{ matrix.container }}
@@ -98,7 +97,7 @@ jobs:
         echo "PYTHONPATH="${SPARK_HOME}/python/test_coverage:$PYTHONPATH"" >> $GITHUB_ENV
         echo "COVERAGE_PROCESS_START="${ROOTPATH}/.coveragerc"" >> $GITHUB_ENV
         python -m pip install . --upgrade
-        pip install -U fink_filters
+# pip install -U fink_filters
 
     - name: Run test suites
       run: |
