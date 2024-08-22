@@ -213,7 +213,7 @@ def init_spark(doctest_namespace):
     myconfig = {
         "username": "rlm",
         "bootstrap.servers": "localhost:9092",
-        "group.id": "rlm_fink",
+        "group_id": "rlm_fink",
     }
     topics = ["fink_grb_bronze"]
 
