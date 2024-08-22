@@ -61,7 +61,7 @@ The three scripts are not meant to be launched lonely but with cron jobs. The fo
 1 17 * * * /custom_install_path/scheduler/science2grb_offline.sh
 ```
 The above lines will launch the streaming services daily at 01:00 AM (Paris Timezone) until the end date specified in the scheduler script file. For both science2grb.sh and grb2distribution.sh, they finished at 05:00 PM (Paris Timezone). The start and end times have been set for ZTF (01:00 AM Paris -> 4:00 PM California / 5:00 PM Paris -> 08:00 AM California) and must be modified for LSST.
-The offline services start at 5:01 PM daily and finish automatically at the end of the process. 
+The offline services start at 5:01 PM daily and finish automatically at the end of the process.
 
 ## Output description
 
