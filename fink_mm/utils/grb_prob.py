@@ -1,22 +1,11 @@
 import numpy as np
-import pandas as pd
-from math import pi
 from scipy.stats import poisson
 
-from pyspark.sql.functions import pandas_udf, col  # noqa: F401
-from pyspark.sql.types import DoubleType
-
-from astropy.coordinates import SkyCoord
-import astropy.units as u
-from astropy.time import Time
+# All constante necessary data for the grb proba
 
 # From statistics computed on fink database
 mean_ztf_transient_area = 31  # mean number of ztf transient per night per square degree
 mean_ztf_transient_night = 141994  # mean number of ztf transient per night
-
-
-####### PROB SERENDIPITOUS #######
-# All constante necessary data for the grb proba
 
 mu_fermi = 250  # mean rate of grb detection by fermi (250 GRB/year)
 mu_swift = 100  # mean rate of grb detection by swift (100 GRB/year)
@@ -171,7 +160,7 @@ def grb_proba_cdf(time_interval: float, grb_rate: float) -> float:
     -------
     float
         probability of having at least one grb in the given time delay
-    
+
     Examples
     --------
     >>> '%.6f' % grb_proba_cdf(1, mu_fermi_ztf)
@@ -228,9 +217,9 @@ def serendipitous_association_proba(
     Returns
     -------
     float
-        serendipitous probability of having a GRB in the delay and 
+        serendipitous probability of having a GRB in the delay and
         an optical transient in the circle error region.
-    
+
     Examples
     --------
     ZTF21aagwbjr / GRB210204A
