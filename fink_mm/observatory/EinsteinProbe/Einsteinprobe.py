@@ -3,7 +3,6 @@ import os.path as path
 from fink_mm.observatory import OBSERVATORY_PATH
 
 
-
 class Einsteinprobe(Observatory):
 
     def __init__(self, notice: str):
@@ -21,7 +20,9 @@ class Einsteinprobe(Observatory):
         >>> type(ep_alert)
         <class 'Einsteinprobe.Einsteinprobe'>
         """
-        super().__init__(path.join(OBSERVATORY_PATH, "EinsteinProbe", "einsteinprobe.json"), notice)
+        super().__init__(
+            path.join(OBSERVATORY_PATH, "EinsteinProbe", "einsteinprobe.json"), notice
+        )
 
     def is_observation(self) -> bool:
         """
