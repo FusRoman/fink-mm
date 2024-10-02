@@ -142,7 +142,6 @@ class Observatory(ABC):
         >>> fermi_gbm.detect_instruments()
         'GBM'
         """
-
         return self.voevent.attrib["ivorn"].split("#")[1].split("_")[0]
 
     @abstractmethod

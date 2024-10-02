@@ -143,10 +143,10 @@ def init_icecube(doctest_namespace):
 @pytest.fixture(autouse=True)
 def init_LVK(doctest_namespace):
     doctest_namespace["lvk_initial_path"] = (
-        "fink_mm/test/test_data/VODB/lvk/initial.txt"
+        "fink_mm/test/test_data/VODB/lvk/initial.json"
     )
-    doctest_namespace["lvk_update_path"] = "fink_mm/test/test_data/VODB/lvk/update.txt"
-    doctest_namespace["lvk_test_path"] = "fink_mm/test/test_data/VODB/lvk/test.txt"
+    doctest_namespace["lvk_update_path"] = "fink_mm/test/test_data/VODB/lvk/update.json"
+    doctest_namespace["lvk_test_path"] = "fink_mm/test/test_data/VODB/lvk/test.json"
 
     lvk_initial = json_to_class(
         load_json_from_path(doctest_namespace["lvk_initial_path"], logger)
@@ -162,6 +162,19 @@ def init_LVK(doctest_namespace):
     doctest_namespace["lvk_initial"] = lvk_initial
     doctest_namespace["lvk_update"] = lvk_update
     doctest_namespace["lvk_test"] = lvk_test
+
+
+@pytest.fixture(autouse=True)
+def init_EP(doctest_namespace):
+    doctest_namespace["ep_initial_path"] = (
+        "fink_mm/test/test_data/VODB/einsteinprobe/alert.example.json"
+    )
+
+    ep_alert = json_to_class(
+        load_json_from_path(doctest_namespace["ep_initial_path"], logger)
+    )
+
+    doctest_namespace["ep_alert"] = ep_alert
 
 
 @pytest.fixture(autouse=True, scope="session")
