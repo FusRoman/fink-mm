@@ -185,7 +185,7 @@ def load_and_parse_gcn(
             table,
             root_path=gcn_rawdatapath,
             partition_cols=["year", "month", "day"],
-            basename_template="{}_{}_{}".format(
+            basename_template="{}_{}_{}.parquet".format(
                 str(df["triggerId"].values[0]), time.time(), "{i}"
             ),
             existing_data_behavior="overwrite_or_ignore",
