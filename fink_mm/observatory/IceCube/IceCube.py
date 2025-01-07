@@ -3,16 +3,12 @@ import datetime as dt
 from astropy.time import Time
 import voeventparse as vp
 import os.path as path
-from pandera import check_output
 from astropy.coordinates import SkyCoord
 import astropy.units as u
 
 
 from fink_mm.observatory import OBSERVATORY_PATH
-from fink_mm.observatory.observatory import (
-    Observatory,
-    voevent_df_schema,
-)
+from fink_mm.observatory.observatory import Observatory
 
 
 class IceCube(Observatory):
@@ -75,7 +71,6 @@ class IceCube(Observatory):
         coords = vp.get_event_position(self.voevent)
         return coords.err * 60
 
-    @check_output(voevent_df_schema)
     def voevent_to_df(self):
         """
         Convert a voevent object into a dataframe.

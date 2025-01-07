@@ -6,7 +6,6 @@ import datetime as dt
 from astropy.coordinates import SkyCoord
 import pandas as pd
 from lxml.objectify import ObjectifiedElement
-from pandera import check_output
 import numpy as np
 import healpy as hp
 from abc import ABC, abstractmethod
@@ -17,7 +16,6 @@ from astropy.time import Time
 from fink_utils.science.utils import ra2phi, dec2theta
 
 from fink_mm.observatory import OBSERVATORY_JSON_SCHEMA_PATH
-from fink_mm.test.hypothesis.observatory_schema import voevent_df_schema
 from fink_mm.utils.grb_prob import serendipitous_association_proba
 
 
@@ -193,7 +191,6 @@ class Observatory(ABC):
         coords = vp.get_event_position(self.voevent)
         return coords.ra, coords.dec
 
-    @check_output(voevent_df_schema)
     def voevent_to_df(self) -> pd.DataFrame:
         """
         Convert a voevent object into a dataframe.
