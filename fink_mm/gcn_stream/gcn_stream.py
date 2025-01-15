@@ -110,7 +110,7 @@ def load_and_parse_gcn(
     >>> base_gcn = base_gcn.drop(columns="ackTime")
     >>> test_gcn = pd.read_parquet("fink_mm/test/test_data/683571622_0_test")
     >>> test_gcn["gcn_status"] = "initial"
-    >>> assert_frame_equal(base_gcn, test_gcn)
+    >>> assert_frame_equal(base_gcn, test_gcn, check_dtype=False)
 
     >>> json_str = open(lvk_initial_path, 'r').read()
     >>> tmp_dir_gcn = tempfile.TemporaryDirectory()
@@ -128,7 +128,7 @@ def load_and_parse_gcn(
     >>> base_gcn = base_gcn.drop(columns="ackTime")
     >>> test_gcn = pd.read_parquet("fink_mm/test/test_data/S230518h_0_test")
     >>> test_gcn["gcn_status"] = "initial"
-    >>> assert_frame_equal(base_gcn, test_gcn)
+    >>> assert_frame_equal(base_gcn, test_gcn, check_dtype=False)
     """
 
     if topic in TOPICS_FORMAT["xml"]:

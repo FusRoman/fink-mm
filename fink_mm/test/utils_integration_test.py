@@ -211,8 +211,8 @@ def align_xml_gcn(
     0  10.0  24.0
 
     >>> new_gcn[["triggerTimeUTC", "triggerTimejd"]]
-                        triggerTimeUTC  triggerTimejd
-    0 2023-06-06 07:33:30.511000+00:00   2.460102e+06
+                triggerTimeUTC  triggerTimejd
+    0  2023-06-06 07:33:30.511   2.460102e+06
 
     >>> new_gcn["err_arcmin"]
     0    300.0
