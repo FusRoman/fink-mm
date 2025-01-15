@@ -9,7 +9,6 @@ from astropy.time import Time
 from astropy.table import QTable
 import astropy_healpix as ah
 from base64 import b64decode
-from pandera import check_output
 import datetime as dt
 import json
 import healpy as hp
@@ -17,7 +16,6 @@ from healpy.pixelfunc import pix2ang, ang2pix
 
 from fink_mm.observatory import OBSERVATORY_PATH
 from fink_mm.observatory.observatory import Observatory
-from fink_mm.test.hypothesis.observatory_schema import voevent_df_schema
 from datetime import datetime
 
 
@@ -277,7 +275,6 @@ class LVK(Observatory):
         dec = lat.deg
         return ra, dec
 
-    @check_output(voevent_df_schema)
     def voevent_to_df(self) -> pd.DataFrame:
         """
         Convert a voevent object into a dataframe.
