@@ -1,0 +1,10 @@
+{
+    "name": "EinsteinProbe",
+    "//gcn_description": "https://gcn.nasa.gov/missions/einstein-probe",
+    "gcn_file_format": "json",
+    "packet_type": ["WXT"],
+    "kafka_topics": [
+        "gcn.notices.einstein_probe.wxt.alert"
+    ],
+    "grb_detection_rate": -1.0
+}

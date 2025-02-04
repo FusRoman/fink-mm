@@ -187,6 +187,8 @@ def json_to_class(gcn: dict) -> observatory.Observatory:
     """
     if "superevent_id" in gcn:
         return __OBS_CLASS["lvk"](gcn)
+    elif gcn["instrument"] == "WXT":
+        return __OBS_CLASS["einsteinprobe"](gcn)
     else:
         raise Exception("unknown json format")
 
