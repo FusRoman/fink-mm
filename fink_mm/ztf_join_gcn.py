@@ -38,7 +38,7 @@ from fink_mm.utils.fun_utils import DataMode
 from fink_mm.init import get_config, init_logging, return_verbose_level
 from fink_mm.utils.fun_utils import get_pixels
 
-from fink_filters.filter_mm_module.filter import (
+from fink_filters.ztf.filter_mm_module.filter import (
     f_grb_bronze_events,
     f_grb_silver_events,
     f_grb_gold_events,

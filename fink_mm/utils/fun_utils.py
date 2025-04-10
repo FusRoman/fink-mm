@@ -10,7 +10,7 @@ from pyspark.sql import DataFrame
 from pyspark.sql.functions import pandas_udf
 from pyspark.sql.types import DoubleType, ArrayType, IntegerType
 
-from fink_filters.classification import extract_fink_classification
+from fink_filters.ztf.classification import extract_fink_classification
 from fink_utils.spark.utils import concat_col
 
 from fink_mm.observatory import obsname_to_class, INSTR_FORMAT
