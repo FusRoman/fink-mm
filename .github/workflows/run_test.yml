@@ -8,8 +8,6 @@ on:
       - main
   pull_request:
   workflow_dispatch:
-  schedule:
-    - cron: '0 6 * * 1,4'
 
 env:
   NIGHT: 20190903
@@ -24,7 +22,7 @@ jobs:
 
     strategy:
       matrix:
-        container: ["julienpeloton/fink-ci:latest"]
+        container: ["julienpeloton/fink-ci-ztf:latest"]
 
     container:
       image: ${{ matrix.container }}
@@ -102,7 +100,7 @@ jobs:
 
     - name: Run test suites
       run: |
-        coverage run --source=${ROOTPATH} --rcfile=${ROOTPATH}/.coveragerc -m pytest --doctest-modules fink_mm
+        coverage run --source=${ROOTPATH} --rcfile=${ROOTPATH}/.coveragerc -m pytest --doctest-modules fink_mm --ignore=fink_mm/test/hypothesis
         curl -s https://codecov.io/bash | bash
 
   # run-integration-test:

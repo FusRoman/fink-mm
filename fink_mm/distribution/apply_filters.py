@@ -1,7 +1,7 @@
 from pyspark.sql import functions as F
 
 from fink_utils.broker.distributionUtils import write_to_kafka
-from fink_filters.filter_mm_module.filter import (
+from fink_filters.ztf.filter_mm_module.filter import (
     f_grb_bronze_events,
     f_grb_silver_events,
     f_grb_gold_events,
