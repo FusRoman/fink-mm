@@ -8,8 +8,6 @@ on:
       - main
   pull_request:
   workflow_dispatch:
-  schedule:
-    - cron: '0 6 * * 1,4'
 
 env:
   NIGHT: 20190903
